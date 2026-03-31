@@ -174,7 +174,7 @@ export class HotspotManager {
       ctx.fillText('→', canvas.width / 2, canvas.height / 2);
     };
 
-    img.src = spriteUrl.startsWith('/') ? spriteUrl : `/${spriteUrl}`;
+    img.src = spriteUrl;
   }
 
   update(deltaTime) {
