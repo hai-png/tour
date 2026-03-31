@@ -13,12 +13,12 @@ export class FloorPlanManager {
     this.floorPlanImage = null; // Store loaded image
     this.floorPlanConfig = null; // Store loaded floor plan configuration
 
-    // Floor configuration with image paths (using translation keys)
+    // Floor configuration with image paths (using WebP for better performance)
     this.floors = [
-      { id: 'ground', nameKey: 'groundFloor', image: 'floor-plan/ground.png' },
-      { id: 'first', nameKey: 'firstFloor', image: 'floor-plan/first.png' },
-      { id: 'second', nameKey: 'secondFloor', image: 'floor-plan/second.png' },
-      { id: 'third', nameKey: 'thirdFloor', image: 'floor-plan/third.png' }
+      { id: 'ground', nameKey: 'groundFloor', image: 'floor-plan/ground.webp' },
+      { id: 'first', nameKey: 'firstFloor', image: 'floor-plan/first.webp' },
+      { id: 'second', nameKey: 'secondFloor', image: 'floor-plan/second.webp' },
+      { id: 'third', nameKey: 'thirdFloor', image: 'floor-plan/third.webp' }
     ];
 
     // Scene to floor mapping based on scene names

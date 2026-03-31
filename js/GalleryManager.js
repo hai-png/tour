@@ -41,30 +41,30 @@ export class GalleryManager {
    * Load gallery images from project or use defaults
    */
   loadGalleryImages() {
-    // Load all images from gallery/ folder
+    // Load all images from gallery/ folder (using WebP for better performance)
     const galleryFiles = [
-      'Entrance view.png',
-      'GF-DINING ROOM 2.png',
-      'GF-LIVING ROOM 2.png',
-      'GF-OPEN KITCHEN 1.png',
-      'MINI SALON.png',
-      'MNI SALON 2.png',
-      'Scene 67.png',
-      'Scene 68.png',
-      'Scene 70.png',
-      'Scene 71_1.png',
-      'Scene 74_1.png',
-      'Scene 77.png',
-      'Scene 78.png',
-      'Scene 80.png',
-      'Scene 81.png'
+      'Entrance view',
+      'GF-DINING ROOM 2',
+      'GF-LIVING ROOM 2',
+      'GF-OPEN KITCHEN 1',
+      'MINI SALON',
+      'MNI SALON 2',
+      'Scene 67',
+      'Scene 68',
+      'Scene 70',
+      'Scene 71_1',
+      'Scene 74_1',
+      'Scene 77',
+      'Scene 78',
+      'Scene 80',
+      'Scene 81'
     ];
 
     this.images = galleryFiles.map((file, index) => ({
       id: index + 1,
-      url: `gallery/${file}`,
-      thumbnail: `gallery/${file}`,
-      title: file.replace('.png', '').replace(/-/g, ' '),
+      url: `gallery/${file}.webp`,
+      thumbnail: `gallery/${file}.webp`,
+      title: file.replace(/-/g, ' '),
       titleKey: `gallery_${index + 1}`,
       description: `Gallery image ${index + 1}`,
       category: this.categorizeImage(file)

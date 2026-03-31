@@ -117,14 +117,18 @@ export class HotspotManager {
     const ctx = canvas.getContext('2d');
     const img = new Image();
     img.crossOrigin = 'anonymous';
-    
-    // Build sprite URL - check if it exists, fallback to placeholder if not
+
+    // Build sprite URL - check if it exists, fallback to placeholder if not (using WebP for better performance)
     let spriteUrl = spriteConfig.url;
     if (!spriteUrl.startsWith('http') && !spriteUrl.startsWith('data:')) {
       // Relative path - check if from 3DVista export
       if (spriteUrl.includes('hai-png.github.io-main')) {
         // Map to local path
         spriteUrl = spriteUrl.replace('hai-png.github.io-main/', '');
+      }
+      // Convert PNG to WebP for better performance
+      if (spriteUrl.endsWith('.png')) {
+        spriteUrl = spriteUrl.replace('.png', '.webp');
       }
     }
 

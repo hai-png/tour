@@ -108,17 +108,20 @@ export class PanoramaViewer {
     return new Promise(resolve => {
       const img = new Image();
       img.crossOrigin = '';
-      
-      // Support new {face}.jpg format or old directory format
+
+      // Support new {face}.webp format or old directory format (using WebP for better performance)
       let imgUrl = baseUrl;
       if (baseUrl.includes('{face}')) {
-        // New format: path/{face}.jpg
-        imgUrl = baseUrl.replace('{face}', faceName);
-      } else if (!baseUrl.endsWith('.jpg')) {
-        // Old format: path/face/2/0_0.jpg
-        imgUrl = `${baseUrl}/${this.faceDirs[faceName]}/2/0_0.jpg`;
+        // New format: path/{face}.webp
+        imgUrl = baseUrl.replace('{face}', faceName).replace('.jpg', '.webp');
+      } else if (!baseUrl.endsWith('.webp') && !baseUrl.endsWith('.jpg')) {
+        // Old format: path/face/2/0_0.webp
+        imgUrl = `${baseUrl}/${this.faceDirs[faceName]}/2/0_0.webp`;
+      } else if (baseUrl.endsWith('.jpg')) {
+        // Convert jpg to webp
+        imgUrl = baseUrl.replace('.jpg', '.webp');
       }
-      
+
       img.onload = () => {
         const canvas = document.createElement('canvas');
         canvas.width = img.width;
