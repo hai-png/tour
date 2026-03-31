@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Floor Plan Radar Editor - HAI PNG Virtual Tour</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      overflow: hidden;
+    }
+
+    #editor-container {
+      display: flex;
+      height: 100vh;
+    }
+
+    /* Left Panel - Floor Plan Canvas */
+    .canvas-panel {
+      flex: 1;
+      position: relative;
+      background: #1e293b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    #floor-plan-wrapper {
+      position: relative;
+      max-width: 90%;
+      max-height: 90%;
+    }
+
+    #floor-plan-canvas {
+      display: block;
+      max-width: 100%;
+      max-height: 80vh;
+      border: 2px solid rgba(99, 102, 241, 0.3);
+      border-radius: 8px;
+    }
+
+    /* Right Panel - Editor Controls */
+    .editor-panel {
+      width: 400px;
+      background: rgba(30, 41, 59, 0.95);
+      border-left: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .editor-panel h2 {
+      font-size: 18px;
+      margin-bottom: 16px;
+      color: #6366f1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .editor-section {
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .editor-section:last-child {
+      border-bottom: none;
+    }
+
+    .editor-section h3 {
+      font-size: 14px;
+      color: #94a3b8;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Floor Selector */
+    .floor-selector {
+      width: 100%;
+      padding: 10px 12px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      color: #e2e8f0;
+      font-size: 14px;
+      cursor: pointer;
+      margin-bottom: 12px;
+    }
+
+    .floor-selector:focus {
+      outline: none;
+      border-color: #6366f1;
+    }
+
+    /* Control Group */
+    .control-group {
+      margin-bottom: 12px;
+    }
+
+    .control-group label {
+      display: block;
+      font-size: 12px;
+      color: #94a3b8;
+      margin-bottom: 6px;
+    }
+
+    .control-group input[type="number"],
+    .control-group input[type="text"],
+    .control-group select {
+      width: 100%;
+      padding: 8px 10px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      color: #e2e8f0;
+      font-size: 13px;
+    }
+
+    .control-group input:focus {
+      outline: none;
+      border-color: #6366f1;
+    }
+
+    .control-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+    }
+
+    /* Buttons */
+    .btn {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+      width: 100%;
+      justify-content: center;
+      margin-bottom: 8px;
+    }
+
+    .btn:last-child {
+      margin-bottom: 0;
+    }
+
+    .btn-primary {
+      background: #6366f1;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #4f46e5;
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e2e8f0;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-danger {
+      background: #ef4444;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-group .btn {
+      flex: 1;
+    }
+
+    /* Marker List */
+    .marker-list {
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+    }
+
+    .marker-item {
+      padding: 10px 12px;
+      background: rgba(15, 23, 42, 0.5);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      cursor: pointer;
+      transition: background 0.2s;
+      font-size: 13px;
+    }
+
+    .marker-item:hover {
+      background: rgba(99, 102, 241, 0.2);
+    }
+
+    .marker-item.active {
+      background: rgba(99, 102, 241, 0.3);
+      border-left: 3px solid #6366f1;
+    }
+
+    .marker-item:last-child {
+      border-bottom: none;
+    }
+
+    /* Instructions */
+    .instructions {
+      background: rgba(99, 102, 241, 0.1);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 16px;
+    }
+
+    .instructions h4 {
+      font-size: 13px;
+      color: #6366f1;
+      margin-bottom: 8px;
+    }
+
+    .instructions ul {
+      font-size: 12px;
+      color: #94a3b8;
+      padding-left: 16px;
+      line-height: 1.8;
+    }
+
+    /* Status Bar */
+    .status-bar {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background: rgba(30, 41, 59, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 8px;
+      padding: 12px 20px;
+      display: flex;
+      gap: 20px;
+      font-size: 13px;
+      z-index: 100;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-item i {
+      color: #22d3ee;
+    }
+
+    /* Radar Marker on Canvas */
+    .radar-marker {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      transform: translate(-50%, -50%);
+      cursor: move;
+      z-index: 10;
+    }
+
+    .radar-marker::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 3px solid #22d3ee;
+      background: rgba(34, 211, 238, 0.2);
+    }
+
+    .radar-marker::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 8px;
+      height: 8px;
+      background: #22d3ee;
+      border-radius: 50%;
+    }
+
+    .radar-marker.selected::before {
+      border-color: #6366f1;
+      background: rgba(99, 102, 241, 0.3);
+    }
+
+    .radar-marker.selected::after {
+      background: #6366f1;
+    }
+
+    /* Direction Arrow */
+    .direction-arrow {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 30px;
+      height: 3px;
+      background: #6366f1;
+      transform-origin: left center;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+
+    .direction-arrow::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      border-left: 8px solid #6366f1;
+      border-top: 5px solid transparent;
+      border-bottom: 5px solid transparent;
+    }
+
+    /* Loading */
+    .loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.95);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+
+    .loading-content {
+      text-align: center;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(99, 102, 241, 0.2);
+      border-top-color: #6366f1;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Export Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 3000;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 24px;
+      width: 90%;
+      max-width: 700px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .modal-content h2 {
+      margin-bottom: 16px;
+      color: #6366f1;
+    }
+
+    .modal-content textarea {
+      width: 100%;
+      min-height: 400px;
+      background: #0f172a;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      padding: 12px;
+      color: #e2e8f0;
+      font-family: monospace;
+      font-size: 12px;
+      resize: vertical;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+      justify-content: flex-end;
+    }
+
+    .modal-actions .btn {
+      width: auto;
+    }
+  </style>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div id="editor-container">
+    <!-- Left Panel - Canvas -->
+    <div class="canvas-panel">
+      <div id="floor-plan-wrapper">
+        <canvas id="floor-plan-canvas"></canvas>
+        <!-- Radar markers will be added here -->
+      </div>
+
+      <!-- Status Bar -->
+      <div class="status-bar">
+        <div class="status-item">
+          <i class="fas fa-layer-group"></i>
+          <span id="status-floor">Floor: -</span>
+        </div>
+        <div class="status-item">
+          <i class="fas fa-map-marker-alt"></i>
+          <span id="status-markers">Markers: 0</span>
+        </div>
+        <div class="status-item">
+          <i class="fas fa-mouse-pointer"></i>
+          <span id="status-position">X: 0 | Y: 0</span>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div id="loading" class="loading-overlay">
+        <div class="loading-content">
+          <div class="spinner"></div>
+          <h2>Loading Editor...</h2>
+          <p>Loading floor plan images and configuration</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Panel - Editor -->
+    <div class="editor-panel">
+      <h2><i class="fas fa-compass"></i> Floor Plan Radar Editor</h2>
+
+      <div class="instructions">
+        <h4><i class="fas fa-info-circle"></i> How to Use</h4>
+        <ul>
+          <li><strong>Click</strong> on the floor plan to place a radar marker</li>
+          <li><strong>Drag</strong> markers to reposition them</li>
+          <li><strong>Select</strong> a marker to edit its properties</li>
+          <li><strong>Set yaw</strong> to orient the radar direction</li>
+          <li><strong>Export</strong> to update floor-plan-config.json</li>
+        </ul>
+      </div>
+
+      <div class="editor-section">
+        <h3><i class="fas fa-layer-group"></i> Floor Selection</h3>
+        <select id="floor-select" class="floor-selector"></select>
+      </div>
+
+      <div class="editor-section">
+        <h3><i class="fas fa-list"></i> Scene Markers</h3>
+        <div class="btn-group" style="margin-bottom: 12px;">
+          <button class="btn btn-primary" id="btn-add-marker" style="flex: 1;">
+            <i class="fas fa-plus"></i> Add
+          </button>
+          <button class="btn btn-danger" id="btn-delete-marker" style="flex: 1;">
+            <i class="fas fa-trash"></i> Delete
+          </button>
+        </div>
+        <div id="marker-list" class="marker-list"></div>
+      </div>
+
+      <div class="editor-section">
+        <h3><i class="fas fa-crosshairs"></i> Position</h3>
+        <div class="control-row">
+          <div class="control-group">
+            <label>X (%)</label>
+            <input type="number" id="marker-x" step="0.1" value="50" />
+          </div>
+          <div class="control-group">
+            <label>Y (%)</label>
+            <input type="number" id="marker-y" step="0.1" value="50" />
+          </div>
+          <div class="control-group">
+            <label>Yaw (°)</label>
+            <input type="number" id="marker-yaw" step="1" value="0" />
+          </div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-secondary" id="btn-set-from-click">
+            <i class="fas fa-mouse-pointer"></i> Set from Click
+          </button>
+        </div>
+      </div>
+
+      <div class="editor-section">
+        <h3><i class="fas fa-compass"></i> Radar Orientation</h3>
+        <div class="control-group">
+          <label>Radar Arrow Yaw (°)</label>
+          <input type="number" id="radar-yaw" step="1" value="0" />
+        </div>
+        <div class="control-group">
+          <label>Arrow Rotation Slider</label>
+          <input type="range" id="radar-yaw-slider" min="0" max="360" value="0" 
+            style="width: 100%; accent-color: #22d3ee;" />
+          <div style="display: flex; justify-content: space-between; font-size: 11px; color: #94a3b8; margin-top: 4px;">
+            <span>0° (Up)</span>
+            <span>90° (Right)</span>
+            <span>180° (Down)</span>
+            <span>270° (Left)</span>
+          </div>
+        </div>
+        <div class="btn-group" style="margin-top: 12px;">
+          <button class="btn btn-secondary" id="btn-set-radar-yaw-0">
+            <i class="fas fa-arrow-up"></i> Up (0°)
+          </button>
+          <button class="btn btn-secondary" id="btn-set-radar-yaw-90">
+            <i class="fas fa-arrow-right"></i> Right (90°)
+          </button>
+          <button class="btn btn-secondary" id="btn-set-radar-yaw-180">
+            <i class="fas fa-arrow-down"></i> Down (180°)
+          </button>
+          <button class="btn btn-secondary" id="btn-set-radar-yaw-270">
+            <i class="fas fa-arrow-left"></i> Left (270°)
+          </button>
+        </div>
+      </div>
+
+      <div class="editor-section">
+        <h3><i class="fas fa-video"></i> Initial View</h3>
+        <div class="control-row">
+          <div class="control-group">
+            <label>Yaw (°)</label>
+            <input type="number" id="view-yaw" step="1" value="0" />
+          </div>
+          <div class="control-group">
+            <label>Pitch (°)</label>
+            <input type="number" id="view-pitch" step="1" value="0" />
+          </div>
+          <div class="control-group">
+            <label>FOV (°)</label>
+            <input type="number" id="view-fov" step="1" value="60" min="30" max="100" />
+          </div>
+        </div>
+      </div>
+
+      <div class="editor-section">
+        <h3><i class="fas fa-tag"></i> Properties</h3>
+        <div class="control-group">
+          <label>Scene ID</label>
+          <input type="text" id="scene-id" readonly />
+        </div>
+        <div class="control-group">
+          <label>Scene Name</label>
+          <input type="text" id="scene-name" placeholder="e.g., 01_living" />
+        </div>
+        <div class="control-group">
+          <label>Scene Index</label>
+          <input type="number" id="scene-index" value="0" />
+        </div>
+      </div>
+
+      <div class="editor-section">
+        <h3><i class="fas fa-save"></i> Actions</h3>
+        <button class="btn btn-primary" id="btn-save">
+          <i class="fas fa-save"></i> Save Changes
+        </button>
+        <button class="btn btn-secondary" id="btn-export">
+          <i class="fas fa-download"></i> Export JSON
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Export Modal -->
+  <div class="modal-overlay" id="export-modal">
+    <div class="modal-content">
+      <h2><i class="fas fa-download"></i> Export Floor Plan Config</h2>
+      <p style="color: #94a3b8; margin-bottom: 12px; font-size: 13px;">
+        Copy this JSON and save it to <code style="background: rgba(99, 102, 241, 0.2); padding: 2px 6px; border-radius: 4px;">floor-plan/floor-plan-config.json</code>
+      </p>
+      <textarea id="export-json" readonly></textarea>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="document.getElementById('export-modal').classList.remove('active')">
+          <i class="fas fa-times"></i> Close
+        </button>
+        <button class="btn btn-primary" id="btn-copy-export">
+          <i class="fas fa-copy"></i> Copy to Clipboard
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    // Editor State
+    const state = {
+      project: null,
+      floorPlanConfig: null,
+      currentFloorIndex: 0,
+      selectedMarkerId: null,
+      pendingClick: false,
+      floors: [
+        { id: 'ground', name: 'Ground Floor', image: 'floor-plan/ground.png' },
+        { id: 'first', name: 'First Floor', image: 'floor-plan/first.png' },
+        { id: 'second', name: 'Second Floor', image: 'floor-plan/second.png' },
+        { id: 'third', name: 'Third Floor', image: 'floor-plan/third.png' }
+      ]
+    };
+
+    // Canvas Setup
+    const canvas = document.getElementById('floor-plan-canvas');
+    const ctx = canvas.getContext('2d');
+    const wrapper = document.getElementById('floor-plan-wrapper');
+    let floorImage = null;
+
+    // Load project and config
+    async function loadEditor() {
+      try {
+        // Load project
+        const projectResponse = await fetch('media/tdv-import/project.json');
+        state.project = await projectResponse.json();
+        console.log('Project loaded:', state.project.name);
+
+        // Load floor plan config
+        try {
+          const configResponse = await fetch('floor-plan/floor-plan-config.json');
+          if (configResponse.ok) {
+            state.floorPlanConfig = await configResponse.json();
+            console.log('Floor plan config loaded');
+          }
+        } catch (e) {
+          console.log('No existing floor plan config, will create new');
+          state.floorPlanConfig = { floors: [] };
+        }
+
+        populateFloorSelector();
+        loadFloor(0);
+        document.getElementById('loading').style.display = 'none';
+      } catch (error) {
+        console.error('Failed to load editor:', error);
+      }
+    }
+
+    // Populate floor selector
+    function populateFloorSelector() {
+      const select = document.getElementById('floor-select');
+      state.floors.forEach((floor, i) => {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = floor.name;
+        select.appendChild(opt);
+      });
+
+      select.addEventListener('change', (e) => {
+        loadFloor(parseInt(e.target.value));
+      });
+    }
+
+    // Load floor image
+    function loadFloor(floorIndex) {
+      state.currentFloorIndex = floorIndex;
+      const floor = state.floors[floorIndex];
+
+      floorImage = new Image();
+      floorImage.crossOrigin = 'anonymous';
+      floorImage.onload = () => {
+        // Set canvas size to match image aspect ratio
+        const maxWidth = wrapper.clientWidth * 0.9;
+        const maxHeight = window.innerHeight * 0.8;
+        
+        let width = floorImage.width;
+        let height = floorImage.height;
+        
+        // Scale down if needed
+        if (width > maxWidth || height > maxHeight) {
+          const scale = Math.min(maxWidth / width, maxHeight / height);
+          width *= scale;
+          height *= scale;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        canvas.style.width = `${width}px`;
+        canvas.style.height = `${height}px`;
+
+        drawFloorPlan();
+        updateMarkers();
+        updateStatus();
+      };
+      floorImage.src = floor.image;
+    }
+
+    // Draw floor plan
+    function drawFloorPlan() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (floorImage) {
+        ctx.drawImage(floorImage, 0, 0, canvas.width, canvas.height);
+      }
+    }
+
+    // Get current floor markers
+    function getCurrentFloorMarkers() {
+      const floorId = state.floors[state.currentFloorIndex].id;
+      const floorConfig = state.floorPlanConfig.floors.find(f => f.id === floorId);
+      return floorConfig ? (floorConfig.scenes || []) : [];
+    }
+
+    // Update markers display
+    function updateMarkers() {
+      // Remove existing markers
+      document.querySelectorAll('.radar-marker').forEach(el => el.remove());
+
+      const markers = getCurrentFloorMarkers();
+
+      markers.forEach((marker, index) => {
+        const el = createMarkerElement(marker, index);
+        wrapper.appendChild(el);
+      });
+
+      document.getElementById('status-markers').textContent = `Markers: ${markers.length}`;
+    }
+
+    // Create marker element
+    function createMarkerElement(marker, index) {
+      const el = document.createElement('div');
+      el.className = 'radar-marker' + (marker.sceneId === state.selectedMarkerId ? ' selected' : '');
+      el.dataset.index = index;
+
+      // Position
+      const rect = canvas.getBoundingClientRect();
+
+      el.style.left = `${(marker.position.x / 100) * rect.width}px`;
+      el.style.top = `${(marker.position.y / 100) * rect.height}px`;
+
+      // Add direction arrow - use radarYaw if available, otherwise initialView.yaw
+      const arrow = document.createElement('div');
+      arrow.className = 'direction-arrow';
+      const yaw = marker.radarYaw !== undefined ? marker.radarYaw : (marker.initialView?.yaw || 0);
+      arrow.style.transform = `translateY(-50%) rotate(${yaw}deg)`;
+      el.appendChild(arrow);
+
+      // Events
+      el.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        selectMarker(index);
+        startDrag(e, el, index);
+      });
+
+      return el;
+    }
+
+    // Select marker
+    function selectMarker(index) {
+      const markers = getCurrentFloorMarkers();
+      const marker = markers[index];
+
+      if (!marker) return;
+
+      state.selectedMarkerId = marker.sceneId;
+
+      // Update form
+      document.getElementById('scene-id').value = marker.sceneId || '';
+      document.getElementById('scene-name').value = marker.sceneName || '';
+      document.getElementById('scene-index').value = marker.sceneIndex !== undefined ? marker.sceneIndex : 0;
+      document.getElementById('marker-x').value = marker.position.x;
+      document.getElementById('marker-y').value = marker.position.y;
+      document.getElementById('marker-yaw').value = marker.radarYaw !== undefined ? marker.radarYaw : (marker.initialView?.yaw || 0);
+      document.getElementById('radar-yaw').value = marker.radarYaw !== undefined ? marker.radarYaw : (marker.initialView?.yaw || 0);
+      document.getElementById('radar-yaw-slider').value = marker.radarYaw !== undefined ? marker.radarYaw : (marker.initialView?.yaw || 0);
+      document.getElementById('view-yaw').value = marker.initialView?.yaw || 0;
+      document.getElementById('view-pitch').value = marker.initialView?.pitch || 0;
+      document.getElementById('view-fov').value = marker.initialView?.fov || 60;
+
+      updateMarkerList();
+      updateMarkers();
+    }
+
+    // Drag functionality
+    function startDrag(e, el, index) {
+      const startY = e.clientY;
+      const startX = e.clientX;
+      const startLeft = parseFloat(el.style.left) || 0;
+      const startTop = parseFloat(el.style.top) || 0;
+
+      const rect = canvas.getBoundingClientRect();
+
+      function onMove(e) {
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+
+        let newLeft = startLeft + dx;
+        let newTop = startTop + dy;
+
+        // Constrain to canvas
+        newLeft = Math.max(0, Math.min(rect.width, newLeft));
+        newTop = Math.max(0, Math.min(rect.height, newTop));
+
+        el.style.left = `${newLeft}px`;
+        el.style.top = `${newTop}px`;
+
+        // Update position display
+        const x = (newLeft / rect.width * 100).toFixed(1);
+        const y = (newTop / rect.height * 100).toFixed(1);
+        document.getElementById('status-position').textContent = `X: ${x} | Y: ${y}`;
+        document.getElementById('marker-x').value = x;
+        document.getElementById('marker-y').value = y;
+      }
+
+      function onUp() {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+
+        // Update marker data
+        const markers = getCurrentFloorMarkers();
+        if (markers[index]) {
+          const x = (parseFloat(el.style.left) / rect.width * 100).toFixed(1);
+          const y = (parseFloat(el.style.top) / rect.height * 100).toFixed(1);
+          markers[index].position.x = parseFloat(x);
+          markers[index].position.y = parseFloat(y);
+        }
+      }
+
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    }
+
+    // Update marker list
+    function updateMarkerList() {
+      const list = document.getElementById('marker-list');
+      list.innerHTML = '';
+
+      const markers = getCurrentFloorMarkers();
+
+      if (markers.length === 0) {
+        list.innerHTML = '<div style="padding: 12px; color: #64748b; font-size: 13px; text-align: center;">No markers on this floor</div>';
+        return;
+      }
+
+      markers.forEach((marker, i) => {
+        const item = document.createElement('div');
+        item.className = 'marker-item' + (marker.sceneId === state.selectedMarkerId ? ' active' : '');
+        item.textContent = `${marker.sceneName || 'Unknown'} (${marker.position.x.toFixed(1)}, ${marker.position.y.toFixed(1)})`;
+        item.addEventListener('click', () => selectMarker(i));
+        list.appendChild(item);
+      });
+    }
+
+    // Add marker
+    function addMarker() {
+      const floorId = state.floors[state.currentFloorIndex].id;
+      let floorConfig = state.floorPlanConfig.floors.find(f => f.id === floorId);
+
+      if (!floorConfig) {
+        floorConfig = {
+          id: floorId,
+          name: state.floors[state.currentFloorIndex].name,
+          image: state.floors[state.currentFloorIndex].image,
+          scenes: []
+        };
+        state.floorPlanConfig.floors.push(floorConfig);
+      }
+
+      if (!floorConfig.scenes) {
+        floorConfig.scenes = [];
+      }
+
+      const sceneIndex = floorConfig.scenes.length;
+      const scene = state.project.scenes[sceneIndex];
+
+      const newMarker = {
+        sceneId: scene?.id || `scene_${Date.now()}`,
+        sceneName: scene?.name || 'new_scene',
+        sceneIndex: sceneIndex,
+        position: { x: 50, y: 50 },
+        radarYaw: 0,
+        initialView: { yaw: 0, pitch: 0, fov: 60 }
+      };
+
+      floorConfig.scenes.push(newMarker);
+      selectMarker(floorConfig.scenes.length - 1);
+      updateMarkers();
+    }
+
+    // Delete marker
+    function deleteMarker() {
+      if (!state.selectedMarkerId) return;
+
+      const floorId = state.floors[state.currentFloorIndex].id;
+      const floorConfig = state.floorPlanConfig.floors.find(f => f.id === floorId);
+
+      if (floorConfig && floorConfig.scenes) {
+        floorConfig.scenes = floorConfig.scenes.filter(m => m.sceneId !== state.selectedMarkerId);
+        state.selectedMarkerId = null;
+        updateMarkers();
+        updateMarkerList();
+
+        // Clear form
+        document.getElementById('scene-id').value = '';
+        document.getElementById('scene-name').value = '';
+      }
+    }
+
+    // Save changes
+    function saveChanges() {
+      if (!state.selectedMarkerId) return;
+
+      const floorId = state.floors[state.currentFloorIndex].id;
+      const floorConfig = state.floorPlanConfig.floors.find(f => f.id === floorId);
+
+      if (!floorConfig || !floorConfig.scenes) return;
+
+      const marker = floorConfig.scenes.find(m => m.sceneId === state.selectedMarkerId);
+      if (!marker) return;
+
+      marker.position.x = parseFloat(document.getElementById('marker-x').value);
+      marker.position.y = parseFloat(document.getElementById('marker-y').value);
+      marker.sceneName = document.getElementById('scene-name').value;
+      marker.sceneIndex = parseInt(document.getElementById('scene-index').value);
+      
+      // Save radar yaw (arrow orientation)
+      marker.radarYaw = parseFloat(document.getElementById('radar-yaw').value);
+      
+      // Save initial view (camera angles when clicked)
+      marker.initialView = {
+        yaw: parseFloat(document.getElementById('view-yaw').value),
+        pitch: parseFloat(document.getElementById('view-pitch').value),
+        fov: parseInt(document.getElementById('view-fov').value)
+      };
+
+      updateMarkers();
+      updateMarkerList();
+
+      alert('Changes saved! Click "Export JSON" to save to file.');
+    }
+
+    // Export JSON
+    function exportJSON() {
+      const json = JSON.stringify(state.floorPlanConfig, null, 2);
+      document.getElementById('export-json').value = json;
+      document.getElementById('export-modal').classList.add('active');
+    }
+
+    // Update status
+    function updateStatus() {
+      const floor = state.floors[state.currentFloorIndex];
+      document.getElementById('status-floor').textContent = `Floor: ${floor.name}`;
+    }
+
+    // Canvas click to place marker
+    canvas.addEventListener('click', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width * 100).toFixed(1);
+      const y = ((e.clientY - rect.top) / rect.height * 100).toFixed(1);
+
+      document.getElementById('marker-x').value = x;
+      document.getElementById('marker-y').value = y;
+      document.getElementById('status-position').textContent = `X: ${x} | Y: ${y}`;
+
+      if (state.selectedMarkerId) {
+        const floorId = state.floors[state.currentFloorIndex].id;
+        const floorConfig = state.floorPlanConfig.floors.find(f => f.id === floorId);
+        const marker = floorConfig?.scenes?.find(m => m.sceneId === state.selectedMarkerId);
+
+        if (marker) {
+          marker.position.x = parseFloat(x);
+          marker.position.y = parseFloat(y);
+          updateMarkers();
+        }
+      }
+    });
+
+    // Mouse move for status
+    canvas.addEventListener('mousemove', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width * 100).toFixed(1);
+      const y = ((e.clientY - rect.top) / rect.height * 100).toFixed(1);
+      document.getElementById('status-position').textContent = `X: ${x} | Y: ${y}`;
+    });
+
+    // Event listeners
+    document.getElementById('btn-add-marker').addEventListener('click', addMarker);
+    document.getElementById('btn-delete-marker').addEventListener('click', deleteMarker);
+    document.getElementById('btn-save').addEventListener('click', saveChanges);
+    document.getElementById('btn-export').addEventListener('click', exportJSON);
+
+    document.getElementById('btn-set-from-click').addEventListener('click', () => {
+      // Just uses last clicked position (already in inputs)
+    });
+
+    // Radar yaw slider - updates arrow rotation in real-time
+    document.getElementById('radar-yaw-slider').addEventListener('input', (e) => {
+      const yaw = parseInt(e.target.value);
+      document.getElementById('radar-yaw').value = yaw;
+      document.getElementById('marker-yaw').value = yaw;
+      
+      // Update arrow rotation visually
+      if (state.selectedMarkerId) {
+        const floorId = state.floors[state.currentFloorIndex].id;
+        const floorConfig = state.floorPlanConfig.floors.find(f => f.id === floorId);
+        const marker = floorConfig?.scenes?.find(m => m.sceneId === state.selectedMarkerId);
+        if (marker) {
+          marker.radarYaw = yaw;
+          updateMarkers();
+        }
+      }
+    });
+
+    // Sync radar yaw number input with slider
+    document.getElementById('radar-yaw').addEventListener('input', (e) => {
+      const yaw = parseFloat(e.target.value) || 0;
+      document.getElementById('radar-yaw-slider').value = yaw;
+      document.getElementById('marker-yaw').value = yaw;
+      
+      // Update arrow rotation visually
+      if (state.selectedMarkerId) {
+        const floorId = state.floors[state.currentFloorIndex].id;
+        const floorConfig = state.floorPlanConfig.floors.find(f => f.id === floorId);
+        const marker = floorConfig?.scenes?.find(m => m.sceneId === state.selectedMarkerId);
+        if (marker) {
+          marker.radarYaw = yaw;
+          updateMarkers();
+        }
+      }
+    });
+
+    // Quick direction buttons for radar yaw
+    document.getElementById('btn-set-radar-yaw-0').addEventListener('click', () => {
+      document.getElementById('radar-yaw').value = 0;
+      document.getElementById('radar-yaw-slider').value = 0;
+      document.getElementById('marker-yaw').value = 0;
+      if (state.selectedMarkerId) {
+        const floorId = state.floors[state.currentFloorIndex].id;
+        const floorConfig = state.floorPlanConfig.floors.find(f => f.id === floorId);
+        const marker = floorConfig?.scenes?.find(m => m.sceneId === state.selectedMarkerId);
+        if (marker) {
+          marker.radarYaw = 0;
+          updateMarkers();
+        }
+      }
+    });
+
+    document.getElementById('btn-set-radar-yaw-90').addEventListener('click', () => {
+      document.getElementById('radar-yaw').value = 90;
+      document.getElementById('radar-yaw-slider').value = 90;
+      document.getElementById('marker-yaw').value = 90;
+      if (state.selectedMarkerId) {
+        const floorId = state.floors[state.currentFloorIndex].id;
+        const floorConfig = state.floorPlanConfig.floors.find(f => f.id === floorId);
+        const marker = floorConfig?.scenes?.find(m => m.sceneId === state.selectedMarkerId);
+        if (marker) {
+          marker.radarYaw = 90;
+          updateMarkers();
+        }
+      }
+    });
+
+    document.getElementById('btn-set-radar-yaw-180').addEventListener('click', () => {
+      document.getElementById('radar-yaw').value = 180;
+      document.getElementById('radar-yaw-slider').value = 180;
+      document.getElementById('marker-yaw').value = 180;
+      if (state.selectedMarkerId) {
+        const floorId = state.floors[state.currentFloorIndex].id;
+        const floorConfig = state.floorPlanConfig.floors.find(f => f.id === floorId);
+        const marker = floorConfig?.scenes?.find(m => m.sceneId === state.selectedMarkerId);
+        if (marker) {
+          marker.radarYaw = 180;
+          updateMarkers();
+        }
+      }
+    });
+
+    document.getElementById('btn-set-radar-yaw-270').addEventListener('click', () => {
+      document.getElementById('radar-yaw').value = 270;
+      document.getElementById('radar-yaw-slider').value = 270;
+      document.getElementById('marker-yaw').value = 270;
+      if (state.selectedMarkerId) {
+        const floorId = state.floors[state.currentFloorIndex].id;
+        const floorConfig = state.floorPlanConfig.floors.find(f => f.id === floorId);
+        const marker = floorConfig?.scenes?.find(m => m.sceneId === state.selectedMarkerId);
+        if (marker) {
+          marker.radarYaw = 270;
+          updateMarkers();
+        }
+      }
+    });
+
+    document.getElementById('btn-copy-export').addEventListener('click', () => {
+      const textarea = document.getElementById('export-json');
+      textarea.select();
+      document.execCommand('copy');
+      alert('Copied to clipboard!');
+    });
+
+    // Initialize
+    loadEditor();
+  </script>
+</body>
+</html>

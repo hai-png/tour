@@ -1,0 +1,417 @@
+{
+  "id": "project-1772926939343",
+  "name": "HAI PNG Virtual Tour",
+  "version": "1.0.0",
+  "scenes": [
+    {
+      "id": "scene_DB744300_D775_4107_41E1_E2F79FF4509D",
+      "name": "01_living",
+      "panoramaUrl": "media/tdv-import/panoramas/panorama_DB744300_D775_4107_41E1_E2F79FF4509D_0/{face}.jpg",
+      "thumbnailUrl": "media/tdv-import/panorama_DB744300_D775_4107_41E1_E2F79FF4509D_t.jpg",
+      "initialView": {"yaw": 0, "pitch": 0, "fov": 60},
+      "hotspots": [
+        {
+          "id": "hotspot_F6D5967D_D79C_C3F9_41D2_05A0DBDF2038",
+          "type": "scene",
+          "position": {"yaw": -44.1, "pitch": -20.67},
+          "content": {"targetSceneId": "scene_DC50DD3E_D774_C17B_41E6_76ADB6C6217F"},
+          "tooltip": {"text": "Circle Arrow 03c Left-Up"}
+        },
+        {
+          "id": "hotspot_FF40A5A9_D88B_4118_41E9_A15436ABA141",
+          "type": "scene",
+          "position": {"yaw": -101.22, "pitch": -18.16},
+          "content": {"targetSceneId": "scene_DC44A2AB_D774_C319_41E5_339270552D3B"},
+          "tooltip": {"text": "Arrow 06a"}
+        }
+      ]
+    },
+    {
+      "id": "scene_DC50DD3E_D774_C17B_41E6_76ADB6C6217F",
+      "name": "02_dining & open kitchen",
+      "panoramaUrl": "media/tdv-import/panoramas/panorama_DC50DD3E_D774_C17B_41E6_76ADB6C6217F_0/{face}.jpg",
+      "thumbnailUrl": "media/tdv-import/panorama_DC50DD3E_D774_C17B_41E6_76ADB6C6217F_t.jpg",
+      "initialView": {"yaw": 0, "pitch": 0, "fov": 60},
+      "hotspots": [
+        {
+          "id": "hotspot_C58A0D1C_D79F_413F_41DE_675FC1C4348F",
+          "type": "scene",
+          "position": {"yaw": -145.61, "pitch": -21.98},
+          "content": {"targetSceneId": "scene_DB744300_D775_4107_41E1_E2F79FF4509D"},
+          "tooltip": {"text": "Circle 01c"}
+        }
+      ]
+    },
+    {
+      "id": "scene_DC5E97BE_D774_C17B_41E0_24BA91992222",
+      "name": "03_first floor family room",
+      "panoramaUrl": "media/tdv-import/panoramas/panorama_DC5E97BE_D774_C17B_41E0_24BA91992222_0/{face}.jpg",
+      "thumbnailUrl": "media/tdv-import/panorama_DC5E97BE_D774_C17B_41E0_24BA91992222_t.jpg",
+      "initialView": {"yaw": 0, "pitch": 0, "fov": 60},
+      "hotspots": [
+        {
+          "id": "hotspot_CF4CDC4C_D7F5_471F_41E3_D02DA0BB5D79",
+          "type": "scene",
+          "position": {"yaw": 85.32, "pitch": -16.69},
+          "content": {"targetSceneId": "scene_DC44A2AB_D774_C319_41E5_339270552D3B"},
+          "tooltip": {"text": "Arrow 06a"},
+          "image": "media/tdv-import/hotspots/panorama_DC5E97BE_D774_C17B_41E0_24BA91992222_0_HS_0_0.png"
+        }
+      ]
+    },
+    {
+      "id": "scene_DC44A2AB_D774_C319_41E5_339270552D3B",
+      "name": "04_first floor to bed room",
+      "panoramaUrl": "media/tdv-import/panoramas/panorama_DC44A2AB_D774_C319_41E5_339270552D3B_0/{face}.jpg",
+      "thumbnailUrl": "media/tdv-import/panorama_DC44A2AB_D774_C319_41E5_339270552D3B_t.jpg",
+      "initialView": {"yaw": 0, "pitch": 0, "fov": 60},
+      "hotspots": [
+        {
+          "id": "hotspot_C46F5BD7_D7B7_4109_41E9_E126AB39A2D0",
+          "type": "scene",
+          "position": {"yaw": 26.57, "pitch": -16.04},
+          "content": {"targetSceneId": "scene_DC5E7314_D777_410F_41C9_B784BC991045"},
+          "tooltip": {"text": "Circle Arrow 03c"},
+          "image": "media/tdv-import/hotspots/panorama_DC44A2AB_D774_C319_41E5_339270552D3B_0_HS_0_0.png"
+        },
+        {
+          "id": "hotspot_C33919F8_D7B4_C107_41EA_8B9BBD6BD3E1",
+          "type": "scene",
+          "position": {"yaw": -8.56, "pitch": -6.66},
+          "content": {"targetSceneId": "scene_DC5FADB7_D774_C109_41E0_A20BC05345FE"},
+          "tooltip": {"text": "Circle Door 02"},
+          "image": "media/tdv-import/hotspots/panorama_DC44A2AB_D774_C319_41E5_339270552D3B_0_HS_1_0.png"
+        },
+        {
+          "id": "hotspot_C372C5D3_D78B_4109_41DE_C630ABB9A65C",
+          "type": "scene",
+          "position": {"yaw": 111.2, "pitch": -16.35},
+          "content": {"targetSceneId": "scene_DC5E97BE_D774_C17B_41E0_24BA91992222"},
+          "tooltip": {"text": "Circle Arrow 04b"},
+          "image": "media/tdv-import/hotspots/panorama_DC44A2AB_D774_C319_41E5_339270552D3B_0_HS_2_0.png"
+        },
+        {
+          "id": "hotspot_F2777081_D77F_5F09_41B0_364DC5B26605",
+          "type": "scene",
+          "position": {"yaw": 52.85, "pitch": -34.2},
+          "content": {"targetSceneId": "scene_DB744300_D775_4107_41E1_E2F79FF4509D"},
+          "tooltip": {"text": "Arrow 06c Left-Up"}
+        },
+        {
+          "id": "hotspot_F047BB92_D8B7_C10B_41DD_835183E4DAE2",
+          "type": "info",
+          "position": {"yaw": 83.08, "pitch": 12.11},
+          "content": {"title": "Arrow 06b Left-Up"},
+          "tooltip": {"text": "Arrow 06b Left-Up"},
+          "image": "media/tdv-import/hotspots/panorama_DC44A2AB_D774_C319_41E5_339270552D3B_0_HS_4_0.png"
+        }
+      ]
+    },
+    {
+      "id": "scene_DC5FADB7_D774_C109_41E0_A20BC05345FE",
+      "name": "05_first floor bed room 1",
+      "panoramaUrl": "media/tdv-import/panoramas/panorama_DC5FADB7_D774_C109_41E0_A20BC05345FE_0/{face}.jpg",
+      "thumbnailUrl": "media/tdv-import/panorama_DC5FADB7_D774_C109_41E0_A20BC05345FE_t.jpg",
+      "initialView": {"yaw": 0, "pitch": 0, "fov": 60},
+      "hotspots": [
+        {
+          "id": "hotspot_C19C83B8_D794_C107_41DB_D5D2CDF7F898",
+          "type": "scene",
+          "position": {"yaw": 121.52, "pitch": -28.64},
+          "content": {"targetSceneId": "scene_DC44A2AB_D774_C319_41E5_339270552D3B"},
+          "tooltip": {"text": "Circle 03b"},
+          "image": "media/tdv-import/hotspots/panorama_DC5FADB7_D774_C109_41E0_A20BC05345FE_0_HS_0_0.png"
+        }
+      ]
+    },
+    {
+      "id": "scene_DC5E7314_D777_410F_41C9_B784BC991045",
+      "name": "07_first floor to bed room 2",
+      "panoramaUrl": "media/tdv-import/panoramas/panorama_DC5E7314_D777_410F_41C9_B784BC991045_0/{face}.jpg",
+      "thumbnailUrl": "media/tdv-import/panorama_DC5E7314_D777_410F_41C9_B784BC991045_t.jpg",
+      "initialView": {"yaw": 0, "pitch": 0, "fov": 60},
+      "hotspots": [
+        {
+          "id": "hotspot_C09BBBDE_D78D_C13B_41CB_AD534BC0421A",
+          "type": "scene",
+          "position": {"yaw": 124.64, "pitch": -34.04},
+          "content": {"targetSceneId": "scene_DC44A2AB_D774_C319_41E5_339270552D3B"},
+          "tooltip": {"text": "Arrow 06a Right-Up"},
+          "image": "media/tdv-import/hotspots/panorama_DC5E7314_D777_410F_41C9_B784BC991045_0_HS_0_0.png"
+        }
+      ]
+    },
+    {
+      "id": "scene_DC5BA7E4_D777_410F_41E3_F0D566C2F4D7",
+      "name": "09_first floor hall way from stair",
+      "panoramaUrl": "media/tdv-import/panoramas/panorama_DC5BA7E4_D777_410F_41E3_F0D566C2F4D7_0/{face}.jpg",
+      "thumbnailUrl": "media/tdv-import/panorama_DC5BA7E4_D777_410F_41E3_F0D566C2F4D7_t.jpg",
+      "initialView": {"yaw": 0, "pitch": 0, "fov": 60},
+      "hotspots": [
+        {
+          "id": "hotspot_C5228198_D78D_4107_4194_79C5978B2540",
+          "type": "scene",
+          "position": {"yaw": 15.29, "pitch": -1.56},
+          "content": {"targetSceneId": "scene_DC44A2AB_D774_C319_41E5_339270552D3B"},
+          "tooltip": {"text": "Circle Arrow 03c Right"},
+          "image": "media/tdv-import/hotspots/panorama_DC5BA7E4_D777_410F_41E3_F0D566C2F4D7_0_HS_0_0.png"
+        }
+      ]
+    },
+    {
+      "id": "scene_DC462273_D777_4309_41E4_17EF9CCCBD4C",
+      "name": "10_2nd floor family room",
+      "panoramaUrl": "media/tdv-import/panoramas/panorama_DC462273_D777_4309_41E4_17EF9CCCBD4C_0/{face}.jpg",
+      "thumbnailUrl": "media/tdv-import/panorama_DC462273_D777_4309_41E4_17EF9CCCBD4C_t.jpg",
+      "initialView": {"yaw": 0, "pitch": 0, "fov": 60},
+      "hotspots": [
+        {
+          "id": "hotspot_CF535160_D7F5_4107_41E4_B14EC0567358",
+          "type": "scene",
+          "position": {"yaw": 174.44, "pitch": -15.22},
+          "content": {"targetSceneId": "scene_DC45A6C1_D777_C308_41B5_775636919F4F"},
+          "tooltip": {"text": "Arrow 06b"}
+        },
+        {
+          "id": "hotspot_CF02816A_D7FD_411B_41E7_27A7EF10A8B6",
+          "type": "scene",
+          "position": {"yaw": -157.63, "pitch": -15.05},
+          "content": {"targetSceneId": "scene_DC47BCE3_D777_4709_41E0_0857273CB166"},
+          "tooltip": {"text": "Circle 01c"},
+          "image": "media/tdv-import/hotspots/panorama_DC462273_D777_4309_41E4_17EF9CCCBD4C_0_HS_1_0.png"
+        },
+        {
+          "id": "hotspot_FD68F236_D8BD_C30B_4197_9932072361DB",
+          "type": "scene",
+          "position": {"yaw": 156.44, "pitch": -17.35},
+          "content": {"targetSceneId": "scene_DC44A2AB_D774_C319_41E5_339270552D3B"},
+          "tooltip": {"text": "Arrow 06b Right-Up"},
+          "image": "media/tdv-import/hotspots/panorama_DC462273_D777_4309_41E4_17EF9CCCBD4C_0_HS_2_0.png"
+        }
+      ]
+    },
+    {
+      "id": "scene_DC47BCE3_D777_4709_41E0_0857273CB166",
+      "name": "11_2nd floor master bed room",
+      "panoramaUrl": "media/tdv-import/panoramas/panorama_DC47BCE3_D777_4709_41E0_0857273CB166_0/{face}.jpg",
+      "thumbnailUrl": "media/tdv-import/panorama_DC47BCE3_D777_4709_41E0_0857273CB166_t.jpg",
+      "initialView": {"yaw": 0, "pitch": 0, "fov": 60},
+      "hotspots": [
+        {
+          "id": "hotspot_CE46F97A_D78C_C1FB_41CE_9BC01492E6C9",
+          "type": "scene",
+          "position": {"yaw": 55.43, "pitch": -17.35},
+          "content": {"targetSceneId": "scene_DC5DE84D_D777_4F19_41B6_298BD1CC52E2"},
+          "tooltip": {"text": "Circle 03c"}
+        },
+        {
+          "id": "hotspot_FED7DA68_D88F_C307_41D3_1404C4C0470E",
+          "type": "scene",
+          "position": {"yaw": 125.95, "pitch": -26.35},
+          "content": {"targetSceneId": "scene_DC462273_D777_4309_41E4_17EF9CCCBD4C"},
+          "tooltip": {"text": "Circle 01c"},
+          "image": "media/tdv-import/hotspots/panorama_DC47BCE3_D777_4709_41E0_0857273CB166_0_HS_1_0.png"
+        }
+      ]
+    },
+    {
+      "id": "scene_DC5DE84D_D777_4F19_41B6_298BD1CC52E2",
+      "name": "12_2nd floor master bed room",
+      "panoramaUrl": "media/tdv-import/panoramas/panorama_DC5DE84D_D777_4F19_41B6_298BD1CC52E2_0/{face}.jpg",
+      "thumbnailUrl": "media/tdv-import/panorama_DC5DE84D_D777_4F19_41B6_298BD1CC52E2_t.jpg",
+      "initialView": {"yaw": 0, "pitch": 0, "fov": 60},
+      "hotspots": [
+        {
+          "id": "hotspot_CD86B6F2_D795_430B_41B0_E4EB9681095C",
+          "type": "scene",
+          "position": {"yaw": -53.45, "pitch": -9.38},
+          "content": {"targetSceneId": "scene_DC5B0CA0_D777_C707_41D6_CC02EF3AFBAD"},
+          "tooltip": {"text": "Circle 01c"}
+        },
+        {
+          "id": "hotspot_CDE6EF3E_D795_C17B_41E6_9932F1CE318B",
+          "type": "scene",
+          "position": {"yaw": -47.55, "pitch": -0.55},
+          "content": {"targetSceneId": "scene_DC4452BD_D777_C379_41E5_1EDA7259DB75"},
+          "tooltip": {"text": "Circle Door 01"},
+          "image": "media/tdv-import/hotspots/panorama_DC5DE84D_D777_4F19_41B6_298BD1CC52E2_0_HS_1_0.png"
+        },
+        {
+          "id": "hotspot_F13D063E_D89C_C37B_41D7_0C5716A8560D",
+          "type": "scene",
+          "position": {"yaw": -66.6, "pitch": -13.91},
+          "content": {"targetSceneId": "scene_DC462273_D777_4309_41E4_17EF9CCCBD4C"},
+          "tooltip": {"text": "Arrow 06a Left"},
+          "image": "media/tdv-import/hotspots/panorama_DC5DE84D_D777_4F19_41B6_298BD1CC52E2_0_HS_2_0.png"
+        }
+      ]
+    },
+    {
+      "id": "scene_DC4452BD_D777_C379_41E5_1EDA7259DB75",
+      "name": "13_2nd floor master bathroom",
+      "panoramaUrl": "media/tdv-import/panoramas/panorama_DC4452BD_D777_C379_41E5_1EDA7259DB75_0/{face}.jpg",
+      "thumbnailUrl": "media/tdv-import/panorama_DC4452BD_D777_C379_41E5_1EDA7259DB75_t.jpg",
+      "initialView": {"yaw": 0, "pitch": 0, "fov": 60},
+      "hotspots": [
+        {
+          "id": "hotspot_CD143FBF_D79D_4179_41BB_920E9668C993",
+          "type": "scene",
+          "position": {"yaw": 81.61, "pitch": -6.05},
+          "content": {"targetSceneId": "scene_DC5DE84D_D777_4F19_41B6_298BD1CC52E2"},
+          "tooltip": {"text": "Circle 01c"},
+          "image": "media/tdv-import/hotspots/panorama_DC4452BD_D777_C379_41E5_1EDA7259DB75_0_HS_0_0.png"
+        }
+      ]
+    },
+    {
+      "id": "scene_DC5B0CA0_D777_C707_41D6_CC02EF3AFBAD",
+      "name": "14_2nd floor master dressing room",
+      "panoramaUrl": "media/tdv-import/panoramas/panorama_DC5B0CA0_D777_C707_41D6_CC02EF3AFBAD_0/{face}.jpg",
+      "thumbnailUrl": "media/tdv-import/panorama_DC5B0CA0_D777_C707_41D6_CC02EF3AFBAD_t.jpg",
+      "initialView": {"yaw": 0, "pitch": 0, "fov": 60},
+      "hotspots": [
+        {
+          "id": "hotspot_F1E6DB82_D897_410B_41E3_4CD398E5EDCF",
+          "type": "scene",
+          "position": {"yaw": -158.49, "pitch": -28.96},
+          "content": {"targetSceneId": "scene_DC5DE84D_D777_4F19_41B6_298BD1CC52E2"},
+          "tooltip": {"text": "Arrow 06a"}
+        }
+      ]
+    },
+    {
+      "id": "scene_DC45A6C1_D777_C308_41B5_775636919F4F",
+      "name": "15_2nd floor stair landing",
+      "panoramaUrl": "media/tdv-import/panoramas/panorama_DC45A6C1_D777_C308_41B5_775636919F4F_0/{face}.jpg",
+      "thumbnailUrl": "media/tdv-import/panorama_DC45A6C1_D777_C308_41B5_775636919F4F_t.jpg",
+      "initialView": {"yaw": 0, "pitch": 0, "fov": 60},
+      "hotspots": [
+        {
+          "id": "hotspot_CCB66223_D79C_C309_41E4_9D4001A098C3",
+          "type": "scene",
+          "position": {"yaw": 4.49, "pitch": -3.6},
+          "content": {"targetSceneId": "scene_DC4530B4_D777_FF08_41E4_47F896114353"},
+          "tooltip": {"text": "Arrow 06a"},
+          "image": "media/tdv-import/hotspots/panorama_DC45A6C1_D777_C308_41B5_775636919F4F_0_HS_0_0.png"
+        },
+        {
+          "id": "hotspot_CC2C79EF_D795_C119_41E0_F9FBFDAE790A",
+          "type": "info",
+          "position": {"yaw": -60.55, "pitch": -39.93},
+          "content": {"title": "Arrow 06c Right"},
+          "tooltip": {"text": "Arrow 06c Right"},
+          "image": "media/tdv-import/hotspots/panorama_DC45A6C1_D777_C308_41B5_775636919F4F_0_HS_1_0.png"
+        }
+      ]
+    },
+    {
+      "id": "scene_DC4530B4_D777_FF08_41E4_47F896114353",
+      "name": "16_terrace floor",
+      "panoramaUrl": "media/tdv-import/panoramas/panorama_DC4530B4_D777_FF08_41E4_47F896114353_0/{face}.jpg",
+      "thumbnailUrl": "media/tdv-import/panorama_DC4530B4_D777_FF08_41E4_47F896114353_t.jpg",
+      "initialView": {"yaw": 0, "pitch": 0, "fov": 60},
+      "hotspots": [
+        {
+          "id": "hotspot_CBA91347_D795_C109_41C4_5C8D0DDD72B4",
+          "type": "scene",
+          "position": {"yaw": -16.34, "pitch": -16.54},
+          "content": {"targetSceneId": "scene_DC440AF5_D777_C308_41B0_13691E9AEB46"},
+          "tooltip": {"text": "Arrow 06a Left"},
+          "image": "media/tdv-import/hotspots/panorama_DC4530B4_D777_FF08_41E4_47F896114353_0_HS_0_0.png"
+        },
+        {
+          "id": "hotspot_CB68F727_D7B4_C109_41DB_53E80C8C7EF0",
+          "type": "scene",
+          "position": {"yaw": -143.88, "pitch": -22.09},
+          "content": {"targetSceneId": "scene_DC467556_D777_C10B_41D1_4E673AAAA286"},
+          "tooltip": {"text": "Circle 01c"},
+          "image": "media/tdv-import/hotspots/panorama_DC4530B4_D777_FF08_41E4_47F896114353_0_HS_1_0.png"
+        },
+        {
+          "id": "hotspot_F37F6160_D8F4_C107_41BC_9A008F0DFF2E",
+          "type": "scene",
+          "position": {"yaw": -84.2, "pitch": -39.44},
+          "content": {"targetSceneId": "scene_DC462273_D777_4309_41E4_17EF9CCCBD4C"},
+          "tooltip": {"text": "Arrow 06a"},
+          "image": "media/tdv-import/hotspots/panorama_DC4530B4_D777_FF08_41E4_47F896114353_0_HS_2_0.png"
+        }
+      ]
+    },
+    {
+      "id": "scene_DC440AF5_D777_C308_41B0_13691E9AEB46",
+      "name": "17_terrace floor office",
+      "panoramaUrl": "media/tdv-import/panoramas/panorama_DC440AF5_D777_C308_41B0_13691E9AEB46_0/{face}.jpg",
+      "thumbnailUrl": "media/tdv-import/panorama_DC440AF5_D777_C308_41B0_13691E9AEB46_t.jpg",
+      "initialView": {"yaw": 0, "pitch": 0, "fov": 60},
+      "hotspots": [
+        {
+          "id": "hotspot_C80ADAFB_D7B4_C0F9_41E4_82E6B3148549",
+          "type": "scene",
+          "position": {"yaw": -158.12, "pitch": -38.95},
+          "content": {"targetSceneId": "scene_DC4530B4_D777_FF08_41E4_47F896114353"},
+          "tooltip": {"text": "Arrow 06a Left-Up"},
+          "image": "media/tdv-import/hotspots/panorama_DC440AF5_D777_C308_41B0_13691E9AEB46_0_HS_0_0.png"
+        }
+      ]
+    },
+    {
+      "id": "scene_DC467556_D777_C10B_41D1_4E673AAAA286",
+      "name": "18_terrace floor GYM",
+      "panoramaUrl": "media/tdv-import/panoramas/panorama_DC467556_D777_C10B_41D1_4E673AAAA286_0/{face}.jpg",
+      "thumbnailUrl": "media/tdv-import/panorama_DC467556_D777_C10B_41D1_4E673AAAA286_t.jpg",
+      "initialView": {"yaw": 0, "pitch": 0, "fov": 60},
+      "hotspots": [
+        {
+          "id": "hotspot_CAF8B8A5_D7B4_CF09_41C9_06679C37A87F",
+          "type": "scene",
+          "position": {"yaw": -168.76, "pitch": -34.69},
+          "content": {"targetSceneId": "scene_DC4530B4_D777_FF08_41E4_47F896114353"},
+          "tooltip": {"text": "Circle 01c"},
+          "image": "media/tdv-import/hotspots/panorama_DC467556_D777_C10B_41D1_4E673AAAA286_0_HS_0_0.png"
+        }
+      ]
+    }
+  ],
+  "startSceneId": "scene_DB744300_D775_4107_41E1_E2F79FF4509D",
+  "skin": {
+    "template": "custom",
+    "primaryColor": "#4a90d9",
+    "secondaryColor": "#2c3e50",
+    "textColor": "#ffffff",
+    "backgroundOpacity": 80,
+    "fontFamily": "Inter, sans-serif",
+    "borderRadius": 8,
+    "showControls": true,
+    "showSceneMenu": true,
+    "showFullscreen": true,
+    "showGyroscope": false,
+    "showVR": false,
+    "showAutorotate": true,
+    "showThumbnails": false,
+    "loadingStyle": "spinner",
+    "components": [
+      {"id": "branding-main", "type": "branding", "enabled": true, "position": "top-left", "trigger": "always", "order": 1, "config": {"logoUrl": "media/tdv-import/skin/logo.png", "logoWidth": 140, "companyName": "HAI PNG", "tagline": "Virtual Tour"}},
+      {"id": "scene-list", "type": "panorama-list", "enabled": true, "position": "sidebar-left", "trigger": "button", "triggerLabel": "Scenes", "triggerIcon": "fas fa-th", "order": 2, "config": {"layout": "list", "showThumbnails": true, "showDescription": false, "showHotspotCount": true, "title": "Rooms"}},
+      {"id": "nav-arrows", "type": "navigation-arrows", "enabled": true, "position": "bottom-center", "trigger": "always", "order": 3, "config": {"style": "arrows", "position": "sides", "showSceneName": true, "size": 48, "autoHide": false}},
+      {"id": "compass-top", "type": "compass", "enabled": true, "position": "top-center", "trigger": "always", "order": 4, "config": {"style": "bar", "showDegrees": true, "showCardinals": true, "size": 180}},
+      {"id": "settings-modal", "type": "settings-panel", "enabled": true, "position": "modal", "trigger": "button", "triggerLabel": "Settings", "triggerIcon": "fas fa-cog", "order": 5, "config": {"showQuality": true, "showAutoRotate": true, "showGyroscope": false, "showFullscreen": true}},
+      {"id": "tour-info", "type": "tour-info", "enabled": true, "position": "modal", "trigger": "button", "triggerLabel": "Info", "triggerIcon": "fas fa-info-circle", "order": 6, "config": {"title": "HAI PNG Virtual Tour", "subtitle": "Interactive 360° Experience", "description": "Explore this beautiful property with our immersive virtual tour.", "showSceneCount": true}}
+    ]
+  },
+  "floorplans": [],
+  "guidedTours": [],
+  "media": [],
+  "settings": {
+    "autoRotate": false,
+    "autoRotateSpeed": 5,
+    "autoRotateDelay": 3000,
+    "mouseWheelZoom": true,
+    "keyboardNavigation": true,
+    "draggableHotspots": true,
+    "defaultFov": 60,
+    "minFov": 20,
+    "maxFov": 100,
+    "minPitch": -90,
+    "maxPitch": 90
+  }
+}

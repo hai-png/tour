@@ -1,0 +1,45 @@
+{
+  "name": "HAI PNG Virtual Tour",
+  "short_name": "HAI Tour",
+  "description": "Interactive 360° virtual tour of HAI PNG property",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#6366f1",
+  "orientation": "any",
+  "scope": "./",
+  "icons": [
+    {
+      "src": "./media/tdv-import/skin/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./media/tdv-import/skin/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["travel", "education", "utilities"],
+  "screenshots": [],
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "shortcuts": [
+    {
+      "name": "Start Tour",
+      "short_name": "Tour",
+      "description": "Begin the virtual tour",
+      "url": "./index.html?start=tour",
+      "icons": [{ "src": "./media/tdv-import/skin/logo.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Gallery",
+      "short_name": "Gallery",
+      "description": "View photo gallery",
+      "url": "./index.html?modal=gallery",
+      "icons": [{ "src": "./media/tdv-import/skin/logo.png", "sizes": "96x96" }]
+    }
+  ]
+}

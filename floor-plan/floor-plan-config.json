@@ -1,0 +1,258 @@
+{
+  "floors": [
+    {
+      "id": "ground",
+      "name": "Ground Floor",
+      "image": "floor-plan/ground.png",
+      "referenceImage": "floor-plan/ground_floor_hotspot_position_with_initial_view.png",
+      "scenes": [
+        {
+          "sceneId": "scene_DB744300_D775_4107_41E1_E2F79FF4509D",
+          "sceneName": "01_living",
+          "position": {
+            "x": 56.8,
+            "y": 55.6
+          },
+          "initialView": {
+            "yaw": 0,
+            "pitch": 0,
+            "fov": 60
+          }
+        },
+        {
+          "sceneId": "scene_DC50DD3E_D774_C17B_41E6_76ADB6C6217F",
+          "sceneName": "02_dining & open kitchen",
+          "position": {
+            "x": 73.6,
+            "y": 43.4
+          },
+          "initialView": {
+            "yaw": 0,
+            "pitch": 0,
+            "fov": 60
+          },
+          "radarYaw": 270
+        }
+      ]
+    },
+    {
+      "id": "first",
+      "name": "First Floor",
+      "image": "floor-plan/first.png",
+      "referenceImage": "floor-plan/first_floor_hotspot_position_with_initial_view.png",
+      "scenes": [
+        {
+          "sceneId": "scene_DC5E97BE_D774_C17B_41E0_24BA91992222",
+          "sceneName": "03_first floor family room",
+          "position": {
+            "x": 66.8,
+            "y": 41.5
+          },
+          "initialView": {
+            "yaw": 0,
+            "pitch": 0,
+            "fov": 60
+          },
+          "radarYaw": 90
+        },
+        {
+          "sceneId": "scene_DC44A2AB_D774_C319_41E5_339270552D3B",
+          "sceneName": "04_first floor to bed room",
+          "position": {
+            "x": 35,
+            "y": 45
+          },
+          "initialView": {
+            "yaw": 0,
+            "pitch": 0,
+            "fov": 60
+          },
+          "radarYaw": 254
+        },
+        {
+          "sceneId": "scene_DC5FADB7_D774_C109_41E0_A20BC05345FE",
+          "sceneName": "05_first floor bed room 1",
+          "position": {
+            "x": 25.1,
+            "y": 14.6
+          },
+          "initialView": {
+            "yaw": 0,
+            "pitch": 0,
+            "fov": 60
+          },
+          "radarYaw": 270
+        },
+        {
+          "sceneId": "scene_DC5E7314_D777_410F_41C9_B784BC991045",
+          "sceneName": "07_first floor to bed room 2",
+          "position": {
+            "x": 21,
+            "y": 43.8
+          },
+          "initialView": {
+            "yaw": 0,
+            "pitch": 0,
+            "fov": 60
+          },
+          "radarYaw": 180
+        },
+        {
+          "sceneId": "scene_DC5BA7E4_D777_410F_41E3_F0D566C2F4D7",
+          "sceneName": "09_first floor hall way from stair",
+          "position": {
+            "x": 45.3,
+            "y": 25.4
+          },
+          "initialView": {
+            "yaw": 0,
+            "pitch": 0,
+            "fov": 60
+          },
+          "radarYaw": 90
+        }
+      ]
+    },
+    {
+      "id": "second",
+      "name": "Second Floor",
+      "image": "floor-plan/second.png",
+      "referenceImage": "floor-plan/second_floor_hotspot_position_with_initial_view.png",
+      "scenes": [
+        {
+          "sceneId": "scene_DC462273_D777_4309_41E4_17EF9CCCBD4C",
+          "sceneName": "10_2nd floor family room",
+          "position": {
+            "x": 48,
+            "y": 46.2
+          },
+          "initialView": {
+            "yaw": 0,
+            "pitch": 0,
+            "fov": 60
+          },
+          "radarYaw": 90
+        },
+        {
+          "sceneId": "scene_DC47BCE3_D777_4709_41E0_0857273CB166",
+          "sceneName": "11_2nd floor master bed room",
+          "position": {
+            "x": 61.9,
+            "y": 33.3
+          },
+          "initialView": {
+            "yaw": 0,
+            "pitch": 0,
+            "fov": 60
+          },
+          "radarYaw": 0
+        },
+        {
+          "sceneId": "scene_DC5DE84D_D777_4F19_41B6_298BD1CC52E2",
+          "sceneName": "12_2nd floor master bed room",
+          "position": {
+            "x": 74.2,
+            "y": 49.2
+          },
+          "initialView": {
+            "yaw": 0,
+            "pitch": 0,
+            "fov": 60
+          },
+          "radarYaw": 329
+        },
+        {
+          "sceneId": "scene_DC4452BD_D777_C379_41E5_1EDA7259DB75",
+          "sceneName": "13_2nd floor master bathroom",
+          "position": {
+            "x": 83.5,
+            "y": 23.3
+          },
+          "initialView": {
+            "yaw": 0,
+            "pitch": 0,
+            "fov": 60
+          }
+        },
+        {
+          "sceneId": "scene_DC5B0CA0_D777_C707_41D6_CC02EF3AFBAD",
+          "sceneName": "14_2nd floor master dressing room",
+          "position": {
+            "x": 68.2,
+            "y": 13
+          },
+          "initialView": {
+            "yaw": 0,
+            "pitch": 0,
+            "fov": 60
+          },
+          "radarYaw": 214
+        },
+        {
+          "sceneId": "scene_DC45A6C1_D777_C308_41B5_775636919F4F",
+          "sceneName": "15_2nd floor stair landing",
+          "position": {
+            "x": 43,
+            "y": 24.3
+          },
+          "initialView": {
+            "yaw": 0,
+            "pitch": 0,
+            "fov": 60
+          },
+          "radarYaw": 90
+        }
+      ]
+    },
+    {
+      "id": "third",
+      "name": "Third Floor",
+      "image": "floor-plan/third.png",
+      "referenceImage": "floor-plan/third_floor_hotspot_position_with_initial_view.png",
+      "scenes": [
+        {
+          "sceneId": "scene_DC4530B4_D777_FF08_41E4_47F896114353",
+          "sceneName": "16_terrace floor",
+          "position": {
+            "x": 36.1,
+            "y": 41.4
+          },
+          "initialView": {
+            "yaw": 0,
+            "pitch": 0,
+            "fov": 60
+          }
+        },
+        {
+          "sceneId": "scene_DC440AF5_D777_C308_41B0_13691E9AEB46",
+          "sceneName": "17_terrace floor office",
+          "position": {
+            "x": 66.7,
+            "y": 16.7
+          },
+          "initialView": {
+            "yaw": 0,
+            "pitch": 0,
+            "fov": 60
+          },
+          "radarYaw": 180
+        },
+        {
+          "sceneId": "scene_DC467556_D777_C10B_41D1_4E673AAAA286",
+          "sceneName": "18_terrace floor GYM",
+          "position": {
+            "x": 20.1,
+            "y": 41.4
+          },
+          "initialView": {
+            "yaw": 0,
+            "pitch": 0,
+            "fov": 60
+          },
+          "radarYaw": 180,
+          "sceneIndex": 0
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hotspot Editor - HAI PNG Virtual Tour</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      overflow: hidden;
+    }
+
+    /* Editor Container */
+    #editor-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    /* Canvas */
+    #panorama-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Editor Panel */
+    .editor-panel {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 380px;
+      background: rgba(30, 41, 59, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      max-height: calc(100vh - 40px);
+      overflow-y: auto;
+      z-index: 1000;
+    }
+
+    .editor-panel h2 {
+      font-size: 18px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #6366f1;
+    }
+
+    .editor-section {
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .editor-section:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .editor-section h3 {
+      font-size: 14px;
+      color: #94a3b8;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Scene Selector */
+    .scene-selector {
+      width: 100%;
+      padding: 10px 12px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      color: #e2e8f0;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .scene-selector:focus {
+      outline: none;
+      border-color: #6366f1;
+    }
+
+    /* Form Controls */
+    .control-group {
+      margin-bottom: 12px;
+    }
+
+    .control-group label {
+      display: block;
+      font-size: 12px;
+      color: #94a3b8;
+      margin-bottom: 6px;
+    }
+
+    .control-group input[type="number"],
+    .control-group input[type="text"],
+    .control-group select {
+      width: 100%;
+      padding: 8px 10px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      color: #e2e8f0;
+      font-size: 13px;
+    }
+
+    .control-group input:focus {
+      outline: none;
+      border-color: #6366f1;
+    }
+
+    .control-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    /* Buttons */
+    .btn {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: #6366f1;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #4f46e5;
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e2e8f0;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-danger {
+      background: #ef4444;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    /* Hotspot List */
+    .hotspot-list {
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+    }
+
+    .hotspot-item {
+      padding: 10px 12px;
+      background: rgba(15, 23, 42, 0.5);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      cursor: pointer;
+      transition: background 0.2s;
+      font-size: 13px;
+    }
+
+    .hotspot-item:hover {
+      background: rgba(99, 102, 241, 0.2);
+    }
+
+    .hotspot-item.active {
+      background: rgba(99, 102, 241, 0.3);
+      border-left: 3px solid #6366f1;
+    }
+
+    .hotspot-item:last-child {
+      border-bottom: none;
+    }
+
+    /* Hotspot Preview */
+    .hotspot-preview {
+      width: 80px;
+      height: 80px;
+      background: rgba(15, 23, 42, 0.8);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .hotspot-preview img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    /* Instructions */
+    .instructions {
+      background: rgba(99, 102, 241, 0.1);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 16px;
+    }
+
+    .instructions h4 {
+      font-size: 13px;
+      color: #6366f1;
+      margin-bottom: 8px;
+    }
+
+    .instructions ul {
+      font-size: 12px;
+      color: #94a3b8;
+      padding-left: 16px;
+      line-height: 1.8;
+    }
+
+    /* Status Bar */
+    .status-bar {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background: rgba(30, 41, 59, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 8px;
+      padding: 12px 20px;
+      display: flex;
+      gap: 20px;
+      font-size: 13px;
+      z-index: 1000;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-item i {
+      color: #6366f1;
+    }
+
+    /* Hotspot Marker in 3D */
+    .hotspot-marker {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      z-index: 100;
+    }
+
+    .hotspot-marker.selected {
+      filter: drop-shadow(0 0 10px #6366f1);
+    }
+
+    .hotspot-marker::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 3px solid #6366f1;
+      animation: pulse 1.5s ease-out infinite;
+    }
+
+    .hotspot-marker::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 16px;
+      height: 16px;
+      background: #6366f1;
+      border-radius: 50%;
+      border: 3px solid white;
+    }
+
+    @keyframes pulse {
+      0% {
+        width: 100%;
+        height: 100%;
+        opacity: 1;
+      }
+      100% {
+        width: 200%;
+        height: 200%;
+        opacity: 0;
+      }
+    }
+
+    /* Camera Direction Indicator */
+    .direction-indicator {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+    }
+
+    .direction-arrow {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 40px;
+      height: 4px;
+      background: #22d3ee;
+      transform-origin: left center;
+      transform: translateY(-50%);
+    }
+
+    .direction-arrow::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      border-left: 10px solid #22d3ee;
+      border-top: 6px solid transparent;
+      border-bottom: 6px solid transparent;
+    }
+
+    /* Loading */
+    .loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.95);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+
+    .loading-content {
+      text-align: center;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(99, 102, 241, 0.2);
+      border-top-color: #6366f1;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Export Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 3000;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 24px;
+      width: 90%;
+      max-width: 600px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .modal-content h2 {
+      margin-bottom: 16px;
+      color: #6366f1;
+    }
+
+    .modal-content textarea {
+      width: 100%;
+      min-height: 300px;
+      background: #0f172a;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      padding: 12px;
+      color: #e2e8f0;
+      font-family: monospace;
+      font-size: 12px;
+      resize: vertical;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+      justify-content: flex-end;
+    }
+  </style>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div id="editor-container">
+    <canvas id="panorama-canvas"></canvas>
+
+    <!-- Loading Screen -->
+    <div id="loading" class="loading-overlay">
+      <div class="loading-content">
+        <div class="spinner"></div>
+        <h2>Loading Editor...</h2>
+        <p>Loading panorama and hotspot data</p>
+      </div>
+    </div>
+
+    <!-- Editor Panel -->
+    <div class="editor-panel">
+      <h2><i class="fas fa-crosshairs"></i> Hotspot Editor</h2>
+
+      <div class="instructions">
+        <h4><i class="fas fa-info-circle"></i> How to Use</h4>
+        <ul>
+          <li><strong>Click</strong> on the panorama to place a new hotspot</li>
+          <li><strong>Select</strong> a hotspot from the list to edit</li>
+          <li><strong>Drag</strong> to look around</li>
+          <li><strong>Scroll</strong> to zoom in/out</li>
+          <li>Adjust yaw, pitch, and distance for precise placement</li>
+          <li>Set camera angles for the target view</li>
+        </ul>
+      </div>
+
+      <div class="editor-section">
+        <h3><i class="fas fa-image"></i> Scene Selection</h3>
+        <select id="scene-select" class="scene-selector"></select>
+      </div>
+
+      <div class="editor-section">
+        <h3><i class="fas fa-list"></i> Hotspots</h3>
+        <div class="btn-group" style="margin-bottom: 12px;">
+          <button class="btn btn-primary" id="btn-add-hotspot">
+            <i class="fas fa-plus"></i> Add Hotspot
+          </button>
+          <button class="btn btn-danger" id="btn-delete-hotspot">
+            <i class="fas fa-trash"></i> Delete
+          </button>
+        </div>
+        <div id="hotspot-list" class="hotspot-list"></div>
+      </div>
+
+      <div class="editor-section">
+        <h3><i class="fas fa-map-marker-alt"></i> Position</h3>
+        <div class="control-row">
+          <div class="control-group">
+            <label>Yaw (°)</label>
+            <input type="number" id="hotspot-yaw" step="0.01" value="0" />
+          </div>
+          <div class="control-group">
+            <label>Pitch (°)</label>
+            <input type="number" id="hotspot-pitch" step="0.01" value="0" />
+          </div>
+        </div>
+        <div class="control-group">
+          <label>Distance</label>
+          <input type="number" id="hotspot-distance" step="10" value="500" />
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-secondary" id="btn-set-from-view">
+            <i class="fas fa-crosshairs"></i> Set from Current View
+          </button>
+        </div>
+      </div>
+
+      <div class="editor-section">
+        <h3><i class="fas fa-video"></i> Target Camera</h3>
+        <div class="control-row">
+          <div class="control-group">
+            <label>Target Yaw (°)</label>
+            <input type="number" id="target-yaw" step="0.01" value="0" />
+          </div>
+          <div class="control-group">
+            <label>Target Pitch (°)</label>
+            <input type="number" id="target-pitch" step="0.01" value="0" />
+          </div>
+        </div>
+        <div class="control-group">
+          <label>Target FOV (°)</label>
+          <input type="number" id="target-fov" step="1" value="60" min="30" max="100" />
+        </div>
+        <div class="control-group">
+          <label>Target Scene</label>
+          <select id="target-scene" class="scene-selector"></select>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-secondary" id="btn-set-camera-from-view">
+            <i class="fas fa-camera"></i> Set from Current View
+          </button>
+        </div>
+      </div>
+
+      <div class="editor-section">
+        <h3><i class="fas fa-tag"></i> Properties</h3>
+        <div class="control-group">
+          <label>Hotspot ID</label>
+          <input type="text" id="hotspot-id" readonly />
+        </div>
+        <div class="control-group">
+          <label>Label</label>
+          <input type="text" id="hotspot-label" placeholder="e.g., Arrow to Kitchen" />
+        </div>
+        <div class="control-group">
+          <label>Sprite Image URL</label>
+          <input type="text" id="hotspot-sprite" placeholder="media/tdv-import/hotspots/..." />
+        </div>
+        <div class="hotspot-preview">
+          <img id="sprite-preview" src="" alt="Preview" style="display: none;" />
+          <span id="sprite-placeholder" style="color: #64748b; font-size: 12px;">No Image</span>
+        </div>
+      </div>
+
+      <div class="editor-section">
+        <h3><i class="fas fa-save"></i> Actions</h3>
+        <div class="btn-group">
+          <button class="btn btn-primary" id="btn-save">
+            <i class="fas fa-save"></i> Save Changes
+          </button>
+          <button class="btn btn-secondary" id="btn-export">
+            <i class="fas fa-download"></i> Export JSON
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <div class="status-item">
+        <i class="fas fa-image"></i>
+        <span id="status-scene">Scene: -</span>
+      </div>
+      <div class="status-item">
+        <i class="fas fa-compress-arrows-alt"></i>
+        <span id="status-view">Yaw: 0° | Pitch: 0° | FOV: 60°</span>
+      </div>
+      <div class="status-item">
+        <i class="fas fa-map-marker-alt"></i>
+        <span id="status-hotspots">Hotspots: 0</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Export Modal -->
+  <div class="modal-overlay" id="export-modal">
+    <div class="modal-content">
+      <h2><i class="fas fa-download"></i> Export Hotspot Data</h2>
+      <p style="color: #94a3b8; margin-bottom: 12px; font-size: 13px;">
+        Copy this JSON and save it to <code style="background: rgba(99, 102, 241, 0.2); padding: 2px 6px; border-radius: 4px;">media/tdv-import/hotspots.json</code>
+      </p>
+      <textarea id="export-json" readonly></textarea>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="document.getElementById('export-modal').classList.remove('active')">
+          <i class="fas fa-times"></i> Close
+        </button>
+        <button class="btn btn-primary" id="btn-copy-export">
+          <i class="fas fa-copy"></i> Copy to Clipboard
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js';
+
+    // Editor State
+    const state = {
+      project: null,
+      hotspots: [],
+      currentSceneIndex: 0,
+      selectedHotspotId: null,
+      camera: { yaw: 0, pitch: 0, fov: 60 },
+      isDragging: false,
+      lastMouseX: 0,
+      lastMouseY: 0
+    };
+
+    // Three.js Setup
+    const canvas = document.getElementById('panorama-canvas');
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+
+    // Sphere geometry for panorama
+    const sphereGeometry = new THREE.SphereGeometry(500, 64, 64);
+    const sphereMaterial = new THREE.MeshBasicMaterial({
+      map: null,
+      side: THREE.BackSide
+    });
+    const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+    scene.add(sphere);
+
+    // Hotspot markers group
+    const markersGroup = new THREE.Group();
+    scene.add(markersGroup);
+
+    // Load project data
+    async function loadProject() {
+      try {
+        const response = await fetch('media/tdv-import/project.json');
+        state.project = await response.json();
+        console.log('Project loaded:', state.project.name);
+
+        // Load hotspot data
+        try {
+          const hsResponse = await fetch('media/tdv-import/hotspots.json');
+          if (hsResponse.ok) {
+            state.hotspots = (await hsResponse.json()).hotspots || [];
+          }
+        } catch (e) {
+          console.log('No hotspot data loaded');
+          state.hotspots = [];
+        }
+
+        populateSceneSelectors();
+        loadScene(0);
+        updateHotspotList();
+        document.getElementById('loading').style.display = 'none';
+      } catch (error) {
+        console.error('Failed to load project:', error);
+      }
+    }
+
+    // Populate scene selectors
+    function populateSceneSelectors() {
+      const sceneSelect = document.getElementById('scene-select');
+      const targetScene = document.getElementById('target-scene');
+
+      state.project.scenes.forEach((s, i) => {
+        const name = s.name.replace(/^\d+_/, '').replace(/_/g, ' ');
+        const opt1 = document.createElement('option');
+        opt1.value = i;
+        opt1.textContent = `${i + 1}. ${name}`;
+        sceneSelect.appendChild(opt1);
+
+        const opt2 = opt1.cloneNode(true);
+        targetScene.appendChild(opt2);
+      });
+
+      sceneSelect.addEventListener('change', (e) => {
+        loadScene(parseInt(e.target.value));
+      });
+    }
+
+    // Load scene panorama
+    function loadScene(index) {
+      state.currentSceneIndex = index;
+      const sceneData = state.project.scenes[index];
+
+      // Load texture
+      const texture = new THREE.TextureLoader().load(sceneData.imageUrl);
+      sphereMaterial.map = texture;
+      sphereMaterial.needsUpdate = true;
+
+      // Reset camera
+      state.camera = { yaw: 0, pitch: 0, fov: 60 };
+      updateCamera();
+
+      // Update markers
+      updateMarkers();
+      updateStatus();
+
+      // Update scene select
+      document.getElementById('scene-select').value = index;
+    }
+
+    // Update camera
+    function updateCamera() {
+      camera.fov = state.camera.fov;
+      camera.updateProjectionMatrix();
+
+      const yawRad = state.camera.yaw * Math.PI / 180;
+      const pitchRad = state.camera.pitch * Math.PI / 180;
+
+      const x = 500 * Math.sin(yawRad) * Math.cos(pitchRad);
+      const y = 500 * Math.sin(pitchRad);
+      const z = 500 * Math.cos(yawRad) * Math.cos(pitchRad);
+
+      camera.position.set(x, y, z);
+      camera.lookAt(0, 0, 0);
+    }
+
+    // Update markers
+    function updateMarkers() {
+      // Clear existing markers
+      while (markersGroup.children.length) {
+        const obj = markersGroup.children[0];
+        markersGroup.remove(obj);
+      }
+
+      // Get hotspots for current scene
+      const sceneHotspots = state.hotspots.filter(h => h.sceneIndex === state.currentSceneIndex);
+
+      sceneHotspots.forEach(hs => {
+        const marker = createMarker(hs);
+        markersGroup.add(marker);
+      });
+
+      document.getElementById('status-hotspots').textContent = `Hotspots: ${sceneHotspots.length}`;
+    }
+
+    // Create marker
+    function createMarker(hs) {
+      const group = new THREE.Group();
+      group.userData = { hotspotId: hs.id };
+
+      // Create marker geometry
+      const geometry = new THREE.SphereGeometry(3, 16, 16);
+      const material = new THREE.MeshBasicMaterial({
+        color: hs.id === state.selectedHotspotId ? 0x6366f1 : 0x22d3ee
+      });
+      const sphere = new THREE.Mesh(geometry, material);
+
+      // Position
+      const yawRad = -hs.position.yaw * Math.PI / 180;
+      const pitchRad = hs.position.pitch * Math.PI / 180;
+
+      sphere.position.set(
+        500 * Math.sin(yawRad) * Math.cos(pitchRad),
+        500 * Math.sin(pitchRad),
+        500 * Math.cos(yawRad) * Math.cos(pitchRad)
+      );
+
+      group.add(sphere);
+
+      // Add direction indicator if has target
+      if (hs.content && hs.content.targetSceneIndex !== undefined) {
+        const arrowGeometry = new THREE.ConeGeometry(1, 5, 8);
+        const arrowMaterial = new THREE.MeshBasicMaterial({ color: 0x6366f1 });
+        const arrow = new THREE.Mesh(arrowGeometry, arrowMaterial);
+        arrow.position.copy(sphere.position);
+        arrow.lookAt(0, 0, 0);
+        arrow.rotateX(Math.PI / 2);
+        group.add(arrow);
+      }
+
+      return group;
+    }
+
+    // Update hotspot list
+    function updateHotspotList() {
+      const list = document.getElementById('hotspot-list');
+      list.innerHTML = '';
+
+      const sceneHotspots = state.hotspots.filter(h => h.sceneIndex === state.currentSceneIndex);
+
+      if (sceneHotspots.length === 0) {
+        list.innerHTML = '<div style="padding: 12px; color: #64748b; font-size: 13px; text-align: center;">No hotspots in this scene</div>';
+        return;
+      }
+
+      sceneHotspots.forEach(hs => {
+        const item = document.createElement('div');
+        item.className = 'hotspot-item' + (hs.id === state.selectedHotspotId ? ' active' : '');
+        item.textContent = `${hs.id} - ${hs.content?.label || 'Unnamed'}`;
+        item.addEventListener('click', () => selectHotspot(hs.id));
+        list.appendChild(item);
+      });
+    }
+
+    // Select hotspot
+    function selectHotspot(id) {
+      state.selectedHotspotId = id;
+      const hs = state.hotspots.find(h => h.id === id);
+
+      if (!hs) return;
+
+      // Update form
+      document.getElementById('hotspot-id').value = hs.id;
+      document.getElementById('hotspot-yaw').value = hs.position.yaw.toFixed(2);
+      document.getElementById('hotspot-pitch').value = hs.position.pitch.toFixed(2);
+      document.getElementById('hotspot-distance').value = hs.position.distance;
+      document.getElementById('hotspot-label').value = hs.content?.label || '';
+      document.getElementById('hotspot-sprite').value = hs.sprite?.url || '';
+      document.getElementById('target-yaw').value = hs.content?.targetYaw?.toFixed(2) || 0;
+      document.getElementById('target-pitch').value = hs.content?.targetPitch?.toFixed(2) || 0;
+      document.getElementById('target-fov').value = hs.content?.targetFov || 60;
+      document.getElementById('target-scene').value = hs.content?.targetSceneIndex || state.currentSceneIndex;
+
+      // Update sprite preview
+      const preview = document.getElementById('sprite-preview');
+      const placeholder = document.getElementById('sprite-placeholder');
+      if (hs.sprite?.url) {
+        preview.src = hs.sprite.url;
+        preview.style.display = 'block';
+        placeholder.style.display = 'none';
+      } else {
+        preview.style.display = 'none';
+        placeholder.style.display = 'block';
+      }
+
+      updateHotspotList();
+      updateMarkers();
+    }
+
+    // Add new hotspot
+    function addHotspot() {
+      const id = `hs_${Date.now()}`;
+      const newHotspot = {
+        id,
+        type: 'animated-sprite',
+        position: {
+          yaw: state.camera.yaw,
+          pitch: state.camera.pitch,
+          distance: 500
+        },
+        sprite: {
+          url: '',
+          frameCount: 24,
+          rowCount: 6,
+          colCount: 4,
+          frameDuration: 41,
+          width: 520,
+          height: 420,
+          displayWidth: 60,
+          displayHeight: 60
+        },
+        content: {
+          targetSceneId: '',
+          targetSceneIndex: state.currentSceneIndex,
+          label: 'New Hotspot',
+          targetYaw: 0,
+          targetPitch: 0,
+          targetFov: 60
+        },
+        tooltip: {
+          text: 'New Hotspot',
+          visible: false
+        },
+        visible: true,
+        sceneIndex: state.currentSceneIndex,
+        sceneId: state.project.scenes[state.currentSceneIndex].id
+      };
+
+      state.hotspots.push(newHotspot);
+      selectHotspot(id);
+      updateHotspotList();
+      updateMarkers();
+    }
+
+    // Delete hotspot
+    function deleteHotspot() {
+      if (!state.selectedHotspotId) return;
+
+      state.hotspots = state.hotspots.filter(h => h.id !== state.selectedHotspotId);
+      state.selectedHotspotId = null;
+      updateHotspotList();
+      updateMarkers();
+
+      // Clear form
+      document.getElementById('hotspot-id').value = '';
+      document.getElementById('hotspot-label').value = '';
+      document.getElementById('hotspot-sprite').value = '';
+    }
+
+    // Save changes
+    function saveChanges() {
+      if (!state.selectedHotspotId) return;
+
+      const hs = state.hotspots.find(h => h.id === state.selectedHotspotId);
+      if (!hs) return;
+
+      hs.position.yaw = parseFloat(document.getElementById('hotspot-yaw').value);
+      hs.position.pitch = parseFloat(document.getElementById('hotspot-pitch').value);
+      hs.position.distance = parseInt(document.getElementById('hotspot-distance').value);
+      hs.content.label = document.getElementById('hotspot-label').value;
+      hs.sprite.url = document.getElementById('hotspot-sprite').value;
+      hs.content.targetYaw = parseFloat(document.getElementById('target-yaw').value);
+      hs.content.targetPitch = parseFloat(document.getElementById('target-pitch').value);
+      hs.content.targetFov = parseInt(document.getElementById('target-fov').value);
+      hs.content.targetSceneIndex = parseInt(document.getElementById('target-scene').value);
+      hs.content.targetSceneId = state.project.scenes[hs.content.targetSceneIndex]?.id || '';
+
+      updateMarkers();
+      updateHotspotList();
+
+      alert('Changes saved! Click "Export JSON" to save to file.');
+    }
+
+    // Export JSON
+    function exportJSON() {
+      const data = {
+        version: '1.0',
+        source: '3DVista (Editor)',
+        generatedAt: new Date().toISOString(),
+        totalHotspots: state.hotspots.length,
+        animatedResources: state.hotspots.length,
+        hotspots: state.hotspots
+      };
+
+      const json = JSON.stringify(data, null, 2);
+      document.getElementById('export-json').value = json;
+      document.getElementById('export-modal').classList.add('active');
+    }
+
+    // Update status bar
+    function updateStatus() {
+      const sceneName = state.project.scenes[state.currentSceneIndex]?.name.replace(/^\d+_/, '').replace(/_/g, ' ') || '-';
+      document.getElementById('status-scene').textContent = `Scene: ${sceneName}`;
+      document.getElementById('status-view').textContent =
+        `Yaw: ${state.camera.yaw.toFixed(1)}° | Pitch: ${state.camera.pitch.toFixed(1)}° | FOV: ${state.camera.fov}°`;
+    }
+
+    // Event Listeners
+    document.getElementById('btn-add-hotspot').addEventListener('click', addHotspot);
+    document.getElementById('btn-delete-hotspot').addEventListener('click', deleteHotspot);
+    document.getElementById('btn-save').addEventListener('click', saveChanges);
+    document.getElementById('btn-export').addEventListener('click', exportJSON);
+
+    document.getElementById('btn-set-from-view').addEventListener('click', () => {
+      if (!state.selectedHotspotId) return;
+      document.getElementById('hotspot-yaw').value = state.camera.yaw.toFixed(2);
+      document.getElementById('hotspot-pitch').value = state.camera.pitch.toFixed(2);
+    });
+
+    document.getElementById('btn-set-camera-from-view').addEventListener('click', () => {
+      if (!state.selectedHotspotId) return;
+      document.getElementById('target-yaw').value = state.camera.yaw.toFixed(2);
+      document.getElementById('target-pitch').value = state.camera.pitch.toFixed(2);
+      document.getElementById('target-fov').value = state.camera.fov;
+    });
+
+    document.getElementById('btn-copy-export').addEventListener('click', () => {
+      const textarea = document.getElementById('export-json');
+      textarea.select();
+      document.execCommand('copy');
+      alert('Copied to clipboard!');
+    });
+
+    // Mouse interaction
+    canvas.addEventListener('mousedown', (e) => {
+      state.isDragging = true;
+      state.lastMouseX = e.clientX;
+      state.lastMouseY = e.clientY;
+    });
+
+    canvas.addEventListener('mouseup', () => {
+      state.isDragging = false;
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+      if (!state.isDragging) return;
+
+      const deltaX = e.clientX - state.lastMouseX;
+      const deltaY = e.clientY - state.lastMouseY;
+
+      state.camera.yaw -= deltaX * 0.2;
+      state.camera.pitch -= deltaY * 0.2;
+      state.camera.pitch = Math.max(-89, Math.min(89, state.camera.pitch));
+
+      state.lastMouseX = e.clientX;
+      state.lastMouseY = e.clientY;
+
+      updateCamera();
+      updateStatus();
+    });
+
+    canvas.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      state.camera.fov += e.deltaY * 0.05;
+      state.camera.fov = Math.max(30, Math.min(100, state.camera.fov));
+      updateCamera();
+      updateStatus();
+    });
+
+    canvas.addEventListener('click', (e) => {
+      if (state.isDragging && Math.abs(e.clientX - state.lastMouseX) > 5) return;
+
+      // Raycast to place hotspot
+      const mouse = new THREE.Vector2();
+      mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+      const raycaster = new THREE.Raycaster();
+      raycaster.setFromCamera(mouse, camera);
+
+      const intersects = raycaster.intersectObject(sphere);
+      if (intersects.length > 0) {
+        const point = intersects[0].point;
+        const yaw = Math.atan2(point.x, point.z) * 180 / Math.PI;
+        const pitch = Math.asin(point.y / 500) * 180 / Math.PI;
+
+        document.getElementById('hotspot-yaw').value = yaw.toFixed(2);
+        document.getElementById('hotspot-pitch').value = pitch.toFixed(2);
+
+        if (state.selectedHotspotId) {
+          const hs = state.hotspots.find(h => h.id === state.selectedHotspotId);
+          if (hs) {
+            hs.position.yaw = yaw;
+            hs.position.pitch = pitch;
+            updateMarkers();
+          }
+        }
+      }
+    });
+
+    // Window resize
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // Initialize
+    loadProject();
+  </script>
+</body>
+</html>

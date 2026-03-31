@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HAI PNG Virtual Tour</title>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/ui-components.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json?v=2" />
+  <meta name="theme-color" content="#6366f1" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="HAI Tour" />
+  <link rel="apple-touch-icon" href="media/tdv-import/skin/logo.png" />
+  <link rel="icon" type="image/png" href="media/tdv-import/skin/logo.png" />
+</head>
+<body>
+  <div id="viewer-container">
+    <canvas id="panorama-canvas"></canvas>
+
+    <!-- Loading Screen - Enhanced with Settings -->
+    <div id="loading" class="loading-overlay">
+      <div class="loading-content">
+        <div class="loading-header">
+          <img src="media/tdv-import/skin/logo.png" alt="HAI PNG" class="loading-logo" onerror="this.style.display='none'" />
+          <h1>HAI PNG Virtual Tour</h1>
+          <p>Explore luxury living in the heart of Port Moresby</p>
+        </div>
+
+        <!-- Settings Panel -->
+        <div class="loading-settings" id="loading-settings">
+          <h3 data-i18n="tourPreferences">Tour Preferences</h3>
+          <p class="settings-intro" data-i18n="selectPreferences">Select your preferences before starting the tour</p>
+          
+          <div class="setting-option">
+            <label class="toggle-label">
+              <input type="checkbox" id="setting-auto-rotate" checked />
+              <span class="toggle-switch"></span>
+              <span class="toggle-text" data-i18n="autoRotate">Auto-Rotate</span>
+            </label>
+            <p class="setting-description" data-i18n="autoRotateDesc">Enable smooth automatic camera rotation</p>
+          </div>
+          
+          <div class="setting-option">
+            <label class="toggle-label">
+              <input type="checkbox" id="setting-guided-tour" />
+              <span class="toggle-switch"></span>
+              <span class="toggle-text" data-i18n="startWithGuidedTour">Start Guided Tour</span>
+            </label>
+            <p class="setting-description" data-i18n="guidedTourDesc">Begin with an automated narrated tour</p>
+          </div>
+        </div>
+
+        <div class="loading-spinner">
+          <div class="spinner"></div>
+          <div class="loading-text" data-i18n="preparingExperience">Preparing your experience...</div>
+        </div>
+
+        <!-- Loading Stats -->
+        <div class="loading-stats">
+          <div class="stat-item">
+            <i class="fas fa-image"></i>
+            <span id="stat-total-scenes">0</span>
+            <span class="stat-label" data-i18n="roomsCount">Rooms</span>
+          </div>
+          <div class="stat-item">
+            <i class="fas fa-map-marker-alt"></i>
+            <span id="stat-total-hotspots">0</span>
+            <span class="stat-label" data-i18n="hotspotsCount">Hotspots</span>
+          </div>
+          <div class="stat-item">
+            <i class="fas fa-layer-group"></i>
+            <span id="stat-total-floors">0</span>
+            <span class="stat-label" data-i18n="floorsCount">Floors</span>
+          </div>
+          <div class="stat-item">
+            <i class="fas fa-play-circle"></i>
+            <span>1</span>
+            <span class="stat-label" data-i18n="guidedTourCount">Guided Tour</span>
+          </div>
+        </div>
+
+        <button class="btn-primary" id="btn-start-tour">
+          <i class="fas fa-play"></i> <span data-i18n="startVirtualTour">Start Virtual Tour</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 6. Brand/Logo - Top Left with Property Info -->
+    <div class="brand-container" id="brand-container">
+      <img src="media/tdv-import/skin/logo.png" alt="HAI PNG" class="brand-logo" onerror="this.style.display='none'" />
+      <div class="brand-text">
+        <h1>HAI PNG</h1>
+        <p data-i18n="virtualTour">Virtual Tour</p>
+      </div>
+      <button class="brand-info-btn" id="btn-prop-info" title="Property Info" data-i18n-title="propertyInfo">
+        <i class="fas fa-info-circle"></i>
+      </button>
+      <button class="brand-contact-btn" id="btn-contact-main" title="Contact Us" data-i18n-title="contactUs">
+        <i class="fas fa-envelope"></i>
+      </button>
+    </div>
+
+    <!-- Current Room Display - Below Branding -->
+    <div class="current-room-container" id="current-room-container">
+      <span id="current-room-name">Loading...</span>
+      <div class="current-room-data" id="current-room-data">
+        <span class="room-type" id="room-type"></span>
+        <span class="room-area" id="room-area"></span>
+        <div class="room-features" id="room-features"></div>
+      </div>
+    </div>
+
+    <!-- 1. Top Bar - Center Top (actions only) -->
+    <div class="top-center-bar" id="top-center-bar">
+      <!-- Guided Tour Controls -->
+      <div class="guided-tour-controls" id="guided-tour-controls" style="display: none;">
+        <button class="top-bar-btn" id="btn-tour-pause" title="Pause" data-i18n-title="pause">
+          <i class="fas fa-pause"></i>
+        </button>
+        <button class="top-bar-btn" id="btn-tour-stop" title="Stop" data-i18n-title="stop">
+          <i class="fas fa-stop"></i>
+        </button>
+      </div>
+      
+      <button class="top-bar-btn" id="btn-guided-tour" title="Guided Tour" data-i18n-title="guidedTour">
+        <i class="fas fa-play-circle"></i>
+        <span data-i18n="guidedTour">Guided Tour</span>
+      </button>
+      <button class="top-bar-btn" id="btn-language" title="Language" data-i18n-title="language">
+        <i class="fas fa-language"></i>
+        <span data-i18n="language">Language</span>
+      </button>
+      <button class="top-bar-btn" id="btn-share" title="Share" data-i18n-title="share">
+        <i class="fas fa-share-alt"></i>
+        <span data-i18n="share">Share</span>
+      </button>
+      <button class="top-bar-btn" id="btn-settings" title="Settings" data-i18n-title="settings">
+        <i class="fas fa-cog"></i>
+        <span data-i18n="settings">Settings</span>
+      </button>
+    </div>
+
+    <!-- 8. Mini Floor Plan - Top Right -->
+    <div class="floor-plan-container" id="floor-plan-container">
+      <div class="floor-plan-header">
+        <h4><i class="fas fa-home"></i> <span data-i18n="floorPlan">Floor Plan</span></h4>
+        <div class="floor-plan-name" id="floor-plan-name">Ground Floor</div>
+        <button class="floor-plan-toggle" id="floor-plan-toggle"><i class="fas fa-chevron-up"></i></button>
+      </div>
+      <div class="floor-plan-content collapsed" id="floor-plan-content">
+        <canvas id="floor-plan-canvas"></canvas>
+        <div class="floor-plan-radar" id="floor-plan-radar">
+          <div class="radar-container">
+            <div class="radar-ring outer"></div>
+            <div class="radar-ring middle"></div>
+            <div class="radar-ring inner"></div>
+            <div class="radar-center"></div>
+            <div class="radar-direction" id="radar-direction">
+              <i class="fas fa-arrow-up"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. Quick Tools - Left Side Vertical (with dark mode toggle) -->
+    <div class="quick-tools" id="quick-tools">
+      <button class="quick-tool-btn" id="btn-dark-mode" title="Dark/Light Mode" data-i18n-title="darkMode">
+        <i class="fas fa-moon"></i>
+        <span data-i18n="darkMode">Dark Mode</span>
+      </button>
+      <button class="quick-tool-btn" id="btn-capture-viewport" title="Capture Viewport" data-i18n-title="capture">
+        <i class="fas fa-camera"></i>
+        <span data-i18n="capture">Capture</span>
+      </button>
+      <button class="quick-tool-btn" id="btn-zoom-in" title="Zoom In" data-i18n-title="zoomIn">
+        <i class="fas fa-search-plus"></i>
+        <span data-i18n="zoomIn">Zoom +</span>
+      </button>
+      <button class="quick-tool-btn" id="btn-zoom-out" title="Zoom Out" data-i18n-title="zoomOut">
+        <i class="fas fa-search-minus"></i>
+        <span data-i18n="zoomOut">Zoom -</span>
+      </button>
+      <button class="quick-tool-btn" id="btn-fullscreen" title="Fullscreen" data-i18n-title="fullscreen">
+        <i class="fas fa-expand"></i>
+        <span data-i18n="fullscreen">Fullscreen</span>
+      </button>
+      <button class="quick-tool-btn" id="btn-reset" title="Reset View" data-i18n-title="resetView">
+        <i class="fas fa-compress-arrows-alt"></i>
+        <span data-i18n="resetView">Reset</span>
+      </button>
+    </div>
+
+    <!-- 7. Room List - Horizontal Row at Bottom -->
+    <div class="room-list-horizontal" id="room-list-horizontal">
+      <button class="room-nav-btn" id="room-prev" title="Previous Room" data-i18n-title="previousRoom">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <div class="room-list-scroll" id="room-list-scroll">
+        <div class="room-list-items" id="room-list-items"></div>
+      </div>
+      <button class="room-nav-btn" id="room-next" title="Next Room" data-i18n-title="nextRoom">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+
+    <!-- 3. Gallery Widget - Bottom Right Corner -->
+    <div class="gallery-widget" id="gallery-widget">
+      <div class="gallery-widget-bar" id="gallery-widget-bar">
+        <div class="gallery-thumbnails-preview">
+          <div class="gallery-preview-thumb" id="gallery-preview-1">
+            <img src="" alt="" />
+          </div>
+          <div class="gallery-preview-thumb" id="gallery-preview-2">
+            <img src="" alt="" />
+          </div>
+          <div class="gallery-preview-count" id="gallery-preview-count">
+            <span>+0</span>
+          </div>
+        </div>
+        <div class="gallery-widget-info">
+          <h4 data-i18n="projectGallery">Project Gallery</h4>
+          <p id="gallery-media-count">0 <span data-i18n="photosVideos">Photos & Videos</span></p>
+        </div>
+        <button class="gallery-grid-btn" id="btn-gallery-grid" title="Open Gallery" data-i18n-title="openGallery">
+          <i class="fas fa-th"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Navigation Arrows (hidden by default, shown on hotspot hover) -->
+    <button class="nav-arrow prev" id="nav-prev" style="display: none;">
+      <i class="fas fa-chevron-left"></i>
+      <span class="nav-label" id="nav-prev-label" data-i18n="previous">Previous</span>
+    </button>
+    <button class="nav-arrow next" id="nav-next" style="display: none;">
+      <i class="fas fa-chevron-right"></i>
+      <span class="nav-label" id="nav-next-label" data-i18n="next">Next</span>
+    </button>
+    <!-- Language Modal -->
+    <div class="modal-overlay" id="modal-language">
+      <div class="modal-content">
+        <button class="modal-close" onclick="document.getElementById('modal-language').classList.remove('active')"><i class="fas fa-times"></i></button>
+        <h2 class="modal-title"><i class="fas fa-language"></i> <span data-i18n="language">Language</span></h2>
+        <p class="modal-text" data-i18n="selectLanguage">Select your preferred language for the tour.</p>
+        <div class="language-list" id="language-list">
+          <button class="language-option active" data-lang="en">
+            <span class="lang-flag">🇺🇳</span>
+            <span class="lang-name" data-i18n="english">English</span>
+          </button>
+          <button class="language-option" data-lang="am">
+            <span class="lang-flag">🇪🇹</span>
+            <span class="lang-name" data-i18n="amharic">አማርኛ</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Property Info Modal - Redesigned -->
+    <div class="modal-overlay" id="modal-property-info">
+      <div class="modal-content modal-property-info-content">
+        <button class="modal-close" onclick="document.getElementById('modal-property-info').classList.remove('active')"><i class="fas fa-times"></i></button>
+
+        <!-- Property Header -->
+        <div class="property-info-header">
+          <div class="property-info-logo">
+            <img src="media/tdv-import/skin/logo.png" alt="HAI PNG" onerror="this.style.display='none'" />
+          </div>
+          <div class="property-info-title">
+            <h2><i class="fas fa-building"></i> HAI PNG Property</h2>
+            <p class="property-subtitle">Luxury Living in Port Moresby</p>
+          </div>
+          <div class="property-status-badge">
+            <i class="fas fa-circle"></i> <span data-i18n="available">Available</span>
+          </div>
+        </div>
+
+        <!-- Property Hero Image -->
+        <div class="property-info-hero">
+          <div class="property-hero-slider">
+            <img id="property-hero-img" src="media/tdv-import/panorama_CFF86997_D78D_4109_41D6_D7F4B4601989_t.jpg" alt="Property Hero" onerror="this.style.background='linear-gradient(135deg, var(--primary), var(--secondary))'" />
+          </div>
+          <div class="property-hero-overlay">
+            <div class="hero-stat">
+              <i class="fas fa-bed"></i>
+              <span id="prop-stat-bedrooms">4 <span data-i18n="beds">Beds</span></span>
+            </div>
+            <div class="hero-stat">
+              <i class="fas fa-bath"></i>
+              <span id="prop-stat-bathrooms">3 <span data-i18n="baths">Baths</span></span>
+            </div>
+            <div class="hero-stat">
+              <i class="fas fa-ruler-combined"></i>
+              <span id="prop-stat-area">2,500 <span data-i18n="sqft">sqft</span></span>
+            </div>
+            <div class="hero-stat">
+              <i class="fas fa-layer-group"></i>
+              <span id="prop-stat-floors">2 <span data-i18n="floors">Floors</span></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Property Info Tabs -->
+        <div class="property-info-tabs">
+          <button class="property-tab-btn active" data-tab="overview">
+            <i class="fas fa-info-circle"></i> <span data-i18n="overview">Overview</span>
+          </button>
+          <button class="property-tab-btn" data-tab="location">
+            <i class="fas fa-map-marker-alt"></i> <span data-i18n="location">Location</span>
+          </button>
+        </div>
+
+        <!-- Tab Contents -->
+        <div class="property-tab-content">
+          <!-- Overview Tab (Combined Overview + Features) -->
+          <div class="property-tab-panel active" id="tab-overview">
+            <h3><i class="fas fa-home"></i> <span data-i18n="propertyOverview">Property Overview</span></h3>
+            <p class="property-description" data-i18n="propertyDescription">
+              Experience luxury living in the heart of Port Moresby. This stunning multi-level property
+              features modern architecture with spacious living areas, floor-to-ceiling windows, and
+              premium finishes throughout. The open-concept design seamlessly connects indoor and
+              outdoor living spaces, perfect for entertaining.
+            </p>
+
+            <div class="property-amenities-grid">
+              <div class="amenity-card">
+                <i class="fas fa-swimming-pool"></i>
+                <span data-i18n="swimmingPool">Swimming Pool</span>
+              </div>
+              <div class="amenity-card">
+                <i class="fas fa-dumbbell"></i>
+                <span data-i18n="fitnessCenter">Fitness Center</span>
+              </div>
+              <div class="amenity-card">
+                <i class="fas fa-car"></i>
+                <span data-i18n="parking">Parking</span>
+              </div>
+              <div class="amenity-card">
+                <i class="fas fa-tree"></i>
+                <span data-i18n="garden">Garden</span>
+              </div>
+              <div class="amenity-card">
+                <i class="fas fa-shield-alt"></i>
+                <span data-i18n="security24_7">24/7 Security</span>
+              </div>
+              <div class="amenity-card">
+                <i class="fas fa-wifi"></i>
+                <span data-i18n="highSpeedWifi">High-Speed WiFi</span>
+              </div>
+              <div class="amenity-card">
+                <i class="fas fa-snowflake"></i>
+                <span data-i18n="airConditioning">Air Conditioning</span>
+              </div>
+              <div class="amenity-card">
+                <i class="fas fa-tv"></i>
+                <span data-i18n="smartHome">Smart Home</span>
+              </div>
+            </div>
+
+            <h4 style="margin-top:20px;"><i class="fas fa-star"></i> <span data-i18n="keyFeatures">Key Features</span></h4>
+            <div class="features-grid-compact">
+              <div class="feature-item-compact">
+                <i class="fas fa-check-circle"></i>
+                <span data-i18n="modernArchitecture">Modern Architecture</span>
+              </div>
+              <div class="feature-item-compact">
+                <i class="fas fa-check-circle"></i>
+                <span data-i18n="multiFloorDesign">Multi-Floor Design</span>
+              </div>
+              <div class="feature-item-compact">
+                <i class="fas fa-check-circle"></i>
+                <span data-i18n="premiumFinishes">Premium Finishes</span>
+              </div>
+              <div class="feature-item-compact">
+                <i class="fas fa-check-circle"></i>
+                <span data-i18n="waterfrontLocation">Waterfront Location</span>
+              </div>
+              <div class="feature-item-compact">
+                <i class="fas fa-check-circle"></i>
+                <span data-i18n="smartHomeTech">Smart Home Technology</span>
+              </div>
+              <div class="feature-item-compact">
+                <i class="fas fa-check-circle"></i>
+                <span data-i18n="energyEfficient">Energy Efficient</span>
+              </div>
+            </div>
+
+            <h4 style="margin-top:20px;"><i class="fas fa-door-open"></i> <span data-i18n="spacesInclude">Spaces Include</span></h4>
+            <div class="spaces-list-compact">
+              <div class="space-item-compact">
+                <i class="fas fa-couch"></i>
+                <span data-i18n="livingDiningAreas">Living & Dining</span>
+              </div>
+              <div class="space-item-compact">
+                <i class="fas fa-utensils"></i>
+                <span data-i18n="gourmetKitchen">Gourmet Kitchen</span>
+              </div>
+              <div class="space-item-compact">
+                <i class="fas fa-bed"></i>
+                <span data-i18n="masterBedrooms">Master Bedrooms</span>
+              </div>
+              <div class="space-item-compact">
+                <i class="fas fa-bath"></i>
+                <span data-i18n="luxuryBathrooms">Luxury Bathrooms</span>
+              </div>
+              <div class="space-item-compact">
+                <i class="fas fa-tv"></i>
+                <span data-i18n="familyRoom">Family Room</span>
+              </div>
+              <div class="space-item-compact">
+                <i class="fas fa-dumbbell"></i>
+                <span data-i18n="gymTerrace">Gym & Terrace</span>
+              </div>
+              <div class="space-item-compact">
+                <i class="fas fa-briefcase"></i>
+                <span data-i18n="homeOffice">Home Office</span>
+              </div>
+              <div class="space-item-compact">
+                <i class="fas fa-umbrella-beach"></i>
+                <span data-i18n="outdoorEntertainment">Outdoor Entertainment</span>
+              </div>
+            </div>
+
+            <div class="property-quick-stats">
+              <div class="quick-stat">
+                <span class="stat-value" id="stat-total-rooms">0</span>
+                <span class="stat-label" data-i18n="roomsCount">Rooms</span>
+              </div>
+              <div class="quick-stat">
+                <span class="stat-value" id="stat-total-hotspots-prop">0</span>
+                <span class="stat-label" data-i18n="hotspotsCount">Hotspots</span>
+              </div>
+              <div class="quick-stat">
+                <span class="stat-value" id="stat-total-floors-prop">0</span>
+                <span class="stat-label" data-i18n="floorsCount">Floors</span>
+              </div>
+              <div class="quick-stat">
+                <span class="stat-value">100%</span>
+                <span class="stat-label" data-i18n="occupancy">Occupancy</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Location Tab - Condensed with Full-Width Map -->
+          <div class="property-tab-panel" id="tab-location">
+            <h3><i class="fas fa-map-marked-alt"></i> <span data-i18n="primeLocation">Prime Location</span></h3>
+            
+            <div class="location-map-wrapper-full">
+              <div id="property-map" class="property-map-full"></div>
+            </div>
+
+            <div class="location-details-compact">
+              <div class="location-detail-item">
+                <i class="fas fa-map-pin"></i>
+                <span>Waigani Drive, Port Moresby, NCD</span>
+              </div>
+              <div class="location-detail-item">
+                <i class="fas fa-compass"></i>
+                <span>-9.4431° S, 147.1803° E</span>
+              </div>
+              <div class="location-detail-item">
+                <i class="fas fa-building"></i>
+                <span>5.2 km to CBD (10 min)</span>
+              </div>
+              <div class="location-detail-item">
+                <i class="fas fa-plane"></i>
+                <span>12 km to Airport (20 min)</span>
+              </div>
+            </div>
+
+            <div class="location-actions-compact">
+              <a href="https://maps.google.com/?q=-9.4431,147.1803" target="_blank" class="btn-location-action">
+                <i class="fas fa-directions"></i> <span data-i18n="getDirections">Get Directions</span>
+              </a>
+              <button class="btn-location-action" id="btn-open-external-map">
+                <i class="fas fa-external-link-alt"></i> <span data-i18n="openInMaps">Open in Maps</span>
+              </button>
+              <button class="btn-location-action" id="btn-copy-property-address">
+                <i class="fas fa-copy"></i> <span data-i18n="copyAddress">Copy Address</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact CTA Section (Outside Tabs) -->
+        <div class="property-contact-cta">
+          <div class="contact-cta-content">
+            <div class="contact-cta-icon">
+              <i class="fas fa-headset"></i>
+            </div>
+            <div class="contact-cta-text">
+              <h4 data-i18n="interestedInProperty">Interested in this Property?</h4>
+              <p data-i18n="contactUsToday">Contact us today for more information or to schedule a viewing.</p>
+            </div>
+            <button class="btn-contact-cta" id="btn-contact-cta">
+              <i class="fas fa-paper-plane"></i> <span data-i18n="contactUs">Contact Us</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact Inquiry Modal -->
+    <div class="modal-overlay" id="modal-contact-inquiry">
+      <div class="modal-content modal-contact-inquiry-content">
+        <button class="modal-close" onclick="document.getElementById('modal-contact-inquiry').classList.remove('active')"><i class="fas fa-times"></i></button>
+        <h2 class="modal-title"><i class="fas fa-envelope"></i> <span data-i18n="contactInquiries">Contact & Inquiries</span></h2>
+        <p class="contact-intro" data-i18n="contactIntro">
+              Interested in this property? Get in touch with our sales team for more information,
+              pricing, or to schedule a personal viewing.
+            </p>
+
+            <div class="contact-cards-grid">
+              <div class="contact-card">
+                <i class="fas fa-phone-alt"></i>
+                <div>
+                  <strong data-i18n="phone">Phone</strong>
+                  <p>+675 1234 5678</p>
+                </div>
+                <a href="tel:+67512345678" class="contact-action-link">
+                  <i class="fas fa-phone"></i> <span data-i18n="call">Call</span>
+                </a>
+              </div>
+              <div class="contact-card">
+                <i class="fas fa-envelope"></i>
+                <div>
+                  <strong data-i18n="email">Email</strong>
+                  <p>info@haipng.com</p>
+                </div>
+                <a href="mailto:info@haipng.com" class="contact-action-link">
+                  <i class="fas fa-paper-plane"></i> <span data-i18n="email">Email</span>
+                </a>
+              </div>
+              <div class="contact-card">
+                <i class="fas fa-clock"></i>
+                <div>
+                  <strong data-i18n="officeHours">Office Hours</strong>
+                  <p>Mon-Fri: 8AM-5PM</p>
+                </div>
+              </div>
+              <div class="contact-card">
+                <i class="fas fa-globe"></i>
+                <div>
+                  <strong data-i18n="website">Website</strong>
+                  <p>www.haipng.com</p>
+                </div>
+                <a href="https://www.haipng.com" target="_blank" class="contact-action-link">
+                  <i class="fas fa-external-link-alt"></i> <span data-i18n="visit">Visit</span>
+                </a>
+              </div>
+            </div>
+
+            <div class="contact-form-wrapper">
+              <h4 data-i18n="sendInquiry">Send an Inquiry</h4>
+              <form id="property-contact-form" class="property-contact-form">
+                <div class="form-row">
+                  <input type="text" data-i18n-placeholder="yourName" placeholder="Your Name" required />
+                  <input type="email" data-i18n-placeholder="yourEmail" placeholder="Your Email" required />
+                </div>
+                <div class="form-row">
+                  <input type="tel" data-i18n-placeholder="yourPhone" placeholder="Your Phone" />
+                  <select>
+                    <option value="" data-i18n="interestedIn">Interested in...</option>
+                    <option value="buying" data-i18n="buying">Buying</option>
+                    <option value="renting" data-i18n="renting">Renting</option>
+                    <option value="viewing" data-i18n="viewing">Scheduling a Viewing</option>
+                    <option value="info" data-i18n="info">More Information</option>
+                  </select>
+                </div>
+                <textarea data-i18n-placeholder="yourMessage" placeholder="Your Message" rows="4" required></textarea>
+                <button type="submit" class="btn-submit-inquiry">
+                  <i class="fas fa-paper-plane"></i> <span data-i18n="sendInquiryButton">Send Inquiry</span>
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Share Modal -->
+    <div class="modal-overlay" id="modal-share">
+      <div class="modal-content modal-share-content">
+        <button class="modal-close" onclick="document.getElementById('modal-share').classList.remove('active')"><i class="fas fa-times"></i></button>
+        <h2 class="modal-title"><i class="fas fa-share-alt"></i> <span data-i18n="shareThisTour">Share This Tour</span></h2>
+        <p class="modal-text" data-i18n="shareWithFriends">Share this virtual tour with your friends and colleagues.</p>
+
+        <div class="share-content-wrapper">
+          <div class="share-qr-section">
+            <div class="qr-code-container" id="qr-code-container">
+              <canvas id="qr-code-canvas"></canvas>
+            </div>
+            <p class="qr-label" data-i18n="scanToView">Scan to open on mobile</p>
+          </div>
+
+          <div class="share-options-section">
+            <div class="share-options">
+              <button class="share-option" data-share="facebook">
+                <i class="fab fa-facebook-f"></i>
+                <span data-i18n="facebook">Facebook</span>
+              </button>
+              <button class="share-option" data-share="whatsapp">
+                <i class="fab fa-whatsapp"></i>
+                <span data-i18n="whatsapp">WhatsApp</span>
+              </button>
+              <button class="share-option" data-share="copy">
+                <i class="fas fa-link"></i>
+                <span data-i18n="copyLink">Copy Link</span>
+              </button>
+            </div>
+
+            <div class="share-link-section">
+              <label data-i18n="directLink">Direct Link:</label>
+              <div class="share-link-input">
+                <input type="text" id="share-link" readonly value="https://haipng.com/virtual-tour" />
+                <button class="btn-copy-link" id="btn-copy-link" title="Copy" data-i18n-title="copy">
+                  <i class="fas fa-copy"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Location Modal -->
+    <div class="modal-overlay" id="modal-location">
+      <div class="modal-content modal-location-content">
+        <button class="modal-close" onclick="document.getElementById('modal-location').classList.remove('active')"><i class="fas fa-times"></i></button>
+        <h2 class="modal-title"><i class="fas fa-map-marker-alt"></i> <span data-i18n="location">Location</span></h2>
+        <p class="modal-text" data-i18n="findUs">Find us at this prime location in Port Moresby, Papua New Guinea.</p>
+
+        <div class="location-map-container">
+          <div id="location-map" style="width:100%;height:350px;background:var(--bg-glass);border-radius:var(--radius-md);"></div>
+        </div>
+
+        <div class="location-details">
+          <h3>HAI PNG Property</h3>
+          <p><i class="fas fa-map-pin"></i> <span id="location-address">123 Virtual Street, Digital City, DC 12345</span></p>
+          <p><i class="fas fa-phone"></i> +675 1234 5678</p>
+          <p><i class="fas fa-envelope"></i> info@haipng.com</p>
+
+          <div class="location-actions">
+            <a href="https://maps.google.com" target="_blank" class="btn-primary">
+              <i class="fas fa-directions"></i> <span data-i18n="getDirections">Get Directions</span>
+            </a>
+            <button class="btn-secondary" id="btn-copy-address">
+              <i class="fas fa-copy"></i> <span data-i18n="copyAddress">Copy Address</span>
+            </button>
+            <button class="btn-secondary" id="btn-open-external-map">
+              <i class="fas fa-external-link-alt"></i> <span data-i18n="openInMaps">Open in Maps</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Guided Tour Modal -->
+    <div class="modal-overlay" id="modal-guided-tour">
+      <div class="modal-content modal-guided-tour-content">
+        <button class="modal-close" onclick="document.getElementById('modal-guided-tour').classList.remove('active')"><i class="fas fa-times"></i></button>
+        <h2 class="modal-title"><i class="fas fa-play-circle"></i> Guided Tour</h2>
+        <p class="modal-text">Experience an automated tour with text narration.</p>
+
+        <div class="guided-tour-steps" id="guided-tour-steps">
+          <!-- Steps will be populated dynamically -->
+        </div>
+
+        <div class="guided-tour-controls">
+          <button class="btn-tour-control" id="btn-tour-play">
+            <i class="fas fa-play"></i> Start Tour
+          </button>
+          <button class="btn-tour-control" id="btn-tour-pause" disabled>
+            <i class="fas fa-pause"></i> Pause
+          </button>
+          <button class="btn-tour-control" id="btn-tour-stop" disabled>
+            <i class="fas fa-stop"></i> Stop
+          </button>
+        </div>
+
+        <div class="tour-progress">
+          <div class="progress-bar">
+            <div class="progress-fill" id="tour-progress-fill"></div>
+          </div>
+          <span id="tour-progress-text">0 / 0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="modal-settings">
+      <div class="modal-content">
+        <button class="modal-close" onclick="document.getElementById('modal-settings').classList.remove('active')"><i class="fas fa-times"></i></button>
+        <h2 class="modal-title" data-i18n="settings"><i class="fas fa-cog"></i> Settings</h2>
+
+        <div class="settings-section">
+          <h4 style="font-size:14px;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+            <i class="fas fa-eye" style="color:var(--primary-light);"></i> View Settings
+          </h4>
+
+          <div class="setting-row">
+            <span class="setting-label" data-i18n="autoRotate">Auto-Rotate</span>
+            <div class="toggle" id="toggle-autorotate" onclick="window.tourPlayer.ui.toggleSetting('autorotate')">
+              <div class="toggle-knob"></div>
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <span class="setting-label">Zoom Level (FOV)</span>
+            <div style="display:flex;align-items:center;gap:8px;flex:1;">
+              <i class="fas fa-search-minus" style="color:var(--text-muted);font-size:12px;"></i>
+              <input type="range" id="settings-zoom" min="30" max="100" value="60"
+                style="flex:1;accent-color:var(--primary);" />
+              <i class="fas fa-search-plus" style="color:var(--text-muted);font-size:12px;"></i>
+              <span id="settings-zoom-value" style="min-width:50px;text-align:right;font-size:12px;color:var(--text);">60°</span>
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <span class="setting-label">Quality</span>
+            <select id="settings-quality" style="background:var(--bg-glass);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 12px;color:var(--text);font-size:13px;">
+              <option value="high">High</option>
+              <option value="medium" selected>Medium</option>
+              <option value="low">Low</option>
+            </select>
+          </div>
+
+          <div class="setting-row">
+            <span class="setting-label">VR Mode</span>
+            <div class="toggle" id="toggle-vr-mode">
+              <div class="toggle-knob"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Guided Tour Settings -->
+        <div class="settings-section" style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border);">
+          <h4 style="font-size:14px;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+            <i class="fas fa-play-circle" style="color:var(--primary);"></i> Guided Tour
+          </h4>
+
+          <div class="setting-row">
+            <span class="setting-label" data-i18n="tourType">Tour Type</span>
+            <select id="guided-tour-type" style="background:var(--bg-glass);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 12px;color:var(--text);font-size:13px;">
+              <option value="text" selected data-i18n="textHighlights">Text Highlights</option>
+              <option value="audio" data-i18n="audioNarration">Audio Narration</option>
+              <option value="both" data-i18n="audioAndText">Audio + Text</option>
+            </select>
+          </div>
+
+          <div class="setting-row">
+            <span class="setting-label" data-i18n="autoRotate">Auto-Rotate During Tour</span>
+            <div class="toggle active" id="toggle-guided-autorotate" onclick="window.tourPlayer.ui.toggleSetting('guided-autorotate')">
+              <div class="toggle-knob"></div>
+            </div>
+          </div>
+
+          <div class="setting-row" style="justify-content: flex-end; gap: 10px; margin-top: 12px;">
+            <button class="setting-btn" id="btn-guided-tour-settings" style="width: auto; padding: 10px 20px; font-size: 13px; gap: 8px; background: var(--primary); color: white;">
+              <i class="fas fa-play"></i> <span data-i18n="startTour">Start Tour</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="settings-section" style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border);">
+          <h4 style="font-size:14px;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+            <i class="fas fa-sliders-h" style="color:var(--accent);"></i> Controls
+          </h4>
+
+          <div class="setting-row">
+            <span class="setting-label">Motion Sensitivity</span>
+            <input type="range" id="settings-sensitivity" min="1" max="10" value="5"
+              style="flex:1;accent-color:var(--primary);" />
+          </div>
+        </div>
+
+        <div class="settings-section" style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border);">
+          <h4 style="font-size:14px;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+            <i class="fas fa-volume-up" style="color:var(--primary);"></i> Audio
+          </h4>
+
+          <div class="setting-row">
+            <span class="setting-label">Volume</span>
+            <div style="display:flex;align-items:center;gap:8px;flex:1;">
+              <i class="fas fa-volume-down" style="color:var(--text-muted);font-size:12px;"></i>
+              <input type="range" id="settings-volume" min="0" max="1" step="0.1" value="0.5"
+                style="flex:1;accent-color:var(--primary);" />
+              <i class="fas fa-volume-up" style="color:var(--text-muted);font-size:12px;"></i>
+              <span id="settings-volume-value" style="min-width:40px;text-align:right;font-size:12px;color:var(--text);">50%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section" style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border);">
+          <h4 style="font-size:14px;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+            <i class="fas fa-camera" style="color:var(--accent);"></i> Capture View
+          </h4>
+
+          <div class="setting-row">
+            <span class="setting-label">Image Quality</span>
+            <select id="capture-quality" style="background:var(--bg-glass);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 12px;color:var(--text);font-size:13px;">
+              <option value="0.7">Standard (70%)</option>
+              <option value="0.85" selected>High (85%)</option>
+              <option value="0.95">Maximum (95%)</option>
+            </select>
+          </div>
+
+          <div class="setting-row">
+            <span class="setting-label">Watermark</span>
+            <div class="toggle active" id="toggle-watermark">
+              <div class="toggle-knob"></div>
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <span class="setting-label">Capture Current View</span>
+            <button class="setting-btn" id="btn-capture-view" style="width:auto;padding:8px 16px;font-size:12px;gap:6px;">
+              <i class="fas fa-camera"></i> Capture
+            </button>
+          </div>
+
+          <p style="font-size:11px;color:var(--text-muted);margin-top:8px;line-height:1.6;">
+            <i class="fas fa-info-circle"></i> Hotspots and overlays are automatically excluded from captures
+          </p>
+        </div>
+
+        <div class="settings-section" style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border);">
+          <h4 style="font-size:14px;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+            <i class="fas fa-info-circle" style="color:var(--primary);"></i> About
+          </h4>
+          <div style="font-size:12px;color:var(--text-muted);line-height:1.8;">
+            <p><strong>HAI PNG Virtual Tour</strong></p>
+            <p>Version 1.0.0</p>
+            <p>Built with Three.js</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tour Info Modal -->
+    <div class="modal-overlay" id="modal-info">
+      <div class="modal-content modal-tour-info-content">
+        <button class="modal-close" onclick="document.getElementById('modal-info').classList.remove('active')"><i class="fas fa-times"></i></button>
+        <h2 class="modal-title" id="tour-info-title">HAI PNG Virtual Tour</h2>
+
+        <!-- Property Image -->
+        <div class="property-hero-image" style="width:100%;height:200px;background:linear-gradient(135deg, var(--primary), var(--secondary));border-radius:var(--radius-md);margin:20px 0;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+          <img id="property-hero-img" src="" alt="Property" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none';this.parentElement.innerHTML='<i class=\'fas fa-building\' style=\'font-size:64px;opacity:0.3;\'></i>'" />
+        </div>
+
+        <!-- Property Details -->
+        <div class="property-details" id="property-details">
+          <h3 style="font-size:18px;color:var(--text);margin-bottom:12px;">Property Information</h3>
+
+          <div class="property-features" style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:20px;">
+            <div class="feature-item" style="display:flex;align-items:center;gap:10px;">
+              <i class="fas fa-bed" style="color:var(--primary-light);font-size:20px;"></i>
+              <div>
+                <div style="font-size:18px;font-weight:700;color:var(--text);" id="stat-bedrooms">4</div>
+                <div style="font-size:11px;color:var(--text-muted);">Bedrooms</div>
+              </div>
+            </div>
+            <div class="feature-item" style="display:flex;align-items:center;gap:10px;">
+              <i class="fas fa-bath" style="color:var(--accent);font-size:20px;"></i>
+              <div>
+                <div style="font-size:18px;font-weight:700;color:var(--text);" id="stat-bathrooms">3</div>
+                <div style="font-size:11px;color:var(--text-muted);">Bathrooms</div>
+              </div>
+            </div>
+            <div class="feature-item" style="display:flex;align-items:center;gap:10px;">
+              <i class="fas fa-ruler-combined" style="color:var(--secondary);font-size:20px;"></i>
+              <div>
+                <div style="font-size:18px;font-weight:700;color:var(--text);" id="stat-area">2,500</div>
+                <div style="font-size:11px;color:var(--text-muted);">Sq. Ft.</div>
+              </div>
+            </div>
+            <div class="feature-item" style="display:flex;align-items:center;gap:10px;">
+              <i class="fas fa-layer-group" style="color:var(--primary-light);font-size:20px;"></i>
+              <div>
+                <div style="font-size:18px;font-weight:700;color:var(--text);" id="stat-floors">2</div>
+                <div style="font-size:11px;color:var(--text-muted);">Floors</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="property-description" style="margin-bottom:20px;">
+            <h4 style="font-size:14px;color:var(--text);margin-bottom:8px;">Description</h4>
+            <p id="property-description-text" style="font-size:13px;line-height:1.7;color:var(--text-muted);">
+              This stunning multi-level property features modern architecture with spacious living areas,
+              floor-to-ceiling windows, and premium finishes throughout. The open-concept design seamlessly
+              connects indoor and outdoor living spaces, perfect for entertaining.
+            </p>
+          </div>
+
+          <div class="property-amenities">
+            <h4 style="font-size:14px;color:var(--text);margin-bottom:12px;">Amenities</h4>
+            <div class="amenities-grid" style="display:flex;flex-wrap:wrap;gap:8px;">
+              <span class="amenity-tag" style="background:rgba(99,102,241,0.15);color:var(--primary-light);padding:6px 12px;border-radius:20px;font-size:12px;">🏊 Pool</span>
+              <span class="amenity-tag" style="background:rgba(99,102,241,0.15);color:var(--primary-light);padding:6px 12px;border-radius:20px;font-size:12px;">🏋️ Gym</span>
+              <span class="amenity-tag" style="background:rgba(99,102,241,0.15);color:var(--primary-light);padding:6px 12px;border-radius:20px;font-size:12px;">🚗 Parking</span>
+              <span class="amenity-tag" style="background:rgba(99,102,241,0.15);color:var(--primary-light);padding:6px 12px;border-radius:20px;font-size:12px;">🌿 Garden</span>
+              <span class="amenity-tag" style="background:rgba(99,102,241,0.15);color:var(--primary-light);padding:6px 12px;border-radius:20px;font-size:12px;">🔒 Security</span>
+              <span class="amenity-tag" style="background:rgba(99,102,241,0.15);color:var(--primary-light);padding:6px 12px;border-radius:20px;font-size:12px;">📶 WiFi</span>
+              <span class="amenity-tag" style="background:rgba(99,102,241,0.15);color:var(--primary-light);padding:6px 12px;border-radius:20px;font-size:12px;">❄️ AC</span>
+              <span class="amenity-tag" style="background:rgba(99,102,241,0.15);color:var(--primary-light);padding:6px 12px;border-radius:20px;font-size:12px;">🔥 Heating</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tour Stats -->
+        <div class="tour-info-stats" id="tour-info-stats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:20px 0;padding-top:20px;border-top:1px solid var(--border);">
+          <div class="stat-card" style="background:var(--bg-glass);padding:16px;border-radius:var(--radius-md);text-align:center;">
+            <div style="font-size:24px;font-weight:700;color:var(--primary-light);" id="stat-scenes">0</div>
+            <div style="font-size:11px;color:var(--text-muted);">Rooms</div>
+          </div>
+          <div class="stat-card" style="background:var(--bg-glass);padding:16px;border-radius:var(--radius-md);text-align:center;">
+            <div style="font-size:24px;font-weight:700;color:var(--accent);" id="stat-hotspots">0</div>
+            <div style="font-size:11px;color:var(--text-muted);">Hotspots</div>
+          </div>
+          <div class="stat-card" style="background:var(--bg-glass);padding:16px;border-radius:var(--radius-md);text-align:center;">
+            <div style="font-size:24px;font-weight:700;color:var(--secondary);" id="stat-floors-tour">0</div>
+            <div style="font-size:11px;color:var(--text-muted);">Floors</div>
+          </div>
+          <div class="stat-card" style="background:var(--bg-glass);padding:16px;border-radius:var(--radius-md);text-align:center;">
+            <div style="font-size:24px;font-weight:700;color:var(--text);" id="stat-tours">1</div>
+            <div style="font-size:11px;color:var(--text-muted);">Guided Tour</div>
+          </div>
+        </div>
+
+        <div class="tour-controls-info" style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border);">
+          <p class="modal-text"><strong>Navigation Controls:</strong></p>
+          <ul style="margin-left:20px;font-size:13px;line-height:2;color:var(--text-muted);">
+            <li>Drag to look around</li>
+            <li>Scroll to zoom in/out</li>
+            <li>Click arrows to navigate rooms</li>
+            <li>Click hotspots to explore</li>
+            <li>Click floor plan markers for quick navigation</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-gallery">
+      <div class="modal-content modal-gallery-content">
+        <button class="modal-close" onclick="document.getElementById('modal-gallery').classList.remove('active')"><i class="fas fa-times"></i></button>
+        <h2 class="modal-title" data-i18n="photoGallery"><i class="fas fa-images"></i> Photo Gallery</h2>
+        <p class="modal-text" data-i18n="browsePhotos">Browse through our collection of professional photos.</p>
+        
+        <div class="gallery-filter" style="display:flex;gap:8px;margin:16px 0;flex-wrap:wrap;">
+          <button class="gallery-filter-btn active" data-filter="all">All</button>
+          <button class="gallery-filter-btn" data-filter="exterior">Exterior</button>
+          <button class="gallery-filter-btn" data-filter="interior">Interior</button>
+          <button class="gallery-filter-btn" data-filter="amenities">Amenities</button>
+        </div>
+        
+        <div class="gallery-grid" id="gallery-grid">
+          <!-- Gallery items will be populated dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Lightbox Modal -->
+    <div class="modal-overlay" id="modal-lightbox">
+      <div class="lightbox-container">
+        <button class="lightbox-close" onclick="document.getElementById('modal-lightbox').classList.remove('active')"><i class="fas fa-times"></i></button>
+        <button class="lightbox-nav lightbox-prev" id="lightbox-prev"><i class="fas fa-chevron-left"></i></button>
+        <button class="lightbox-nav lightbox-next" id="lightbox-next"><i class="fas fa-chevron-right"></i></button>
+
+        <div class="lightbox-content">
+          <div class="lightbox-image-wrapper">
+            <img id="lightbox-image" src="" alt="Gallery Image" />
+          </div>
+        </div>
+
+        <div class="lightbox-caption" id="lightbox-caption">
+          <h4 id="lightbox-title"></h4>
+          <p id="lightbox-description"></p>
+        </div>
+
+        <div class="lightbox-controls">
+          <button class="lightbox-control-btn" id="lightbox-zoom-in" title="Zoom In"><i class="fas fa-search-plus"></i></button>
+          <button class="lightbox-control-btn" id="lightbox-zoom-out" title="Zoom Out"><i class="fas fa-search-minus"></i></button>
+          <button class="lightbox-control-btn" id="lightbox-reset" title="Reset Zoom"><i class="fas fa-compress-arrows-alt"></i></button>
+          <button class="lightbox-control-btn" id="lightbox-autoplay" title="Autoplay"><i class="fas fa-play"></i></button>
+        </div>
+
+        <div class="lightbox-thumbnails" id="lightbox-thumbnails">
+          <!-- Thumbnails will be populated dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-contact">
+      <div class="modal-content">
+        <button class="modal-close" onclick="document.getElementById('modal-contact').classList.remove('active')"><i class="fas fa-times"></i></button>
+        <h2 class="modal-title">Contact Us</h2>
+        <p class="modal-text">Get in touch for more information about this property.</p>
+        <div class="contact-info">
+          <div class="contact-item"><i class="fas fa-envelope"></i><span>info@haipng.com</span></div>
+          <div class="contact-item"><i class="fas fa-phone"></i><span>+1 (555) 123-4567</span></div>
+          <div class="contact-item"><i class="fas fa-map-marker-alt"></i><span>123 Virtual Street</span></div>
+        </div>
+        <form class="contact-form" onsubmit="event.preventDefault();alert('Message sent!');document.getElementById('modal-contact').classList.remove('active');">
+          <input type="text" placeholder="Your Name" required />
+          <input type="email" placeholder="Your Email" required />
+          <textarea placeholder="Your Message" required></textarea>
+          <button type="submit">Send Message</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Application -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
