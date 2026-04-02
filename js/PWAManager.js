@@ -1287,7 +1287,7 @@ export class PWAManager {
       // Fallback: return empty array, files will be cached on-demand
       return [];
     } catch (error) {
-      console.warn(`[PWA] Failed to scan directory ${path}:`, error);
+      // Silently fail - directories often don't have listing enabled
       return [];
     }
   }
