@@ -158,93 +158,6 @@ export class PWAManager {
   }
 
   /**
-   * Setup top bar install button
-   */
-  setupTopBarInstallButton() {
-    const installBtn = document.getElementById('btn-install-pwa');
-    if (!installBtn) return;
-
-    // Show button and popup automatically after 3 seconds
-    setTimeout(() => {
-      // Check if already installed
-      if (window.matchMedia('(display-mode: standalone)').matches ||
-          window.navigator.standalone === true) {
-        console.log('[PWA] Already installed');
-        return;
-      }
-      
-      // Show install button
-      installBtn.style.display = 'flex';
-      installBtn.style.alignItems = 'center';
-      installBtn.style.gap = '8px';
-      console.log('[PWA] Install button shown');
-      
-      // Auto-show install popup after 1 more second
-      setTimeout(() => {
-        this.showInstallPopup();
-      }, 1000);
-    }, 3000);
-
-    installBtn.addEventListener('click', () => {
-      console.log('[PWA] Install button clicked');
-      this.showInstallPopup();
-    });
-  }
-
-  /**
-   * Show install popup
-   */
-  showInstallPopup() {
-    const popup = document.getElementById('pwa-install-popup');
-    const installBtn = document.getElementById('btn-do-install');
-    const manualSteps = document.getElementById('pwa-manual-steps');
-    
-    if (!popup) return;
-    
-    // Show popup
-    popup.style.display = 'block';
-    console.log('[PWA] Popup shown, promptEvent available:', !!this.promptEvent);
-    
-    // Check if native install available
-    if (this.promptEvent) {
-      // Native install available
-      console.log('[PWA] Native install available, showing Install button');
-      if (installBtn) {
-        installBtn.style.display = 'block';
-        installBtn.onclick = () => this.promptInstall();
-      }
-      if (manualSteps) manualSteps.style.display = 'none';
-    } else {
-      // Show manual steps
-      console.log('[PWA] Native install NOT available, showing manual steps');
-      if (installBtn) {
-        installBtn.style.display = 'none';
-      }
-      if (manualSteps) {
-        manualSteps.style.display = 'block';
-      }
-    }
-    
-    // Auto-hide after 15 seconds
-    setTimeout(() => {
-      popup.style.display = 'none';
-    }, 15000);
-  }
-
-  /**
-   * Show install button in top bar
-   */
-  showInstallButtonInTopBar() {
-    const installBtn = document.getElementById('btn-install-pwa');
-    if (installBtn) {
-      installBtn.style.display = 'flex';
-      installBtn.style.alignItems = 'center';
-      installBtn.style.gap = '8px';
-      console.log('[PWA] Install button shown in top bar');
-    }
-  }
-
-  /**
    * Register service worker
    */
   async registerServiceWorker() {
@@ -369,9 +282,13 @@ export class PWAManager {
       this.isInstalled = false;
       console.log('[PWA] ✅ beforeinstallprompt event fired!');
       console.log('[PWA] promptEvent stored, native install available');
-      
-      // Show install button in top bar immediately
-      this.showInstallButtonInTopBar();
+
+      // Show install button in settings
+      const installBtn = document.getElementById('btn-install-app');
+      if (installBtn) {
+        installBtn.style.display = 'flex';
+        console.log('[PWA] Install button shown in settings');
+      }
     });
 
     // Listen for when prompt doesn't fire (debugging)
@@ -380,7 +297,6 @@ export class PWAManager {
         if (!this.promptEvent) {
           console.log('[PWA] ⚠️ No prompt event after 5 seconds');
           console.log('[PWA] This means: Use browser menu to install manually');
-          console.log('[PWA] Steps: Click ⋮ → Install or Create shortcut');
         } else {
           console.log('[PWA] ✅ Native install prompt available');
         }
@@ -392,8 +308,12 @@ export class PWAManager {
       console.log('[PWA] App installed successfully');
       this.isInstalled = true;
       this.promptEvent = null;
-      this.hideInstallButtonInTopBar();
-      this.updateInstallButtonState();
+      
+      // Hide install button
+      const installBtn = document.getElementById('btn-install-app');
+      if (installBtn) {
+        installBtn.style.display = 'none';
+      }
     });
 
     // Online/Offline detection
@@ -402,7 +322,6 @@ export class PWAManager {
 
     // Setup buttons
     setTimeout(() => this.setupOfflineDownloadButtons(), 1000);
-    setTimeout(() => this.setupTopBarInstallButton(), 3000);
 
     // Track user interaction
     this.trackUserInteraction();
@@ -412,49 +331,25 @@ export class PWAManager {
    * Setup offline download buttons
    */
   setupOfflineDownloadButtons() {
-    const downloadBtn = document.getElementById('btn-download-offline');
+    const installBtn = document.getElementById('btn-install-app');
     const checkStatusBtn = document.getElementById('btn-check-offline-status');
     const statusDisplay = document.getElementById('offline-status-display');
 
-    if (!downloadBtn || !checkStatusBtn) return;
-
-    // Download all content
-    downloadBtn.addEventListener('click', async () => {
-      console.log('[PWA] Download offline button clicked');
-
-      const modal = document.getElementById('modal-offline-download');
-      if (modal) {
-        modal.classList.add('active');
-        document.getElementById('offline-success-message').style.display = 'none';
-        document.getElementById('btn-cancel-offline-download').style.display = 'inline-block';
-      }
-
-      try {
-        const totalItems = await this.downloadForOffline(
-          (progress) => this.updateOfflineProgressUI(progress),
-          (result) => {
-            this.updateOfflineProgressUI(result);
-            setTimeout(() => {
-              document.getElementById('offline-success-message').style.display = 'block';
-              document.getElementById('btn-cancel-offline-download').innerHTML = '<i class="fas fa-check"></i> Done';
-            }, 500);
-          }
-        );
-
-        console.log(`[PWA] Started downloading ${totalItems} items`);
-      } catch (error) {
-        console.error('[PWA] Download failed:', error);
-        alert('Download failed: ' + error.message);
-      }
-    });
+    // Setup native install button
+    if (installBtn) {
+      installBtn.addEventListener('click', async () => {
+        console.log('[PWA] Install app button clicked');
+        await this.triggerNativeInstall();
+      });
+    }
 
     // Check offline status
-    checkStatusBtn.addEventListener('click', async () => {
-      console.log('[PWA] Check offline status clicked');
+    if (checkStatusBtn && statusDisplay) {
+      checkStatusBtn.addEventListener('click', async () => {
+        console.log('[PWA] Check offline status clicked');
 
-      const status = await this.getOfflineStatus();
+        const status = await this.getOfflineStatus();
 
-      if (statusDisplay) {
         statusDisplay.style.display = 'block';
         document.getElementById('offline-cached-count').textContent = status.mediaCount || 0;
         document.getElementById('offline-size').textContent = this.formatBytes(status.estimatedSize || 0);
@@ -467,7 +362,92 @@ export class PWAManager {
           readyEl.textContent = 'Not Ready';
           readyEl.style.color = '#ef4444';
         }
+      });
+    }
+  }
+
+  /**
+   * Trigger native install prompt
+   */
+  async triggerNativeInstall() {
+    console.log('[PWA] Triggering native install...');
+
+    if (this.promptEvent) {
+      try {
+        // Show the native install prompt
+        this.promptEvent.prompt();
+        
+        // Wait for user choice
+        const { outcome } = await this.promptEvent.userChoice;
+        console.log('[PWA] User choice:', outcome);
+        
+        if (outcome === 'accepted') {
+          this.showNotification({
+            type: 'success',
+            title: 'Installing...',
+            message: 'The app is being installed on your device',
+            icon: 'fa-download',
+            duration: 3000
+          });
+        }
+        
+        // Clear the prompt - can only be used once
+        this.promptEvent = null;
+        
+        // Hide install button
+        const installBtn = document.getElementById('btn-install-app');
+        if (installBtn) {
+          installBtn.style.display = 'none';
+        }
+        
+      } catch (error) {
+        console.error('[PWA] Install prompt error:', error);
+        this.showManualInstallInstructions();
       }
+    } else {
+      // No native prompt available - show manual instructions
+      this.showManualInstallInstructions();
+    }
+  }
+
+  /**
+   * Show manual install instructions
+   */
+  showManualInstallInstructions() {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    
+    let title, icon, steps;
+    
+    if (isIOS) {
+      title = 'Install on iOS';
+      icon = 'fa-apple';
+      steps = `
+        <ol style="text-align:left;margin:12px 0;padding-left:20px;font-size:13px;line-height:1.8;">
+          <li>Tap the <strong>Share</strong> button in Safari</li>
+          <li>Scroll and tap <strong>"Add to Home Screen"</strong></li>
+          <li>Tap <strong>Add</strong> in the corner</li>
+        </ol>
+      `;
+    } else {
+      title = 'Install This App';
+      icon = 'fa-desktop';
+      steps = `
+        <ol style="text-align:left;margin:12px 0;padding-left:20px;font-size:13px;line-height:1.8;">
+          <li>Click the <strong>menu</strong> (⋮ or ≡) in your browser</li>
+          <li>Select <strong>"Install"</strong> or <strong>"Create shortcut"</strong></li>
+          <li>Confirm the installation</li>
+        </ol>
+      `;
+    }
+
+    this.showNotification({
+      type: 'info',
+      title: title,
+      message: 'Follow these steps:',
+      icon: icon,
+      duration: 0,
+      dismissible: true,
+      customHtml: steps
     });
   }
 
@@ -531,60 +511,11 @@ export class PWAManager {
    * Show install button
    */
   showInstallButton() {
-    if (this.installPromptShown) return;
-    this.installPromptShown = true;
-
-    let installBtn = document.getElementById('pwa-install-btn');
-    if (!installBtn) {
-      installBtn = document.createElement('button');
-      installBtn.id = 'pwa-install-btn';
-      installBtn.innerHTML = '<i class="fas fa-download"></i> <span>Install App</span>';
-      installBtn.style.cssText = `
-        position: fixed;
-        bottom: 100px;
-        right: 20px;
-        padding: 14px 24px;
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-        color: white;
-        border: none;
-        border-radius: var(--radius-md);
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        z-index: 99999;
-        box-shadow: var(--shadow-lg);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        animation: fadeInUp 0.3s ease;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-        max-width: calc(100% - 40px);
-      `;
-
-      installBtn.addEventListener('mouseenter', () => {
-        installBtn.style.transform = 'translateY(-2px)';
-        installBtn.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.4)';
-      });
-
-      installBtn.addEventListener('mouseleave', () => {
-        installBtn.style.transform = 'translateY(0)';
-        installBtn.style.boxShadow = 'var(--shadow-lg)';
-      });
-
-      installBtn.addEventListener('click', () => this.promptInstall());
-      document.body.appendChild(installBtn);
-
-      // Auto-hide after 20 seconds
-      setTimeout(() => {
-        if (installBtn && installBtn.parentNode) {
-          installBtn.style.animation = 'fadeOutDown 0.3s ease';
-          setTimeout(() => installBtn.remove(), 300);
-          this.installPromptShown = false;
-        }
-      }, 20000);
-
-      // Pulse animation
-      installBtn.style.animation = 'fadeInUp 0.3s ease, pulse 2s ease-in-out 1s infinite';
+    // Show install button in settings (already exists in HTML)
+    const installBtn = document.getElementById('btn-install-app');
+    if (installBtn) {
+      installBtn.style.display = 'flex';
+      console.log('[PWA] Install button shown in settings');
     }
   }
 
@@ -592,69 +523,11 @@ export class PWAManager {
    * Hide install button
    */
   hideInstallButton() {
-    const installBtn = document.getElementById('pwa-install-btn');
+    const installBtn = document.getElementById('btn-install-app');
     if (installBtn) {
-      installBtn.remove();
+      installBtn.style.display = 'none';
     }
     this.installPromptShown = false;
-  }
-
-  /**
-   * Prompt user to install
-   */
-  async promptInstall() {
-    // Close modal first
-    const modal = document.getElementById('modal-pwa-install');
-    if (modal) {
-      modal.classList.remove('active');
-    }
-
-    this.updateInstallProgress(10, 'Preparing installation...');
-
-    if (!this.promptEvent) {
-      console.log('[PWA] Install prompt not available');
-
-      if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
-        this.showIOSInstallInstructions();
-      } else {
-        this.showBrowserInstallHint();
-      }
-      return;
-    }
-
-    this.updateInstallProgress(40, 'Launching installer...');
-    this.promptEvent.prompt();
-    const { outcome } = await this.promptEvent.userChoice;
-
-    console.log('[PWA] User response:', outcome);
-    this.promptEvent = null;
-
-    if (outcome === 'accepted') {
-      this.updateInstallProgress(100, 'Installing...');
-      this.hideInstallButtonInTopBar();
-      
-      // Show success notification
-      this.showNotification({
-        type: 'success',
-        title: 'App Installed!',
-        message: 'HAI Tour has been installed successfully',
-        icon: 'fa-check-circle',
-        duration: 5000
-      });
-    }
-  }
-
-  /**
-   * Show browser install hint
-   */
-  showBrowserInstallHint() {
-    this.showNotification({
-      type: 'info',
-      title: 'Install via Browser',
-      message: 'Use your browser\'s menu (⋮) → "Install HAI Tour" or "Create shortcut"',
-      icon: 'fa-info-circle',
-      duration: 10000
-    });
   }
 
   /**
@@ -823,7 +696,7 @@ export class PWAManager {
   /**
    * Show generic notification
    */
-  showNotification({ type = 'info', title, message, icon, duration = 5000, action, dismissible = true }) {
+  showNotification({ type = 'info', title, message, icon, duration = 5000, action, dismissible = true, customHtml = '' }) {
     const notification = document.createElement('div');
     notification.style.cssText = `
       position: fixed;
@@ -840,27 +713,31 @@ export class PWAManager {
       backdrop-filter: blur(10px);
       box-shadow: var(--shadow-lg);
       display: flex;
-      align-items: center;
-      gap: 12px;
+      flex-direction: column;
+      gap: 8px;
       animation: fadeInDown 0.3s ease;
       max-width: calc(100vw - 40px);
+      width: ${customHtml ? 'min(500px, calc(100vw - 40px))' : 'auto'};
     `;
 
     const iconColor = type === 'success' ? '#10b981' : type === 'warning' ? '#f59e0b' : type === 'error' ? '#ef4444' : '#6366f1';
-    
+
     let actionHTML = '';
     if (action) {
       actionHTML = `<button onclick="this.parentElement.remove(); (${action.callback})()" style="background:var(--primary);border:none;color:#fff;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;margin-left:8px;">${action.label}</button>`;
     }
 
     notification.innerHTML = `
-      <i class="fas ${icon}" style="color: ${iconColor};"></i>
-      <div>
-        <strong>${title}</strong>
-        <div style="font-size:13px;opacity:0.8;margin-top:2px;">${message}</div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <i class="fas ${icon}" style="color: ${iconColor};font-size:20px;"></i>
+        <div style="flex:1;">
+          <strong style="font-size:15px;">${title}</strong>
+          ${message ? `<div style="font-size:13px;opacity:0.8;margin-top:2px;">${message}</div>` : ''}
+        </div>
+        ${dismissible ? `<button onclick="this.parentElement.parentElement.remove()" style="background:transparent;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;"><i class="fas fa-times"></i></button>` : ''}
       </div>
       ${actionHTML}
-      ${dismissible ? `<button onclick="this.parentElement.remove()" style="background:transparent;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;margin-left:8px;"><i class="fas fa-times"></i></button>` : ''}
+      ${customHtml ? `<div style="background:rgba(255,255,255,0.05);padding:12px;border-radius:6px;margin-top:8px;">${customHtml}</div>` : ''}
     `;
 
     document.body.appendChild(notification);

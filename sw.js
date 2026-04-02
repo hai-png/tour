@@ -3,12 +3,12 @@
  * ============================================================
  * Modern PWA implementation with intelligent caching, offline support,
  * and background sync capabilities.
- * 
- * Version: 7.0.0 - Complete Revamp
+ *
+ * Version: 10.0.0 - Standard PWA Install
  */
 
 // Cache versioning
-const CACHE_VERSION = 'v7';
+const CACHE_VERSION = 'v10';
 const CACHE_NAMES = {
   static: `hai-tour-static-${CACHE_VERSION}`,
   media: `hai-tour-media-${CACHE_VERSION}`,
@@ -420,11 +420,15 @@ self.addEventListener('message', (event) => {
       break;
       
     case 'PRECACHE_MEDIA':
-      event.waitUntil(precacheMedia(data.urls, data.port));
+      // Port is transferred via event.ports[0]
+      const precachePort = event.ports[0];
+      event.waitUntil(precacheMedia(data.urls, precachePort));
       break;
       
     case 'CACHE_ALL_MEDIA':
-      event.waitUntil(cacheAllMedia(data.urls, data.port));
+      // Port is transferred via event.ports[0]
+      const transferPort = event.ports[0];
+      event.waitUntil(cacheAllMedia(data.urls, transferPort));
       break;
       
     case 'GET_OFFLINE_STATUS':
@@ -573,14 +577,17 @@ async function cacheAllMedia(urls, port) {
   let cached = 0;
   let failed = 0;
   const results = [];
-  
-  console.log(`[SW] Starting full offline cache: ${urls.length} items`);
-  
+
+  console.log(`[SW] Starting full offline cache: ${urls.length} items, port:`, port);
+
   if (port) {
+    console.log('[SW] Sending CACHE_START message');
     port.postMessage({
       type: 'CACHE_START',
       total: urls.length
     });
+  } else {
+    console.warn('[SW] No port provided, progress updates will not be sent');
   }
   
   for (const url of urls) {
@@ -606,7 +613,7 @@ async function cacheAllMedia(urls, port) {
     
     // Report progress
     if (port) {
-      port.postMessage({
+      const progressData = {
         type: 'CACHE_PROGRESS',
         cached: cached,
         failed: failed,
@@ -615,7 +622,9 @@ async function cacheAllMedia(urls, port) {
         percent: Math.round(((cached + failed) / urls.length) * 100),
         current: cached + failed,
         results: results.slice(-1)[0]
-      });
+      };
+      console.log(`[SW] Sending progress: ${cached}/${urls.length}`, progressData);
+      port.postMessage(progressData);
     }
     
     // Small delay to prevent blocking

@@ -24,7 +24,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
   <!-- PWA Icons -->
-  <link rel="manifest" href="manifest.json?v=7" />
+  <link rel="manifest" href="manifest.json?v=10" />
   <link rel="icon" type="image/png" sizes="32x32" href="media/pwa/favicon.ico" />
   <link rel="icon" type="image/png" sizes="16x16" href="media/pwa/favicon.ico" />
   <link rel="shortcut icon" href="media/pwa/favicon.ico" />
@@ -53,11 +53,11 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
   <!-- Styles -->
-  <link rel="stylesheet" href="css/styles.css?v=7" />
-  <link rel="stylesheet" href="css/ui-components.css?v=7" />
-  <link rel="stylesheet" href="css/responsive.css?v=7" />
-  <link rel="stylesheet" href="css/mobile-fixes.css?v=7" />
-  <link rel="stylesheet" href="css/pwa.css?v=7" />
+  <link rel="stylesheet" href="css/styles.css?v=10" />
+  <link rel="stylesheet" href="css/ui-components.css?v=10" />
+  <link rel="stylesheet" href="css/responsive.css?v=10" />
+  <link rel="stylesheet" href="css/mobile-fixes.css?v=10" />
+  <link rel="stylesheet" href="css/pwa.css?v=10" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
@@ -103,18 +103,6 @@
         <div class="loading-spinner">
           <div class="spinner"></div>
           <div class="loading-text" data-i18n="preparingExperience">Preparing your experience...</div>
-        </div>
-
-        <!-- PWA Install Progress -->
-        <div class="pwa-install-progress" id="pwa-install-progress" style="display: none;">
-          <div class="progress-header">
-            <i class="fas fa-download"></i>
-            <span>Installing app...</span>
-          </div>
-          <div class="progress-bar-container">
-            <div class="progress-bar" id="pwa-progress-bar"></div>
-          </div>
-          <div class="progress-status" id="pwa-progress-status">Initializing...</div>
         </div>
 
         <!-- Loading Stats -->
@@ -206,11 +194,6 @@
       <button class="top-bar-btn" id="btn-share" title="Share" data-i18n-title="share">
         <i class="fas fa-share-alt"></i>
         <span data-i18n="share">Share</span>
-      </button>
-      <!-- PWA Install Button -->
-      <button class="top-bar-btn" id="btn-install-pwa" title="Install App" style="display:none;background:linear-gradient(135deg, #10b981, #059669);border:2px solid rgba(255,255,255,0.2);">
-        <i class="fas fa-download"></i>
-        <span>Install</span>
       </button>
       <button class="top-bar-btn" id="btn-settings" title="Settings" data-i18n-title="settings">
         <i class="fas fa-cog"></i>
@@ -902,22 +885,35 @@
           </p>
         </div>
 
-        <!-- Offline Download Section -->
+        <!-- Install App Section -->
         <div class="settings-section" style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border);">
           <h4 style="font-size:14px;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px;">
-            <i class="fas fa-cloud-download-alt" style="color:var(--primary);"></i> Download for Offline
+            <i class="fas fa-download" style="color:var(--primary);"></i> Install App
           </h4>
           <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;line-height:1.6;">
-            Download all tour content for full offline access. This may take several minutes.
+            Install this app on your device for quick access and offline use. All content is automatically cached for offline viewing.
           </p>
-          <div style="display:flex;gap:10px;flex-wrap:wrap;">
-            <button class="setting-btn" id="btn-download-offline" style="flex:1;min-width:140px;padding:12px 20px;font-size:14px;gap:8px;background:linear-gradient(135deg, #10b981, #059669);color:white;">
-              <i class="fas fa-download"></i> <span>Download All</span>
-            </button>
-            <button class="setting-btn" id="btn-check-offline-status" style="flex:1;min-width:140px;padding:12px 20px;font-size:14px;gap:8px;background:rgba(255,255,255,0.1);color:var(--text);border:1px solid var(--border);">
-              <i class="fas fa-info-circle"></i> <span>Check Status</span>
-            </button>
+          
+          <!-- Native Install Button (shown when browser supports it) -->
+          <button class="setting-btn" id="btn-install-app" style="display:none;flex:1;min-width:200px;padding:14px 24px;font-size:15px;gap:10px;background:linear-gradient(135deg, var(--primary), var(--secondary));color:white;box-shadow:0 4px 12px rgba(99, 102, 241, 0.3);">
+            <i class="fas fa-download"></i> <span>Install App</span>
+          </button>
+          
+          <!-- Manual install instructions -->
+          <div id="manual-install-hint" style="display:block;margin-top:12px;padding:14px;background:rgba(99, 102, 241, 0.1);border-radius:8px;border-left:3px solid var(--primary);">
+            <p style="font-size:12px;color:var(--text-muted);line-height:1.8;margin:0;">
+              <i class="fas fa-info-circle" style="color:var(--primary);"></i>
+              <strong>Don't see the button?</strong> Use your browser menu:
+              <br/>• <strong>Chrome/Edge:</strong> Click <strong>⋮</strong> → <strong>Install</strong> or <strong>Create shortcut</strong>
+              <br/>• <strong>Safari iOS:</strong> Tap <strong>Share</strong> → <strong>Add to Home Screen</strong>
+            </p>
           </div>
+          
+          <!-- Check Status -->
+          <button class="setting-btn" id="btn-check-offline-status" style="flex:1;min-width:200px;padding:12px 20px;font-size:14px;gap:8px;background:rgba(255,255,255,0.1);color:var(--text);border:1px solid var(--border);margin-top:16px;">
+            <i class="fas fa-circle-check"></i> <span>Check Offline Status</span>
+          </button>
+          
           <div id="offline-status-display" style="margin-top:12px;padding:12px;background:rgba(255,255,255,0.05);border-radius:8px;display:none;">
             <div style="display:grid;grid-template-columns:repeat(2, 1fr);gap:8px;font-size:12px;">
               <div>
@@ -1120,100 +1116,10 @@
         </form>
       </div>
     </div>
-
-    <!-- PWA Install Inline Popup -->
-    <div id="pwa-install-popup" style="display:none;position:fixed;top:70px;right:20px;z-index:100000;min-width:300px;max-width:400px;background:var(--bg-dark);border:2px solid #10b981;border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,0.5);padding:20px;">
-      <button onclick="document.getElementById('pwa-install-popup').style.display='none'" style="position:absolute;top:8px;right:8px;background:transparent;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;"><i class="fas fa-times"></i></button>
-      
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
-        <div style="width:50px;height:50px;background:linear-gradient(135deg, #10b981, #059669);border-radius:10px;display:flex;align-items:center;justify-content:center;">
-          <i class="fas fa-download" style="font-size:24px;color:white;"></i>
-        </div>
-        <div>
-          <h3 style="margin:0;font-size:18px;color:var(--text);">Install & Use Offline</h3>
-          <p style="margin:0;font-size:13px;color:var(--text-muted);">Download once, use anywhere</p>
-        </div>
-      </div>
-      
-      <!-- Native Install Button -->
-      <button id="btn-do-install" style="width:100%;padding:14px;background:linear-gradient(135deg, #10b981, #059669);color:white;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:12px;">
-        <i class="fas fa-download" style="margin-right:8px;"></i> Install App
-      </button>
-      
-      <!-- Manual Instructions -->
-      <div id="pwa-manual-steps" style="display:none;padding:12px;background:rgba(255,255,255,0.05);border-radius:8px;">
-        <p style="font-size:13px;margin:0 0 8px 0;color:var(--text-muted);"><strong>Install in 2 steps:</strong></p>
-        <ol style="font-size:12px;color:var(--text-muted);padding-left:18px;margin:0;">
-          <li style="margin-bottom:4px;">Click browser menu <strong>⋮</strong></li>
-          <li>Click <strong>"Install"</strong> or <strong>"Create shortcut"</strong></li>
-        </ol>
-        <p style="font-size:11px;color:#10b981;margin-top:8px;"><i class="fas fa-check-circle"></i> Works fully offline after install</p>
-      </div>
-    </div>
-
-    <!-- Offline Download Progress Modal -->
-    <div class="modal-overlay" id="modal-offline-download">
-      <div class="modal-content" style="max-width:600px;">
-        <button class="modal-close" onclick="document.getElementById('modal-offline-download').classList.remove('active')"><i class="fas fa-times"></i></button>
-        <h2 class="modal-title">
-          <i class="fas fa-cloud-download-alt"></i> Downloading for Offline
-        </h2>
-        <p style="color:var(--text-muted);margin-bottom:20px;">
-          Downloading all tour content for offline access. Please keep this tab open.
-        </p>
-
-        <!-- Progress Bar -->
-        <div style="margin:20px 0;">
-          <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:13px;">
-            <span id="offline-progress-text">Starting...</span>
-            <span id="offline-progress-percent">0%</span>
-          </div>
-          <div style="width:100%;height:12px;background:rgba(255,255,255,0.1);border-radius:6px;overflow:hidden;">
-            <div id="offline-progress-bar" style="width:0%;height:100%;background:linear-gradient(90deg, #10b981, #059669);transition:width 0.3s ease;"></div>
-          </div>
-        </div>
-
-        <!-- Stats -->
-        <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:12px;margin:20px 0;">
-          <div style="text-align:center;padding:12px;background:rgba(255,255,255,0.05);border-radius:8px;">
-            <div style="font-size:20px;font-weight:700;color:#10b981;" id="offline-stat-cached">0</div>
-            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;">Cached</div>
-          </div>
-          <div style="text-align:center;padding:12px;background:rgba(255,255,255,0.05);border-radius:8px;">
-            <div style="font-size:20px;font-weight:700;color:#f59e0b;" id="offline-stat-pending">0</div>
-            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;">Pending</div>
-          </div>
-          <div style="text-align:center;padding:12px;background:rgba(255,255,255,0.05);border-radius:8px;">
-            <div style="font-size:20px;font-weight:700;color:#ef4444;" id="offline-stat-failed">0</div>
-            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;">Failed</div>
-          </div>
-        </div>
-
-        <!-- Current File -->
-        <div style="padding:12px;background:rgba(99, 102, 241, 0.1);border-radius:8px;border-left:3px solid var(--primary);">
-          <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">Currently downloading:</div>
-          <div style="font-size:12px;color:var(--text);word-break:break-all;" id="offline-current-file">-</div>
-        </div>
-
-        <!-- Actions -->
-        <div style="margin-top:24px;display:flex;gap:10px;justify-content:center;">
-          <button id="btn-cancel-offline-download" style="padding:10px 24px;background:rgba(239, 68, 68, 0.2);border:1px solid #ef4444;color:#ef4444;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;" onclick="document.getElementById('modal-offline-download').classList.remove('active')">
-            <i class="fas fa-times"></i> Close
-          </button>
-        </div>
-
-        <!-- Success Message (hidden by default) -->
-        <div id="offline-success-message" style="display:none;text-align:center;padding:20px;">
-          <i class="fas fa-check-circle" style="font-size:48px;color:#10b981;margin-bottom:16px;"></i>
-          <h3 style="color:var(--text);margin-bottom:8px;">Download Complete!</h3>
-          <p style="color:var(--text-muted);font-size:13px;">All content is now available offline.</p>
-        </div>
-      </div>
-    </div>
   </div>
 
   <!-- Application -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script type="module" src="js/main.js?v=3"></script>
+  <script type="module" src="js/main.js?v=10"></script>
 </body>
 </html>
