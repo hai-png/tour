@@ -598,15 +598,25 @@
     backdrop-filter: none !important;
     border: none !important;
     box-shadow: none !important;
+    padding: 4px 2px !important;
+    gap: 4px !important;
   }
 
   .quick-tool-btn {
     background: transparent !important;
     border: none !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+    padding: 6px 4px !important;
   }
 
   .quick-tool-btn i {
     color: #ffffff !important;
+    font-size: 14px !important;
+  }
+
+  .quick-tool-btn span {
+    display: none !important;
   }
 
   /* Gallery - same row as room list */
@@ -695,14 +705,14 @@
     right: auto !important;
     top: 50% !important;
     transform: translateY(-50%) !important;
-    padding: 4px 3px !important;
-    gap: 3px !important;
+    padding: 2px 1px !important;
+    gap: 2px !important;
   }
 
   .quick-tool-btn {
-    min-width: 34px !important;
-    min-height: 34px !important;
-    padding: 4px !important;
+    min-width: 30px !important;
+    min-height: 30px !important;
+    padding: 3px !important;
   }
 
   .quick-tool-btn span {
@@ -710,7 +720,7 @@
   }
 
   .quick-tool-btn i {
-    font-size: 13px !important;
+    font-size: 12px !important;
   }
 
   /* Room List + Gallery same row */

@@ -150,20 +150,23 @@ export class PWAManager {
       console.log('[PWA] promptEvent set:', !!this.promptEvent);
       console.log('[PWA] userInteracted:', this.userInteracted);
 
+      // Update install button state
+      this.updateInstallButtonState();
+
       // Show install button after a short delay and user interaction
       setTimeout(() => {
         console.log('[PWA] Checking if should show install button...');
         console.log('[PWA] userInteracted:', this.userInteracted);
         console.log('[PWA] installPromptShown:', this.installPromptShown);
         console.log('[PWA] promptEvent:', !!this.promptEvent);
-        
+
         if (this.userInteracted && !this.installPromptShown && this.promptEvent) {
           console.log('[PWA] Showing install button');
           this.showInstallButton();
         } else {
           console.log('[PWA] NOT showing install button - conditions not met');
         }
-      }, 2000);
+      }, 1000);
     });
 
     // App installed
@@ -173,11 +176,72 @@ export class PWAManager {
       this.promptEvent = null;
       this.installPromptShown = false;
       this.hideInstallButton();
+      this.updateInstallButtonState();
     });
 
     // Online/Offline detection
     window.addEventListener('online', () => this.handleOnline());
     window.addEventListener('offline', () => this.handleOffline());
+
+    // Setup install button in settings
+    setTimeout(() => this.setupInstallButton(), 500);
+  }
+
+  /**
+   * Setup install button in settings modal
+   */
+  setupInstallButton() {
+    const installBtn = document.getElementById('btn-install-app');
+    const installBtnText = document.getElementById('install-btn-text');
+    const installHint = document.getElementById('install-hint');
+    const installHintText = document.getElementById('install-hint-text');
+
+    if (!installBtn) return;
+
+    installBtn.addEventListener('click', () => {
+      console.log('[PWA] Install button clicked in settings');
+      this.promptInstall();
+    });
+
+    // Update button state based on install availability
+    this.updateInstallButtonState = () => {
+      if (!installBtnText || !installHint || !installHintText) return;
+
+      // Check if already installed
+      if (window.matchMedia('(display-mode: standalone)').matches || 
+          window.navigator.standalone === true) {
+        installBtnText.textContent = 'App Installed ✓';
+        installBtn.disabled = true;
+        installHint.style.display = 'none';
+        return;
+      }
+
+      // Check iOS
+      if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
+        installBtnText.textContent = 'Install on iOS';
+        installBtn.disabled = false;
+        installHint.style.display = 'block';
+        installHintText.textContent = 'Tap Share button, then "Add to Home Screen"';
+        return;
+      }
+
+      // Check if prompt is available
+      if (this.promptEvent) {
+        installBtnText.textContent = 'Install App';
+        installBtn.disabled = false;
+        installHint.style.display = 'none';
+      } else {
+        installBtnText.textContent = 'Install Not Available';
+        installBtn.disabled = true;
+        installHint.style.display = 'block';
+        installHintText.textContent = window.isSecureContext 
+          ? 'Install prompt will appear after more interaction with the app'
+          : 'Requires HTTPS or localhost connection';
+      }
+    };
+
+    // Initial state update
+    this.updateInstallButtonState();
   }
 
   /**
@@ -415,6 +479,10 @@ export class PWAManager {
         this.showBrowserInstallHint();
       }
 
+      // Update button state
+      if (this.updateInstallButtonState) {
+        this.updateInstallButtonState();
+      }
       return;
     }
 
@@ -426,6 +494,11 @@ export class PWAManager {
 
     if (outcome === 'accepted') {
       this.hideInstallButton();
+    }
+
+    // Update button state
+    if (this.updateInstallButtonState) {
+      this.updateInstallButtonState();
     }
   }
 
