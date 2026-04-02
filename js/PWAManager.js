@@ -152,19 +152,11 @@ export class PWAManager {
       // Update install button state immediately
       this.updateInstallButtonState();
 
-      // Show install button after a short delay (no user interaction required)
-      setTimeout(() => {
-        console.log('[PWA] Checking if should show install button...');
-        console.log('[PWA] installPromptShown:', this.installPromptShown);
-        console.log('[PWA] promptEvent:', !!this.promptEvent);
-
-        if (!this.installPromptShown && this.promptEvent) {
-          console.log('[PWA] Showing install button');
-          this.showInstallButton();
-        } else {
-          console.log('[PWA] NOT showing install button - conditions not met');
-        }
-      }, 500);
+      // Show install button immediately (no delay)
+      if (!this.installPromptShown && this.promptEvent) {
+        console.log('[PWA] Showing install button immediately');
+        this.showInstallButton();
+      }
     });
 
     // App installed
