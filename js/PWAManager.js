@@ -178,48 +178,6 @@ export class PWAManager {
     // Online/Offline detection
     window.addEventListener('online', () => this.handleOnline());
     window.addEventListener('offline', () => this.handleOffline());
-    
-    // Add manual test button for debugging
-    setTimeout(() => this.addDebugInstallButton(), 3000);
-  }
-
-  /**
-   * Add debug install button for testing
-   */
-  addDebugInstallButton() {
-    // Only add in development/testing
-    const debugBtn = document.createElement('button');
-    debugBtn.id = 'pwa-debug-install';
-    debugBtn.innerHTML = '<i class="fas fa-bug"></i> <span>Test Install</span>';
-    debugBtn.style.cssText = `
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      padding: 12px 20px;
-      background: #ff9800;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      z-index: 999999;
-      box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      opacity: 0.8;
-    `;
-    
-    debugBtn.addEventListener('click', () => {
-      console.log('[PWA] Debug button clicked');
-      console.log('[PWA] promptEvent:', !!this.promptEvent);
-      console.log('[PWA] isInstalled:', this.isInstalled);
-      this.promptInstall();
-    });
-    
-    document.body.appendChild(debugBtn);
-    console.log('[PWA] Debug install button added');
   }
 
   /**

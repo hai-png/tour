@@ -3469,3 +3469,49 @@ body {
 
   #panorama-canvas { width: 100%; height: auto; }
 }
+
+/* ============================================================
+   Guided Tour Info Card
+   ============================================================ */
+
+.guided-tour-info-card {
+  position: absolute;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(500px, calc(100vw - 40px));
+  background: var(--bg-dark);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  z-index: 95;
+  box-shadow: var(--shadow-lg);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.info-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.info-card-header i {
+  color: var(--primary-light);
+}
+
+.info-card-content {
+  padding: 16px;
+}
+
+.info-card-content p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+  margin: 0;
+}

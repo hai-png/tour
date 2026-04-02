@@ -184,6 +184,10 @@ export class GuidedTourManager {
     }
     if (guidedTourBtn) guidedTourBtn.style.display = 'none';
 
+    // Show info card for narration
+    const infoCard = document.getElementById('guided-tour-info-card');
+    if (infoCard) infoCard.style.display = 'block';
+
     // Close the modal immediately
     if (this.tourPlayer.ui) {
       this.tourPlayer.ui.closeModal('guided-tour');
@@ -250,6 +254,10 @@ export class GuidedTourManager {
       controlsEl.classList.remove('active');
     }
     if (guidedTourBtn) guidedTourBtn.style.display = 'flex';
+
+    // Hide info card
+    const infoCard = document.getElementById('guided-tour-info-card');
+    if (infoCard) infoCard.style.display = 'none';
 
     // Restore original auto-rotate settings and disable
     if (this.tourPlayer) {
@@ -387,12 +395,15 @@ export class GuidedTourManager {
 
   showNarration(text) {
     // Update floating info card with narration
-    const infoCard = document.getElementById('info-card-description');
-    if (infoCard) {
-      infoCard.textContent = text;
-      infoCard.style.animation = 'none';
-      infoCard.offsetHeight; // Trigger reflow
-      infoCard.style.animation = 'fadeIn 0.3s ease';
+    const infoCard = document.getElementById('guided-tour-info-card');
+    const description = document.getElementById('info-card-description');
+    
+    if (infoCard && description) {
+      infoCard.style.display = 'block';
+      description.textContent = text;
+      description.style.animation = 'none';
+      description.offsetHeight; // Trigger reflow
+      description.style.animation = 'fadeIn 0.3s ease';
     }
   }
 }
