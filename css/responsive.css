@@ -688,10 +688,11 @@
     height: 24px !important;
   }
 
-  /* Quick Tools - right edge, vertically centered */
+  /* Quick Tools - LEFT edge, vertically centered for landscape */
   .quick-tools {
     position: absolute !important;
-    right: var(--edge) !important;
+    left: var(--edge) !important;
+    right: auto !important;
     top: 50% !important;
     transform: translateY(-50%) !important;
     padding: 4px 3px !important;
