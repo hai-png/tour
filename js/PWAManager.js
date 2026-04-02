@@ -68,13 +68,13 @@ export class PWAManager {
    */
   async registerServiceWorker() {
     console.log('[PWA] Checking service worker support...');
-    
+
     if ('serviceWorker' in navigator) {
       console.log('[PWA] Service Worker is supported');
-      
+
       try {
         console.log('[PWA] Registering service worker from ./sw.js...');
-        
+
         this.swRegistration = await navigator.serviceWorker.register('./sw.js', {
           scope: './',
           updateViaCache: 'none'  // Always check for updates
@@ -86,6 +86,13 @@ export class PWAManager {
         console.log('[PWA] Installing worker:', !!this.swRegistration.installing);
         console.log('[PWA] Waiting worker:', !!this.swRegistration.waiting);
 
+        // Wait for service worker to be ready, then check for install prompt
+        await navigator.serviceWorker.ready;
+        console.log('[PWA] Service worker ready, checking install prompt...');
+        
+        // Dispatch a custom event to trigger install prompt check
+        window.dispatchEvent(new CustomEvent('pwa-check-install'));
+
         // Listen for updates
         this.swRegistration.addEventListener('updatefound', () => {
           console.log('[PWA] Update found!');
@@ -93,7 +100,7 @@ export class PWAManager {
 
           newWorker.addEventListener('statechange', () => {
             console.log('[PWA] Worker state change:', newWorker.state);
-            
+
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
               console.log('[PWA] New content available');
               this.showUpdateNotification();
@@ -141,6 +148,8 @@ export class PWAManager {
    * Setup event listeners
    */
   setupEventListeners() {
+    console.log('[PWA] Setting up event listeners...');
+
     // Before install prompt (Chrome, Edge, Android)
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
@@ -148,6 +157,7 @@ export class PWAManager {
       this.isInstalled = false;
       console.log('[PWA] ✅ beforeinstallprompt event fired!');
       console.log('[PWA] promptEvent set:', !!this.promptEvent);
+      console.log('[PWA] platforms:', e.platforms);
 
       // Update install button state immediately
       this.updateInstallButtonState();
@@ -156,6 +166,44 @@ export class PWAManager {
       if (!this.installPromptShown && this.promptEvent) {
         console.log('[PWA] Showing install button immediately');
         this.showInstallButton();
+      }
+    });
+
+    // Listen for when the prompt is NOT fired (debugging)
+    window.addEventListener('load', () => {
+      console.log('[PWA] Page loaded, checking installability...');
+      setTimeout(() => {
+        if (!this.promptEvent) {
+          console.log('[PWA] ⚠️ No prompt event after 3 seconds');
+          console.log('[PWA] Possible reasons:');
+          console.log('[PWA]   1. User previously dismissed install prompt');
+          console.log('[PWA]   2. PWA criteria not met (check manifest)');
+          console.log('[PWA]   3. Browser doesn\'t support install prompts');
+          console.log('[PWA] Checking manifest...');
+          fetch('manifest.json')
+            .then(r => r.json())
+            .then(m => {
+              console.log('[PWA] Manifest loaded:', {
+                name: m.name,
+                short_name: m.short_name,
+                display: m.display,
+                icons: m.icons?.length || 0,
+                start_url: m.start_url
+              });
+            })
+            .catch(e => console.error('[PWA] Manifest error:', e));
+        }
+      }, 3000);
+    });
+
+    // Check for install prompt after service worker is ready
+    window.addEventListener('pwa-check-install', () => {
+      console.log('[PWA] pwa-check-install event received');
+      console.log('[PWA] promptEvent:', !!this.promptEvent);
+      
+      // If we still don't have a prompt, try to manually trigger installability check
+      if (!this.promptEvent) {
+        this.checkInstallabilityManual();
       }
     });
 
@@ -211,7 +259,7 @@ export class PWAManager {
         installBtnText.textContent = 'Install on iOS';
         installBtn.disabled = false;
         installHint.style.display = 'block';
-        installHintText.textContent = 'Tap Share button, then "Add to Home Screen"';
+        installHintText.textContent = 'Tap Share button (box with arrow), then "Add to Home Screen"';
         return;
       }
 
@@ -221,17 +269,47 @@ export class PWAManager {
         installBtn.disabled = false;
         installHint.style.display = 'none';
       } else {
-        installBtnText.textContent = 'Install Not Available';
-        installBtn.disabled = true;
+        // Prompt not available - provide alternative instructions
+        installBtnText.textContent = 'Install via Browser';
+        installBtn.disabled = false;
+        installBtn.onclick = () => this.showBrowserInstallHint();
         installHint.style.display = 'block';
-        installHintText.textContent = window.isSecureContext
-          ? 'Install prompt will appear shortly'
-          : 'Requires HTTPS or localhost connection';
+        installHintText.textContent = 'Use your browser menu (⋮) → "Install HAI Tour" or "Create shortcut"';
       }
     };
 
     // Initial state update
     this.updateInstallButtonState();
+  }
+
+  /**
+   * Manual installability check - triggers prompt if available
+   */
+  async checkInstallabilityManual() {
+    console.log('[PWA] Manual installability check...');
+    
+    // Check if already installed
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      console.log('[PWA] Already running as standalone app');
+      return;
+    }
+    
+    // Check iOS
+    if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
+      console.log('[PWA] iOS detected - showing install instructions');
+      this.showIOSInstallInstructions();
+      return;
+    }
+    
+    // For Chrome/Edge - the beforeinstallprompt should have fired already
+    // If not, the user may have previously dismissed it
+    console.log('[PWA] No prompt available - user may have dismissed it previously');
+    console.log('[PWA] To reset: Go to chrome://settings/content/siteDetails?site=https://hai-png.github.io and clear "Install" permission');
+    
+    // Update button to show manual install option
+    if (this.updateInstallButtonState) {
+      this.updateInstallButtonState();
+    }
   }
 
   /**
