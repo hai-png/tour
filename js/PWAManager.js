@@ -144,8 +144,10 @@ export class PWAManager {
       ['click', 'keydown', 'touchstart'].forEach(evt => {
         document.removeEventListener(evt, markInteraction);
       });
+      console.log('[PWA] User interaction detected');
       // Show install button after user interaction
       if (this.promptEvent && !this.installPromptShown) {
+        console.log('[PWA] Showing install button');
         this.showInstallButton();
       }
     };
@@ -279,11 +281,14 @@ export class PWAManager {
       this.promptEvent = e;
       this.isInstalled = false;
       console.log('[PWA] ✅ beforeinstallprompt event fired!');
+      console.log('[PWA] User interacted:', this.userInteracted);
 
       this.updateInstallButtonState();
 
-      if (!this.installPromptShown && this.promptEvent && this.userInteracted) {
-        this.showInstallButton();
+      // Show install button when prompt is ready (will wait for user interaction)
+      if (!this.installPromptShown && this.promptEvent) {
+        console.log('[PWA] Install prompt ready, will show after user interaction');
+        // Don't show immediately - wait for user interaction via trackUserInteraction
       }
     });
 
