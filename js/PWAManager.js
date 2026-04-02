@@ -203,10 +203,12 @@ export class PWAManager {
     
     // Show popup
     popup.style.display = 'block';
+    console.log('[PWA] Popup shown, promptEvent available:', !!this.promptEvent);
     
     // Check if native install available
     if (this.promptEvent) {
       // Native install available
+      console.log('[PWA] Native install available, showing Install button');
       if (installBtn) {
         installBtn.style.display = 'block';
         installBtn.onclick = () => this.promptInstall();
@@ -214,6 +216,7 @@ export class PWAManager {
       if (manualSteps) manualSteps.style.display = 'none';
     } else {
       // Show manual steps
+      console.log('[PWA] Native install NOT available, showing manual steps');
       if (installBtn) {
         installBtn.style.display = 'none';
       }
@@ -222,10 +225,10 @@ export class PWAManager {
       }
     }
     
-    // Auto-hide after 10 seconds
+    // Auto-hide after 15 seconds
     setTimeout(() => {
       popup.style.display = 'none';
-    }, 10000);
+    }, 15000);
   }
 
   /**
@@ -376,12 +379,10 @@ export class PWAManager {
       setTimeout(() => {
         if (!this.promptEvent) {
           console.log('[PWA] ⚠️ No prompt event after 5 seconds');
-          console.log('[PWA] Possible reasons:');
-          console.log('[PWA]   1. User previously dismissed install prompt');
-          console.log('[PWA]   2. Not enough user engagement');
-          console.log('[PWA]   3. Browser doesn\'t support install prompts');
-          console.log('[PWA]   4. Already installed');
-          console.log('[PWA] Will show manual install instructions instead');
+          console.log('[PWA] This means: Use browser menu to install manually');
+          console.log('[PWA] Steps: Click ⋮ → Install or Create shortcut');
+        } else {
+          console.log('[PWA] ✅ Native install prompt available');
         }
       }, 5000);
     });
