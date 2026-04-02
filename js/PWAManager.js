@@ -164,18 +164,26 @@ export class PWAManager {
     const installBtn = document.getElementById('btn-install-pwa');
     if (!installBtn) return;
 
-    // Show button after 2 seconds
+    // Show button and popup automatically after 3 seconds
     setTimeout(() => {
       // Check if already installed
       if (window.matchMedia('(display-mode: standalone)').matches ||
           window.navigator.standalone === true) {
+        console.log('[PWA] Already installed');
         return;
       }
+      
+      // Show install button
       installBtn.style.display = 'flex';
       installBtn.style.alignItems = 'center';
       installBtn.style.gap = '8px';
       console.log('[PWA] Install button shown');
-    }, 2000);
+      
+      // Auto-show install popup after 1 more second
+      setTimeout(() => {
+        this.showInstallPopup();
+      }, 1000);
+    }, 3000);
 
     installBtn.addEventListener('click', () => {
       console.log('[PWA] Install button clicked');
@@ -392,63 +400,11 @@ export class PWAManager {
     window.addEventListener('offline', () => this.handleOffline());
 
     // Setup buttons
-    setTimeout(() => this.setupInstallButton(), 500);
     setTimeout(() => this.setupOfflineDownloadButtons(), 1000);
     setTimeout(() => this.setupTopBarInstallButton(), 3000);
 
     // Track user interaction
     this.trackUserInteraction();
-  }
-
-  /**
-   * Setup install button in settings
-   */
-  setupInstallButton() {
-    const installBtn = document.getElementById('btn-install-app');
-    const installBtnText = document.getElementById('install-btn-text');
-    const installHint = document.getElementById('install-hint');
-    const installHintText = document.getElementById('install-hint-text');
-
-    if (!installBtn) return;
-
-    installBtn.addEventListener('click', () => this.promptInstall());
-
-    this.updateInstallButtonState = () => {
-      if (!installBtnText || !installHint || !installHintText) return;
-
-      // Check if already installed
-      if (window.matchMedia('(display-mode: standalone)').matches ||
-          window.navigator.standalone === true) {
-        installBtnText.textContent = 'App Installed ✓';
-        installBtn.disabled = true;
-        installHint.style.display = 'none';
-        return;
-      }
-
-      // Check iOS
-      if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
-        installBtnText.textContent = 'Install on iOS';
-        installBtn.disabled = false;
-        installHint.style.display = 'block';
-        installHintText.textContent = 'Tap Share button (box with arrow), then "Add to Home Screen"';
-        return;
-      }
-
-      // Check if prompt is available
-      if (this.promptEvent) {
-        installBtnText.textContent = 'Install App';
-        installBtn.disabled = false;
-        installHint.style.display = 'none';
-      } else {
-        installBtnText.textContent = 'Install via Browser';
-        installBtn.disabled = false;
-        installBtn.onclick = () => this.showBrowserInstallHint();
-        installHint.style.display = 'block';
-        installHintText.textContent = 'Use your browser menu (⋮) → "Install HAI Tour" or "Create shortcut"';
-      }
-    };
-
-    this.updateInstallButtonState();
   }
 
   /**
