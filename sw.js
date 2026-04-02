@@ -12,27 +12,27 @@ const CDN_CACHE_NAME = `hai-tour-cdn-${CACHE_VERSION}`;
 
 // Core static assets (cached immediately on install)
 const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/css/styles.css',
-  '/css/ui-components.css',
-  '/js/main.js',
-  '/js/PanoramaViewer.js',
-  '/js/UIManager.js',
-  '/js/HotspotManager.js',
-  '/js/FloorPlanManager.js',
-  '/js/GuidedTourManager.js',
-  '/js/LocationManager.js',
-  '/js/TranslationManager.js',
-  '/js/GalleryManager.js',
-  '/js/AudioManager.js',
-  '/js/CaptureViewManager.js',
-  '/js/PWAManager.js',
-  '/js/VRModeManager.js',
-  '/manifest.json',
-  '/offline.html',
-  '/media/tdv-import/skin/logo.png',
-  '/media/tdv-import/skin/logo.webp'
+  './',
+  './index.html',
+  './css/styles.css',
+  './css/ui-components.css',
+  './js/main.js',
+  './js/PanoramaViewer.js',
+  './js/UIManager.js',
+  './js/HotspotManager.js',
+  './js/FloorPlanManager.js',
+  './js/GuidedTourManager.js',
+  './js/LocationManager.js',
+  './js/TranslationManager.js',
+  './js/GalleryManager.js',
+  './js/AudioManager.js',
+  './js/CaptureViewManager.js',
+  './js/PWAManager.js',
+  './js/VRModeManager.js',
+  './manifest.json',
+  './offline.html',
+  './media/tdv-import/skin/logo.png',
+  './media/tdv-import/skin/logo.webp'
 ];
 
 // External CDN URLs to cache for offline support

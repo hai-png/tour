@@ -28,23 +28,23 @@ export class PWAManager {
       console.warn('[PWA] ⚠️ NOT a secure context! PWA install requires HTTPS or localhost.');
       console.warn('[PWA] Current protocol:', window.location.protocol);
       console.warn('[PWA] isSecureContext:', window.isSecureContext);
-      
+
       // Show warning
       setTimeout(() => this.showSecureContextWarning(), 1000);
+      return; // Exit early if not secure context
     }
-    
+
     this.setupEventListeners();
     await this.registerServiceWorker();
     this.checkInstallability();
     this.monitorOnlineStatus();
     this.setupNavigationHandler();
-    
+
     // Debug logging
     console.log('[PWA] Initialization complete');
     console.log('[PWA] isInstalled:', this.isInstalled);
-    console.log('[PWA] promptEvent:', this.promptEvent);
-    console.log('[PWA] userInteracted:', this.userInteracted);
     console.log('[PWA] isSecureContext:', window.isSecureContext);
+    console.log('[PWA] manifest URL:', document.querySelector('link[rel="manifest"]')?.href);
   }
 
   /**
