@@ -158,6 +158,80 @@ export class PWAManager {
   }
 
   /**
+   * Setup top bar install button
+   */
+  setupTopBarInstallButton() {
+    const installBtn = document.getElementById('btn-install-pwa');
+    if (!installBtn) return;
+
+    installBtn.addEventListener('click', () => {
+      console.log('[PWA] Top bar install button clicked');
+      this.showInstallPrompt();
+    });
+  }
+
+  /**
+   * Show install button in top bar
+   */
+  showInstallButtonInTopBar() {
+    const installBtn = document.getElementById('btn-install-pwa');
+    if (installBtn) {
+      installBtn.style.display = 'flex';
+      installBtn.style.alignItems = 'center';
+      installBtn.style.gap = '8px';
+      console.log('[PWA] Install button shown in top bar');
+    }
+  }
+
+  /**
+   * Hide install button in top bar
+   */
+  hideInstallButtonInTopBar() {
+    const installBtn = document.getElementById('btn-install-pwa');
+    if (installBtn) {
+      installBtn.style.display = 'none';
+    }
+  }
+
+  /**
+   * Show install prompt modal
+   */
+  showInstallPrompt() {
+    // Check if already installed
+    if (window.matchMedia('(display-mode: standalone)').matches ||
+        window.navigator.standalone === true) {
+      this.showNotification({
+        type: 'info',
+        title: 'Already Installed',
+        message: 'The app is already installed on your device',
+        icon: 'fa-check-circle',
+        duration: 3000
+      });
+      return;
+    }
+
+    // Check if iOS
+    if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
+      const iosInstructions = document.getElementById('ios-install-instructions');
+      if (iosInstructions) {
+        iosInstructions.style.display = 'block';
+      }
+    }
+
+    // Show modal
+    const modal = document.getElementById('modal-pwa-install');
+    if (modal) {
+      modal.classList.add('active');
+    }
+
+    // Setup confirm install button
+    const confirmBtn = document.getElementById('btn-confirm-install');
+    if (confirmBtn) {
+      confirmBtn.onclick = () => this.promptInstall();
+    }
+  }
+
+  /**
    * Register service worker
    */
   async registerServiceWorker() {
@@ -281,15 +355,9 @@ export class PWAManager {
       this.promptEvent = e;
       this.isInstalled = false;
       console.log('[PWA] ✅ beforeinstallprompt event fired!');
-      console.log('[PWA] User interacted:', this.userInteracted);
-
-      this.updateInstallButtonState();
-
-      // Show install button when prompt is ready (will wait for user interaction)
-      if (!this.installPromptShown && this.promptEvent) {
-        console.log('[PWA] Install prompt ready, will show after user interaction');
-        // Don't show immediately - wait for user interaction via trackUserInteraction
-      }
+      
+      // Show install button in top bar
+      this.showInstallButtonInTopBar();
     });
 
     // App installed
@@ -297,8 +365,7 @@ export class PWAManager {
       console.log('[PWA] App installed successfully');
       this.isInstalled = true;
       this.promptEvent = null;
-      this.installPromptShown = false;
-      this.hideInstallButton();
+      this.hideInstallButtonInTopBar();
       this.updateInstallButtonState();
     });
 
@@ -309,6 +376,7 @@ export class PWAManager {
     // Setup buttons
     setTimeout(() => this.setupInstallButton(), 500);
     setTimeout(() => this.setupOfflineDownloadButtons(), 1000);
+    setTimeout(() => this.setupTopBarInstallButton(), 1000);
 
     // Track user interaction
     this.trackUserInteraction();
@@ -560,21 +628,21 @@ export class PWAManager {
    * Prompt user to install
    */
   async promptInstall() {
+    // Close modal first
+    const modal = document.getElementById('modal-pwa-install');
+    if (modal) {
+      modal.classList.remove('active');
+    }
+
     this.updateInstallProgress(10, 'Preparing installation...');
 
     if (!this.promptEvent) {
       console.log('[PWA] Install prompt not available');
 
       if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
-        this.updateInstallProgress(100, 'See instructions');
         this.showIOSInstallInstructions();
       } else {
-        this.updateInstallProgress(100, 'Use browser menu');
         this.showBrowserInstallHint();
-      }
-
-      if (this.updateInstallButtonState) {
-        this.updateInstallButtonState();
       }
       return;
     }
@@ -588,13 +656,16 @@ export class PWAManager {
 
     if (outcome === 'accepted') {
       this.updateInstallProgress(100, 'Installing...');
-      this.hideInstallButton();
-    } else {
-      this.updateInstallProgress(0, 'Installation cancelled');
-    }
-
-    if (this.updateInstallButtonState) {
-      this.updateInstallButtonState();
+      this.hideInstallButtonInTopBar();
+      
+      // Show success notification
+      this.showNotification({
+        type: 'success',
+        title: 'App Installed!',
+        message: 'HAI Tour has been installed successfully',
+        icon: 'fa-check-circle',
+        duration: 5000
+      });
     }
   }
 
