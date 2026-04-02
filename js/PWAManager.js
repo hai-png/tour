@@ -1,8 +1,10 @@
 /**
- * PWA Manager - Service Worker and offline functionality
+ * PWA Manager - Modern Service Worker & Offline Functionality
  * ============================================================
  * Provides PWA installation, offline support, and cache management
- * for mobile and desktop deployment.
+ * with enhanced UX for mobile and desktop deployment.
+ * 
+ * Version: 7.0.0 - Complete Revamp
  */
 
 export class PWAManager {
@@ -17,9 +19,7 @@ export class PWAManager {
     this.promptEvent = null;
     this.installProgress = 0;
     this.installStage = 'idle';
-
-    // Track user interaction for install prompt
-    this.trackUserInteraction();
+    this.cacheChannel = null;
 
     this.init();
   }
@@ -29,11 +29,8 @@ export class PWAManager {
     if (!window.isSecureContext) {
       console.warn('[PWA] ⚠️ NOT a secure context! PWA install requires HTTPS or localhost.');
       console.warn('[PWA] Current protocol:', window.location.protocol);
-      console.warn('[PWA] isSecureContext:', window.isSecureContext);
-
-      // Show warning
-      setTimeout(() => this.showSecureContextWarning(), 1000);
-      return; // Exit early if not secure context
+      this.showSecureContextWarning();
+      return;
     }
 
     this.setupEventListeners();
@@ -41,12 +38,101 @@ export class PWAManager {
     this.checkInstallability();
     this.monitorOnlineStatus();
     this.setupNavigationHandler();
+    this.setupCacheMessageChannel();
 
-    // Debug logging
     console.log('[PWA] Initialization complete');
-    console.log('[PWA] isInstalled:', this.isInstalled);
-    console.log('[PWA] isSecureContext:', window.isSecureContext);
-    console.log('[PWA] manifest URL:', document.querySelector('link[rel="manifest"]')?.href);
+  }
+
+  /**
+   * Setup MessageChannel for SW communication
+   */
+  setupCacheMessageChannel() {
+    this.cacheChannel = new MessageChannel();
+    this.cacheChannel.port1.onmessage = (event) => this.handleSWMessage(event);
+    this.cacheChannel.port1.start();
+  }
+
+  /**
+   * Handle messages from Service Worker
+   */
+  handleSWMessage(event) {
+    const { type, message, version, ...data } = event.data;
+
+    switch (type) {
+      case 'SW_INSTALLED':
+        console.log('[PWA] Service Worker installed:', version);
+        break;
+      case 'SW_ACTIVATED':
+        console.log('[PWA] Service Worker activated:', version);
+        this.showUpdateAvailableNotification();
+        break;
+      case 'CACHE_PROGRESS':
+        this.handleCacheProgress(data);
+        break;
+      case 'CACHE_COMPLETE':
+        this.handleCacheComplete(data);
+        break;
+      case 'OFFLINE_CACHE_COMPLETE':
+        this.handleOfflineCacheComplete(data);
+        break;
+    }
+  }
+
+  /**
+   * Handle cache progress updates
+   */
+  handleCacheProgress(data) {
+    const progressEl = document.getElementById('pwa-install-progress');
+    const progressBar = document.getElementById('pwa-progress-bar');
+    const progressStatus = document.getElementById('pwa-progress-status');
+
+    if (progressBar) {
+      progressBar.style.width = `${data.percent}%`;
+    }
+
+    if (progressStatus && data.url) {
+      const fileName = data.url.split('/').pop();
+      progressStatus.textContent = `Caching: ${fileName} (${data.percent}%)`;
+    }
+
+    if (progressEl && data.percent === 100) {
+      setTimeout(() => {
+        progressEl.style.opacity = '0';
+        progressEl.style.transition = 'opacity 0.5s ease';
+        setTimeout(() => {
+          progressEl.style.display = 'none';
+          progressEl.style.opacity = '1';
+        }, 500);
+      }, 1500);
+    }
+  }
+
+  /**
+   * Handle cache completion
+   */
+  handleCacheComplete(data) {
+    console.log('[PWA] Cache complete:', data);
+    this.showNotification({
+      type: 'success',
+      title: 'Offline Cache Complete',
+      message: `${data.cached}/${data.total} items cached successfully`,
+      icon: 'fa-download',
+      duration: 5000
+    });
+  }
+
+  /**
+   * Handle offline cache complete
+   */
+  handleOfflineCacheComplete(data) {
+    console.log('[PWA] Offline cache complete:', data);
+    this.showNotification({
+      type: 'success',
+      title: 'Ready for Offline Use',
+      message: `${data.cached} items cached (${data.successRate}% success rate)`,
+      icon: 'fa-wifi',
+      duration: 5000
+    });
   }
 
   /**
@@ -58,6 +144,10 @@ export class PWAManager {
       ['click', 'keydown', 'touchstart'].forEach(evt => {
         document.removeEventListener(evt, markInteraction);
       });
+      // Show install button after user interaction
+      if (this.promptEvent && !this.installPromptShown) {
+        this.showInstallButton();
+      }
     };
 
     ['click', 'keydown', 'touchstart'].forEach(evt => {
@@ -75,20 +165,15 @@ export class PWAManager {
       console.log('[PWA] Service Worker is supported');
 
       try {
-        console.log('[PWA] Registering service worker from ./sw.js...');
         this.updateInstallProgress(10, 'Starting service worker...');
 
-        this.swRegistration = await navigator.serviceWorker.register('./sw.js', {
-          scope: './',
-          updateViaCache: 'none'  // Always check for updates
+        this.swRegistration = await navigator.serviceWorker.register('/sw.js', {
+          scope: '/',
+          updateViaCache: 'none'
         });
 
         this.updateInstallProgress(30, 'Service worker registered');
         console.log('[PWA] ✅ Service Worker registered:', this.swRegistration.scope);
-        console.log('[PWA] Registration state:', this.swRegistration.state);
-        console.log('[PWA] Active worker:', !!this.swRegistration.active);
-        console.log('[PWA] Installing worker:', !!this.swRegistration.installing);
-        console.log('[PWA] Waiting worker:', !!this.swRegistration.waiting);
 
         // Listen for updates
         this.swRegistration.addEventListener('updatefound', () => {
@@ -97,53 +182,37 @@ export class PWAManager {
           const newWorker = this.swRegistration.installing;
 
           newWorker.addEventListener('statechange', () => {
-            console.log('[PWA] Worker state change:', newWorker.state);
+            console.log('[PWA] Worker state:', newWorker.state);
 
-            if (newWorker.state === 'installing') {
-              this.updateInstallProgress(60, 'Installing...');
-            } else if (newWorker.state === 'installed') {
+            if (newWorker.state === 'installed') {
               this.updateInstallProgress(80, 'Service worker installed');
               if (navigator.serviceWorker.controller) {
                 console.log('[PWA] New content available');
                 this.showUpdateNotification();
-              } else {
-                console.log('[PWA] Service worker ready');
-                this.updateInstallProgress(90, 'Finalizing...');
               }
-            } else if (newWorker.state === 'activating') {
-              this.updateInstallProgress(95, 'Activating...');
             } else if (newWorker.state === 'activated') {
               this.updateInstallProgress(100, 'Ready');
             }
           });
         });
 
-        // Wait for service worker to be ready, then check for install prompt
+        // Wait for service worker to be ready
         await navigator.serviceWorker.ready;
         this.updateInstallProgress(100, 'Ready');
-        console.log('[PWA] Service worker ready, checking install prompt...');
+        console.log('[PWA] Service worker ready');
 
-        // Dispatch a custom event to trigger install prompt check
+        // Trigger install prompt check
         window.dispatchEvent(new CustomEvent('pwa-check-install'));
 
-        // Check for updates periodically
-        setInterval(() => {
-          this.checkForUpdates();
-        }, 60 * 60 * 1000); // Check every hour
-
-        // Handle messages from service worker
-        navigator.serviceWorker.addEventListener('message', (event) => {
-          if (event.data && event.data.type === 'SW_ACTIVATED') {
-            console.log('[PWA] Service Worker activated');
-          }
-        });
+        // Check for updates every hour
+        setInterval(() => this.checkForUpdates(), 60 * 60 * 1000);
 
       } catch (error) {
         console.error('[PWA] ❌ Service Worker registration failed:', error);
         this.updateInstallProgress(0, 'Failed to initialize');
       }
     } else {
-      console.warn('[PWA] ❌ Service Worker is NOT supported in this browser');
+      console.warn('[PWA] ❌ Service Worker is NOT supported');
       this.updateInstallProgress(0, 'Not supported');
     }
   }
@@ -176,20 +245,13 @@ export class PWAManager {
     const progressStatus = document.getElementById('pwa-progress-status');
 
     if (progressEl && progressBar && progressStatus) {
-      // Show progress container
       if (progress < 100) {
         progressEl.style.display = 'block';
       }
 
-      // Update progress bar width
       progressBar.style.width = `${progress}%`;
+      progressStatus.textContent = status;
 
-      // Update status text
-      if (status) {
-        progressStatus.textContent = status;
-      }
-
-      // Hide progress when complete
       if (progress >= 100) {
         setTimeout(() => {
           progressEl.style.opacity = '0';
@@ -211,60 +273,17 @@ export class PWAManager {
   setupEventListeners() {
     console.log('[PWA] Setting up event listeners...');
 
-    // Before install prompt (Chrome, Edge, Android)
+    // Before install prompt
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       this.promptEvent = e;
       this.isInstalled = false;
       console.log('[PWA] ✅ beforeinstallprompt event fired!');
-      console.log('[PWA] promptEvent set:', !!this.promptEvent);
-      console.log('[PWA] platforms:', e.platforms);
 
-      // Update install button state immediately
       this.updateInstallButtonState();
 
-      // Show install button immediately (no delay)
-      if (!this.installPromptShown && this.promptEvent) {
-        console.log('[PWA] Showing install button immediately');
+      if (!this.installPromptShown && this.promptEvent && this.userInteracted) {
         this.showInstallButton();
-      }
-    });
-
-    // Listen for when the prompt is NOT fired (debugging)
-    window.addEventListener('load', () => {
-      console.log('[PWA] Page loaded, checking installability...');
-      setTimeout(() => {
-        if (!this.promptEvent) {
-          console.log('[PWA] ⚠️ No prompt event after 3 seconds');
-          console.log('[PWA] Possible reasons:');
-          console.log('[PWA]   1. User previously dismissed install prompt');
-          console.log('[PWA]   2. PWA criteria not met (check manifest)');
-          console.log('[PWA]   3. Browser doesn\'t support install prompts');
-          console.log('[PWA] Checking manifest...');
-          fetch('manifest.json')
-            .then(r => r.json())
-            .then(m => {
-              console.log('[PWA] Manifest loaded:', {
-                name: m.name,
-                short_name: m.short_name,
-                display: m.display,
-                icons: m.icons?.length || 0,
-                start_url: m.start_url
-              });
-            })
-            .catch(e => console.error('[PWA] Manifest error:', e));
-        }
-      }, 3000);
-    });
-
-    // Check for install prompt after service worker is ready
-    window.addEventListener('pwa-check-install', () => {
-      console.log('[PWA] pwa-check-install event received');
-      console.log('[PWA] promptEvent:', !!this.promptEvent);
-      
-      // If we still don't have a prompt, try to manually trigger installability check
-      if (!this.promptEvent) {
-        this.checkInstallabilityManual();
       }
     });
 
@@ -282,15 +301,16 @@ export class PWAManager {
     window.addEventListener('online', () => this.handleOnline());
     window.addEventListener('offline', () => this.handleOffline());
 
-    // Setup install button in settings
+    // Setup buttons
     setTimeout(() => this.setupInstallButton(), 500);
-    
-    // Setup offline download buttons
     setTimeout(() => this.setupOfflineDownloadButtons(), 1000);
+
+    // Track user interaction
+    this.trackUserInteraction();
   }
 
   /**
-   * Setup install button in settings modal
+   * Setup install button in settings
    */
   setupInstallButton() {
     const installBtn = document.getElementById('btn-install-app');
@@ -300,12 +320,8 @@ export class PWAManager {
 
     if (!installBtn) return;
 
-    installBtn.addEventListener('click', () => {
-      console.log('[PWA] Install button clicked in settings');
-      this.promptInstall();
-    });
+    installBtn.addEventListener('click', () => this.promptInstall());
 
-    // Update button state based on install availability
     this.updateInstallButtonState = () => {
       if (!installBtnText || !installHint || !installHintText) return;
 
@@ -333,7 +349,6 @@ export class PWAManager {
         installBtn.disabled = false;
         installHint.style.display = 'none';
       } else {
-        // Prompt not available - provide alternative instructions
         installBtnText.textContent = 'Install via Browser';
         installBtn.disabled = false;
         installBtn.onclick = () => this.showBrowserInstallHint();
@@ -342,7 +357,6 @@ export class PWAManager {
       }
     };
 
-    // Initial state update
     this.updateInstallButtonState();
   }
 
@@ -359,26 +373,19 @@ export class PWAManager {
     // Download all content
     downloadBtn.addEventListener('click', async () => {
       console.log('[PWA] Download offline button clicked');
-      
-      // Show progress modal
+
       const modal = document.getElementById('modal-offline-download');
       if (modal) {
         modal.classList.add('active');
-        // Reset UI
         document.getElementById('offline-success-message').style.display = 'none';
         document.getElementById('btn-cancel-offline-download').style.display = 'inline-block';
       }
 
       try {
         const totalItems = await this.downloadForOffline(
-          // Progress callback
-          (progress) => {
-            this.updateOfflineProgressUI(progress);
-          },
-          // Complete callback
+          (progress) => this.updateOfflineProgressUI(progress),
           (result) => {
             this.updateOfflineProgressUI(result);
-            // Show success message
             setTimeout(() => {
               document.getElementById('offline-success-message').style.display = 'block';
               document.getElementById('btn-cancel-offline-download').innerHTML = '<i class="fas fa-check"></i> Done';
@@ -386,7 +393,7 @@ export class PWAManager {
           }
         );
 
-        console.log(`[PWA] Started downloading ${totalItems} items for offline access`);
+        console.log(`[PWA] Started downloading ${totalItems} items`);
       } catch (error) {
         console.error('[PWA] Download failed:', error);
         alert('Download failed: ' + error.message);
@@ -396,14 +403,14 @@ export class PWAManager {
     // Check offline status
     checkStatusBtn.addEventListener('click', async () => {
       console.log('[PWA] Check offline status clicked');
-      
+
       const status = await this.getOfflineStatus();
-      
+
       if (statusDisplay) {
         statusDisplay.style.display = 'block';
         document.getElementById('offline-cached-count').textContent = status.mediaCount || 0;
         document.getElementById('offline-size').textContent = this.formatBytes(status.estimatedSize || 0);
-        
+
         const readyEl = document.getElementById('offline-ready');
         if (status.isReadyForOffline) {
           readyEl.textContent = 'Ready ✓';
@@ -414,21 +421,6 @@ export class PWAManager {
         }
       }
     });
-
-    // Listen for service worker messages about cache completion
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.addEventListener('message', (event) => {
-        if (event.data && event.data.type === 'OFFLINE_CACHE_COMPLETE') {
-          console.log('[PWA] Offline cache complete:', event.data);
-          this.updateOfflineProgressUI({
-            type: 'complete',
-            ...event.data
-          });
-        } else if (event.data && event.data.type === 'SW_INSTALLED') {
-          console.log('[PWA] SW Installed:', event.data);
-        }
-      });
-    }
   }
 
   /**
@@ -450,16 +442,10 @@ export class PWAManager {
       document.getElementById('offline-stat-cached').textContent = data.cached;
       document.getElementById('offline-stat-pending').textContent = data.total - data.current;
       document.getElementById('offline-stat-failed').textContent = data.failed || 0;
-      
+
       if (data.url) {
         const fileName = data.url.split('/').pop();
         document.getElementById('offline-current-file').textContent = fileName;
-      }
-      
-      if (data.result && data.result.url) {
-        const fileName = data.result.url.split('/').pop();
-        document.getElementById('offline-current-file').textContent = fileName + 
-          (data.result.success ? ' ✓' : ' ✗');
       }
     } else if (data.type === 'complete') {
       document.getElementById('offline-progress-text').textContent = 'Download Complete!';
@@ -468,9 +454,8 @@ export class PWAManager {
       document.getElementById('offline-stat-cached').textContent = data.cached;
       document.getElementById('offline-stat-pending').textContent = '0';
       document.getElementById('offline-stat-failed').textContent = data.failed || 0;
-      document.getElementById('offline-current-file').textContent = 'All files cached successfully';
-      
-      // Update status display if visible
+      document.getElementById('offline-current-file').textContent = 'All files cached';
+
       const statusDisplay = document.getElementById('offline-status-display');
       if (statusDisplay) {
         statusDisplay.style.display = 'block';
@@ -495,182 +480,12 @@ export class PWAManager {
   }
 
   /**
-   * Manual installability check - triggers prompt if available
-   */
-  async checkInstallabilityManual() {
-    console.log('[PWA] Manual installability check...');
-    
-    // Check if already installed
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-      console.log('[PWA] Already running as standalone app');
-      return;
-    }
-    
-    // Check iOS
-    if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
-      console.log('[PWA] iOS detected - showing install instructions');
-      this.showIOSInstallInstructions();
-      return;
-    }
-    
-    // For Chrome/Edge - the beforeinstallprompt should have fired already
-    // If not, the user may have previously dismissed it
-    console.log('[PWA] No prompt available - user may have dismissed it previously');
-    console.log('[PWA] To reset: Go to chrome://settings/content/siteDetails?site=https://hai-png.github.io and clear "Install" permission');
-    
-    // Update button to show manual install option
-    if (this.updateInstallButtonState) {
-      this.updateInstallButtonState();
-    }
-  }
-
-  /**
-   * Show warning about secure context requirement
-   */
-  showSecureContextWarning() {
-    const warning = document.createElement('div');
-    warning.style.cssText = `
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #ff5722;
-      color: white;
-      padding: 16px 24px;
-      border-radius: 8px;
-      font-size: 14px;
-      z-index: 999999;
-      box-shadow: 0 4px 12px rgba(255, 87, 34, 0.4);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      max-width: calc(100vw - 40px);
-    `;
-    
-    warning.innerHTML = `
-      <i class="fas fa-exclamation-triangle"></i>
-      <span><strong>PWA Install Not Available:</strong> Must use HTTPS or localhost. Current: ${window.location.protocol}</span>
-      <button onclick="this.parentElement.remove()" style="background:transparent;border:none;color:white;cursor:pointer;font-size:18px;margin-left:12px;">
-        <i class="fas fa-times"></i>
-      </button>
-    `;
-    
-    document.body.appendChild(warning);
-    console.log('[PWA] Secure context warning shown');
-  }
-
-  /**
-   * Setup navigation handler for PWA
-   */
-  setupNavigationHandler() {
-    // Handle PWA navigation
-    if (window.location.search) {
-      const params = new URLSearchParams(window.location.search);
-      
-      if (params.get('start') === 'tour') {
-        // Auto-start tour after load
-        setTimeout(() => {
-          const startBtn = document.getElementById('btn-start-tour');
-          if (startBtn) startBtn.click();
-        }, 1000);
-      }
-      
-      if (params.get('modal') === 'gallery') {
-        // Open gallery modal after load
-        setTimeout(() => {
-          this.tourPlayer?.ui?.openModal?.('gallery');
-        }, 1500);
-      }
-      
-      if (params.get('view') === 'floorplan') {
-        // Focus on floor plan
-        setTimeout(() => {
-          const floorPlanContainer = document.getElementById('floor-plan-container');
-          if (floorPlanContainer) {
-            floorPlanContainer.scrollIntoView({ behavior: 'smooth' });
-          }
-        }, 1000);
-      }
-    }
-  }
-
-  /**
-   * Check if app is installable
-   */
-  async checkInstallability() {
-    // Check if already installed (desktop)
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-      this.isInstalled = true;
-      console.log('[PWA] Running as standalone app');
-      return;
-    }
-
-    // Check if already installed (iOS)
-    if (window.navigator.standalone === true) {
-      this.isInstalled = true;
-      console.log('[PWA] Running as iOS standalone app');
-      return;
-    }
-
-    // Check iOS full-screen mode
-    if (window.fullScreen === true || navigator.fullScreen) {
-      this.isInstalled = true;
-      console.log('[PWA] Running in full-screen mode');
-      return;
-    }
-
-    // For iOS, show custom install instructions
-    if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
-      this.showIOSInstallInstructions();
-    }
-  }
-
-  /**
-   * Show iOS install instructions
-   */
-  showIOSInstallInstructions() {
-    // iOS doesn't support beforeinstallprompt
-    // Show custom instructions instead
-    const instructions = document.createElement('div');
-    instructions.className = 'ios-install-instructions';
-    instructions.innerHTML = `
-      <div style="position:fixed;bottom:20px;right:20px;background:var(--bg-dark);border:1px solid var(--primary);border-radius:var(--radius-md);padding:16px;z-index:9999;max-width:300px;box-shadow:var(--shadow-lg);">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
-          <i class="fas fa-download" style="color:var(--primary);font-size:24px;"></i>
-          <strong>Install on iPhone</strong>
-        </div>
-        <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">
-          To install this app on your iPhone:
-        </p>
-        <ol style="font-size:13px;color:var(--text);margin:0;padding-left:20px;">
-          <li>Tap the <strong>Share</strong> button <i class="fas fa-share-square"></i></li>
-          <li>Tap <strong>"Add to Home Screen"</strong> <i class="fas fa-plus-square"></i></li>
-        </ol>
-        <button onclick="this.parentElement.remove()" style="position:absolute;top:8px;right:8px;background:transparent;border:none;color:var(--text-muted);cursor:pointer;">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-    `;
-    document.body.appendChild(instructions);
-
-    // Auto-hide after 15 seconds
-    setTimeout(() => {
-      if (instructions.parentNode) {
-        instructions.style.opacity = '0';
-        instructions.style.transition = 'opacity 0.3s ease';
-        setTimeout(() => instructions.remove(), 300);
-      }
-    }, 15000);
-  }
-
-  /**
-   * Show install button - Fixed for tablets
+   * Show install button
    */
   showInstallButton() {
     if (this.installPromptShown) return;
     this.installPromptShown = true;
 
-    // Create install button if not exists
     let installBtn = document.getElementById('pwa-install-btn');
     if (!installBtn) {
       installBtn = document.createElement('button');
@@ -711,7 +526,7 @@ export class PWAManager {
       installBtn.addEventListener('click', () => this.promptInstall());
       document.body.appendChild(installBtn);
 
-      // Auto-hide after 20 seconds (longer for tablets)
+      // Auto-hide after 20 seconds
       setTimeout(() => {
         if (installBtn && installBtn.parentNode) {
           installBtn.style.animation = 'fadeOutDown 0.3s ease';
@@ -719,17 +534,9 @@ export class PWAManager {
           this.installPromptShown = false;
         }
       }, 20000);
-      
-      // Pulse animation to draw attention
+
+      // Pulse animation
       installBtn.style.animation = 'fadeInUp 0.3s ease, pulse 2s ease-in-out 1s infinite';
-      
-      // Add pulse keyframes if not exists
-      if (!document.getElementById('pulse-keyframes')) {
-        const style = document.createElement('style');
-        style.id = 'pulse-keyframes';
-        style.textContent = '@keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }';
-        document.head.appendChild(style);
-      }
     }
   }
 
@@ -748,23 +555,19 @@ export class PWAManager {
    * Prompt user to install
    */
   async promptInstall() {
-    // Show progress in loading screen
     this.updateInstallProgress(10, 'Preparing installation...');
 
     if (!this.promptEvent) {
       console.log('[PWA] Install prompt not available');
 
-      // Show iOS instructions as fallback
       if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
         this.updateInstallProgress(100, 'See instructions');
         this.showIOSInstallInstructions();
       } else {
-        // Show message that app can be installed via browser menu
         this.updateInstallProgress(100, 'Use browser menu');
         this.showBrowserInstallHint();
       }
 
-      // Update button state
       if (this.updateInstallButtonState) {
         this.updateInstallButtonState();
       }
@@ -775,7 +578,7 @@ export class PWAManager {
     this.promptEvent.prompt();
     const { outcome } = await this.promptEvent.userChoice;
 
-    console.log('[PWA] User response to install prompt:', outcome);
+    console.log('[PWA] User response:', outcome);
     this.promptEvent = null;
 
     if (outcome === 'accepted') {
@@ -785,54 +588,123 @@ export class PWAManager {
       this.updateInstallProgress(0, 'Installation cancelled');
     }
 
-    // Update button state
     if (this.updateInstallButtonState) {
       this.updateInstallButtonState();
     }
   }
 
   /**
-   * Show browser install hint for when prompt is not available
+   * Show browser install hint
    */
   showBrowserInstallHint() {
-    const notification = document.createElement('div');
-    notification.style.cssText = `
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--bg-dark);
-      border: 1px solid var(--primary);
-      border-radius: var(--radius-md);
-      padding: 16px 24px;
-      color: var(--text);
-      font-size: 14px;
-      z-index: 99999;
-      backdrop-filter: blur(20px);
-      box-shadow: var(--shadow-lg);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      animation: fadeInUp 0.3s ease;
-      max-width: calc(100vw - 40px);
-    `;
+    this.showNotification({
+      type: 'info',
+      title: 'Install via Browser',
+      message: 'Use your browser\'s menu (⋮) → "Install HAI Tour" or "Create shortcut"',
+      icon: 'fa-info-circle',
+      duration: 10000
+    });
+  }
 
-    notification.innerHTML = `
-      <i class="fas fa-info-circle" style="color: var(--primary);"></i>
-      <span>To install this app, use your browser's "Install" or "Add to Home Screen" option in the menu.</span>
-      <button onclick="this.parentElement.remove()" style="background:transparent;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;margin-left:12px;">
-        <i class="fas fa-times"></i>
-      </button>
+  /**
+   * Show iOS install instructions
+   */
+  showIOSInstallInstructions() {
+    const instructions = document.createElement('div');
+    instructions.className = 'ios-install-instructions';
+    instructions.innerHTML = `
+      <div style="position:fixed;bottom:20px;right:20px;background:var(--bg-dark);border:1px solid var(--primary);border-radius:var(--radius-md);padding:16px;z-index:9999;max-width:300px;box-shadow:var(--shadow-lg);">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+          <i class="fas fa-download" style="color:var(--primary);font-size:24px;"></i>
+          <strong>Install on iPhone</strong>
+        </div>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">
+          To install this app on your iPhone:
+        </p>
+        <ol style="font-size:13px;color:var(--text);margin:0;padding-left:20px;">
+          <li>Tap the <strong>Share</strong> button <i class="fas fa-share-square"></i></li>
+          <li>Tap <strong>"Add to Home Screen"</strong> <i class="fas fa-plus-square"></i></li>
+        </ol>
+        <button onclick="this.parentElement.remove()" style="position:absolute;top:8px;right:8px;background:transparent;border:none;color:var(--text-muted);cursor:pointer;">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
     `;
-
-    document.body.appendChild(notification);
+    document.body.appendChild(instructions);
 
     setTimeout(() => {
-      if (notification.parentNode) {
-        notification.style.animation = 'fadeOutDown 0.3s ease';
-        setTimeout(() => notification.remove(), 300);
+      if (instructions.parentNode) {
+        instructions.style.opacity = '0';
+        instructions.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => instructions.remove(), 300);
       }
-    }, 10000);
+    }, 15000);
+  }
+
+  /**
+   * Show warning about secure context requirement
+   */
+  showSecureContextWarning() {
+    this.showNotification({
+      type: 'warning',
+      title: 'PWA Install Not Available',
+      message: `Must use HTTPS or localhost. Current: ${window.location.protocol}`,
+      icon: 'fa-exclamation-triangle',
+      duration: 10000,
+      dismissible: true
+    });
+  }
+
+  /**
+   * Setup navigation handler for PWA
+   */
+  setupNavigationHandler() {
+    if (window.location.search) {
+      const params = new URLSearchParams(window.location.search);
+
+      if (params.get('start') === 'tour') {
+        setTimeout(() => {
+          const startBtn = document.getElementById('btn-start-tour');
+          if (startBtn) startBtn.click();
+        }, 1000);
+      }
+
+      if (params.get('modal') === 'gallery') {
+        setTimeout(() => {
+          this.tourPlayer?.ui?.openModal?.('gallery');
+        }, 1500);
+      }
+
+      if (params.get('view') === 'floorplan') {
+        setTimeout(() => {
+          const floorPlanContainer = document.getElementById('floor-plan-container');
+          if (floorPlanContainer) {
+            floorPlanContainer.scrollIntoView({ behavior: 'smooth' });
+          }
+        }, 1000);
+      }
+    }
+  }
+
+  /**
+   * Check if app is installable
+   */
+  async checkInstallability() {
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      this.isInstalled = true;
+      console.log('[PWA] Running as standalone app');
+      return;
+    }
+
+    if (window.navigator.standalone === true) {
+      this.isInstalled = true;
+      console.log('[PWA] Running as iOS standalone app');
+      return;
+    }
+
+    if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
+      this.showIOSInstallInstructions();
+    }
   }
 
   /**
@@ -840,57 +712,75 @@ export class PWAManager {
    */
   handleOnline() {
     this.isOnline = true;
-    this.showOnlineNotification();
-    
-    // Retry any pending operations
-    this.retryPendingOperations();
+    this.showNotification({
+      type: 'success',
+      title: 'Back Online',
+      message: 'Your connection has been restored',
+      icon: 'fa-wifi',
+      duration: 3000
+    });
   }
 
   handleOffline() {
     this.isOnline = false;
-    this.showOfflineNotification();
+    this.showNotification({
+      type: 'warning',
+      title: 'You\'re Offline',
+      message: 'Cached content is still available',
+      icon: 'fa-wifi',
+      duration: 5000
+    });
   }
 
   /**
    * Monitor online status
    */
   monitorOnlineStatus() {
-    // Initial check
     this.isOnline = navigator.onLine;
-  }
-
-  /**
-   * Retry pending operations when back online
-   */
-  async retryPendingOperations() {
-    // Check if there are any pending syncs
-    if ('serviceWorker' in navigator && 'sync' in window.SyncManager?.prototype) {
-      const registration = await navigator.serviceWorker.ready;
-      try {
-        await registration.sync.register('sync-capture');
-      } catch (error) {
-        // Sync not available
-      }
-    }
   }
 
   /**
    * Show update notification
    */
   showUpdateNotification() {
-    // Remove existing notification if any
-    const existing = document.getElementById('pwa-update-notification');
-    if (existing) existing.remove();
+    this.showNotification({
+      type: 'info',
+      title: 'Update Available',
+      message: 'New version available! Refresh to update.',
+      icon: 'fa-sync-alt',
+      duration: 10000,
+      action: {
+        label: 'Refresh Now',
+        callback: () => window.location.reload()
+      }
+    });
+  }
 
+  /**
+   * Show update available notification
+   */
+  showUpdateAvailableNotification() {
+    this.showNotification({
+      type: 'info',
+      title: 'App Updated',
+      message: 'The app has been updated in the background',
+      icon: 'fa-check-circle',
+      duration: 5000
+    });
+  }
+
+  /**
+   * Show generic notification
+   */
+  showNotification({ type = 'info', title, message, icon, duration = 5000, action, dismissible = true }) {
     const notification = document.createElement('div');
-    notification.id = 'pwa-update-notification';
     notification.style.cssText = `
       position: fixed;
       top: 20px;
       left: 50%;
       transform: translateX(-50%);
       background: var(--bg-dark);
-      border: 1px solid var(--primary);
+      border: 1px solid var(--${type === 'success' ? 'success' : type === 'warning' ? 'accent' : type === 'error' ? 'error' : 'primary'});
       border-radius: var(--radius-md);
       padding: 14px 24px;
       color: var(--text);
@@ -905,190 +795,33 @@ export class PWAManager {
       max-width: calc(100vw - 40px);
     `;
 
+    const iconColor = type === 'success' ? '#10b981' : type === 'warning' ? '#f59e0b' : type === 'error' ? '#ef4444' : '#6366f1';
+    
+    let actionHTML = '';
+    if (action) {
+      actionHTML = `<button onclick="this.parentElement.remove(); (${action.callback})()" style="background:var(--primary);border:none;color:#fff;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;margin-left:8px;">${action.label}</button>`;
+    }
+
     notification.innerHTML = `
-      <i class="fas fa-sync-alt" style="color: var(--primary); animation: spin 2s linear infinite;"></i>
-      <span>New version available! Refresh to update.</span>
-      <button onclick="location.reload()" style="background:var(--primary);border:none;color:#fff;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;margin-left:8px;">
-        Refresh Now
-      </button>
-      <button onclick="document.getElementById('pwa-update-notification').remove()" style="background:transparent;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;margin-left:8px;">
-        <i class="fas fa-times"></i>
-      </button>
+      <i class="fas ${icon}" style="color: ${iconColor};"></i>
+      <div>
+        <strong>${title}</strong>
+        <div style="font-size:13px;opacity:0.8;margin-top:2px;">${message}</div>
+      </div>
+      ${actionHTML}
+      ${dismissible ? `<button onclick="this.parentElement.remove()" style="background:transparent;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;margin-left:8px;"><i class="fas fa-times"></i></button>` : ''}
     `;
 
     document.body.appendChild(notification);
 
-    // Add spin animation
-    if (!document.getElementById('spin-animation')) {
-      const style = document.createElement('style');
-      style.id = 'spin-animation';
-      style.textContent = '@keyframes spin { 100% { transform: rotate(360deg); } }';
-      document.head.appendChild(style);
+    if (duration > 0) {
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.style.animation = 'fadeOutUp 0.3s ease';
+          setTimeout(() => notification.remove(), 300);
+        }
+      }, duration);
     }
-  }
-
-  /**
-   * Show offline notification
-   */
-  showOfflineNotification() {
-    // Remove existing offline notification
-    const existing = document.getElementById('pwa-offline-notification');
-    if (existing) existing.remove();
-
-    const notification = document.createElement('div');
-    notification.id = 'pwa-offline-notification';
-    notification.style.cssText = `
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--bg-dark);
-      border: 1px solid var(--accent);
-      border-radius: var(--radius-md);
-      padding: 14px 24px;
-      color: var(--text);
-      font-size: 14px;
-      z-index: 10000;
-      backdrop-filter: blur(10px);
-      box-shadow: var(--shadow-lg);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      animation: fadeInDown 0.3s ease;
-    `;
-
-    notification.innerHTML = `
-      <i class="fas fa-wifi" style="color: var(--accent);"></i>
-      <span>You're offline. Cached content is still available.</span>
-    `;
-
-    document.body.appendChild(notification);
-
-    // Auto-hide after 5 seconds
-    setTimeout(() => {
-      if (notification.parentNode) {
-        notification.style.animation = 'fadeOutUp 0.3s ease';
-        setTimeout(() => notification.remove(), 300);
-      }
-    }, 5000);
-  }
-
-  /**
-   * Show online notification
-   */
-  showOnlineNotification() {
-    const notification = document.createElement('div');
-    notification.style.cssText = `
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--bg-dark);
-      border: 1px solid #10b981;
-      border-radius: var(--radius-md);
-      padding: 14px 24px;
-      color: var(--text);
-      font-size: 14px;
-      z-index: 10000;
-      backdrop-filter: blur(10px);
-      box-shadow: var(--shadow-lg);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      animation: fadeInDown 0.3s ease;
-    `;
-
-    notification.innerHTML = `
-      <i class="fas fa-wifi" style="color: #10b981;"></i>
-      <span>Back online!</span>
-    `;
-
-    document.body.appendChild(notification);
-
-    setTimeout(() => {
-      notification.style.animation = 'fadeOutUp 0.3s ease';
-      setTimeout(() => notification.remove(), 300);
-    }, 3000);
-  }
-
-  /**
-   * Cache specific URLs
-   */
-  async cacheUrls(urls) {
-    if ('serviceWorker' in navigator) {
-      const registration = await navigator.serviceWorker.ready;
-      registration.active.postMessage({
-        type: 'CACHE_URLS',
-        urls: urls
-      });
-    }
-  }
-
-  /**
-   * Get cache status
-   */
-  async getCacheStatus() {
-    if ('caches' in window) {
-      const cacheNames = await caches.keys();
-      const cacheInfo = {};
-
-      for (const name of cacheNames) {
-        const cache = await caches.open(name);
-        const keys = await cache.keys();
-        cacheInfo[name] = {
-          count: keys.length,
-          estimatedSize: keys.length * 100 * 1024 // Rough estimate
-        };
-      }
-
-      return cacheInfo;
-    }
-    return {};
-  }
-
-  /**
-   * Clear cache
-   */
-  async clearCache() {
-    if ('caches' in window) {
-      const cacheNames = await caches.keys();
-      await Promise.all(cacheNames.map(name => caches.delete(name)));
-      console.log('[PWA] Cache cleared');
-    }
-  }
-
-  /**
-   * Precache media files
-   */
-  async precacheMedia(urls) {
-    if ('serviceWorker' in navigator) {
-      const registration = await navigator.serviceWorker.ready;
-      registration.active.postMessage({
-        type: 'PRECACHE_MEDIA',
-        urls: urls
-      });
-    }
-  }
-
-  /**
-   * Is app installed?
-   */
-  isAppInstalled() {
-    return this.isInstalled;
-  }
-
-  /**
-   * Is app online?
-   */
-  isAppOnline() {
-    return this.isOnline;
-  }
-
-  /**
-   * Get install prompt state
-   */
-  canShowInstallPrompt() {
-    return this.promptEvent !== null && !this.isInstalled && !this.installPromptShown;
   }
 
   /**
@@ -1100,13 +833,12 @@ export class PWAManager {
     }
 
     const registration = await navigator.serviceWorker.ready;
-    
+
     // Create message channel for progress updates
     const messageChannel = new MessageChannel();
     const port = messageChannel.port1;
     port.start();
 
-    // Handle progress messages
     port.onmessage = (event) => {
       const data = event.data;
       console.log('[PWA] Cache progress:', data);
@@ -1137,16 +869,14 @@ export class PWAManager {
           total: data.total,
           percent: data.percent,
           successRate: data.successRate,
-          message: `Offline cache complete: ${data.cached}/${data.total} items cached (${data.successRate}% success rate)`
+          message: `Offline cache complete: ${data.cached}/${data.total} items`
         });
       }
     };
 
-    // Get all media URLs from the app
     const mediaUrls = await this.discoverAllMediaUrls();
-    console.log(`[PWA] Discovered ${mediaUrls.length} media URLs to cache`);
+    console.log(`[PWA] Discovered ${mediaUrls.length} media URLs`);
 
-    // Send cache command with message port
     registration.active.postMessage({
       type: 'CACHE_ALL_MEDIA',
       urls: mediaUrls
@@ -1160,55 +890,6 @@ export class PWAManager {
    */
   async discoverAllMediaUrls() {
     const urls = new Set();
-    const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '/');
-
-    // Add panoramas
-    const panoramaFiles = await this.scanDirectory('media/tdv-import/panoramas/');
-    panoramaFiles.forEach(file => {
-      urls.add(`media/tdv-import/panoramas/${file}`);
-      // Also add thumbnail versions
-      const webpFile = file.replace(/\.(jpg|jpeg|png)$/i, '.webp');
-      if (webpFile !== file) {
-        urls.add(`media/tdv-import/panoramas/${webpFile}`);
-      }
-    });
-
-    // Add hotspot images
-    const hotspotFiles = await this.scanDirectory('media/tdv-import/hotspots/');
-    hotspotFiles.forEach(file => {
-      urls.add(`media/tdv-import/hotspots/${file}`);
-    });
-
-    // Add floor plan images
-    const floorPlanFiles = await this.scanDirectory('floor-plan/');
-    floorPlanFiles.forEach(file => {
-      if (file.match(/\.(jpg|jpeg|png|webp|gif)$/i)) {
-        urls.add(`floor-plan/${file}`);
-      }
-    });
-
-    // Add gallery images
-    const galleryFiles = await this.scanDirectory('gallery/');
-    galleryFiles.forEach(file => {
-      urls.add(`gallery/${file}`);
-    });
-
-    // Add audio files
-    const audioFiles = await this.scanDirectory('media/audio/');
-    audioFiles.forEach(file => {
-      urls.add(`media/audio/${file}`);
-    });
-
-    // Add skin/images
-    const skinFiles = await this.scanDirectory('media/tdv-import/skin/');
-    skinFiles.forEach(file => {
-      urls.add(`media/tdv-import/skin/${file}`);
-    });
-
-    // Add config files
-    urls.add('media/tdv-import/project.json');
-    urls.add('media/tdv-import/hotspots.json');
-    urls.add('floor-plan/floor-plan-config.json');
 
     // Add existing thumbnails
     const existingThumbnails = [
@@ -1253,43 +934,15 @@ export class PWAManager {
       'media/tdv-import/panorama_DC5FADB7_D774_C109_41E0_A20BC05345FE_t.jpg',
       'media/tdv-import/panorama_DC5FADB7_D774_C109_41E0_A20BC05345FE_t.webp'
     ];
+    
     existingThumbnails.forEach(url => urls.add(url));
 
+    // Add config files
+    urls.add('media/tdv-import/project.json');
+    urls.add('media/tdv-import/hotspots.json');
+    urls.add('floor-plan/floor-plan-config.json');
+
     return Array.from(urls);
-  }
-
-  /**
-   * Scan directory for files (requires server support or manifest)
-   */
-  async scanDirectory(path) {
-    try {
-      // Try to fetch directory listing (works with some servers)
-      const response = await fetch(path, { 
-        method: 'HEAD',
-        cache: 'no-cache'
-      });
-      
-      if (!response.ok) {
-        return [];
-      }
-
-      // Try to get index file if it exists
-      try {
-        const indexResponse = await fetch(path + 'index.json');
-        if (indexResponse.ok) {
-          const data = await indexResponse.json();
-          return data.files || [];
-        }
-      } catch (e) {
-        // No index file
-      }
-
-      // Fallback: return empty array, files will be cached on-demand
-      return [];
-    } catch (error) {
-      // Silently fail - directories often don't have listing enabled
-      return [];
-    }
   }
 
   /**
@@ -1301,7 +954,8 @@ export class PWAManager {
         mediaCount: 0,
         staticCount: 0,
         totalCount: 0,
-        isReadyForOffline: false
+        isReadyForOffline: false,
+        version: 'unknown'
       };
     }
 
@@ -1323,10 +977,34 @@ export class PWAManager {
   }
 
   /**
-   * Check if content is available offline
+   * Clear cache
    */
-  async isContentAvailableOffline() {
-    const status = await this.getOfflineStatus();
-    return status.isReadyForOffline;
+  async clearCache() {
+    if ('caches' in window) {
+      const cacheNames = await caches.keys();
+      await Promise.all(cacheNames.map(name => caches.delete(name)));
+      console.log('[PWA] Cache cleared');
+    }
+  }
+
+  /**
+   * Is app installed?
+   */
+  isAppInstalled() {
+    return this.isInstalled;
+  }
+
+  /**
+   * Is app online?
+   */
+  isAppOnline() {
+    return this.isOnline;
+  }
+
+  /**
+   * Get install prompt state
+   */
+  canShowInstallPrompt() {
+    return this.promptEvent !== null && !this.isInstalled && !this.installPromptShown;
   }
 }

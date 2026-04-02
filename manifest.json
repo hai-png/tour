@@ -2,39 +2,128 @@
   "name": "HAI PNG Virtual Tour",
   "short_name": "HAI Tour",
   "description": "Interactive 360° virtual tour of HAI PNG property - Explore luxury living in Port Moresby",
-  "start_url": "./index.html",
+  "start_url": "/index.html",
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#6366f1",
   "orientation": "any",
-  "scope": "./",
+  "scope": "/",
   "icons": [
     {
-      "src": "media/pwa/icon-192x192.png",
+      "src": "/media/pwa/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/media/pwa/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/media/pwa/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/media/pwa/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/media/pwa/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/media/pwa/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/media/pwa/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/media/pwa/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/media/pwa/icon-1024x1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/media/pwa/favicon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "media/pwa/icon-512x512.png",
+      "src": "/media/pwa/favicon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ],
-  "categories": ["travel", "education", "utilities", "lifestyle"],
+  "categories": ["travel", "lifestyle", "utilities", "entertainment"],
   "prefer_related_applications": false,
   "shortcuts": [
     {
-      "name": "Start Tour",
-      "short_name": "Tour",
-      "description": "Begin the virtual tour",
-      "url": "./index.html?start=tour",
-      "icons": [{ "src": "media/pwa/icon-192x192.png", "sizes": "192x192" }]
+      "name": "Start Virtual Tour",
+      "short_name": "Start Tour",
+      "description": "Begin the virtual tour experience",
+      "url": "/index.html?start=tour",
+      "icons": [
+        {
+          "src": "/media/pwa/icon-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png",
+          "purpose": "any"
+        }
+      ]
+    },
+    {
+      "name": "View Floor Plan",
+      "short_name": "Floor Plan",
+      "description": "View the property floor plan",
+      "url": "/index.html?view=floorplan",
+      "icons": [
+        {
+          "src": "/media/pwa/icon-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png",
+          "purpose": "any"
+        }
+      ]
+    },
+    {
+      "name": "Open Gallery",
+      "short_name": "Gallery",
+      "description": "Browse property photos and videos",
+      "url": "/index.html?modal=gallery",
+      "icons": [
+        {
+          "src": "/media/pwa/icon-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png",
+          "purpose": "any"
+        }
+      ]
     }
   ],
   "share_target": {
-    "action": "./index.html?share",
+    "action": "/index.html?share",
     "method": "GET",
     "enctype": "application/x-www-form-urlencoded",
     "params": {
@@ -46,5 +135,48 @@
   "launch_handler": {
     "client_mode": "navigate-existing"
   },
-  "handle_links": "preferred"
+  "handle_links": "preferred",
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "file_handlers": [
+    {
+      "action": "/index.html?import",
+      "accept": {
+        "application/json": [".json"],
+        "text/xml": [".xml"]
+      },
+      "icons": [
+        {
+          "src": "/media/pwa/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "protocol_handlers": [
+    {
+      "protocol": "web+tour",
+      "url": "/index.html?url=%s"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/media/pwa/screenshot-desktop.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Desktop Virtual Tour Experience"
+    },
+    {
+      "src": "/media/pwa/screenshot-mobile.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Mobile Virtual Tour Experience"
+    }
+  ],
+  "related_applications": [],
+  "iarc_rating_id": "",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"]
 }

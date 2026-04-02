@@ -2,23 +2,36 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#6366f1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Offline - HAI PNG Virtual Tour</title>
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/media/pwa/favicon.ico" />
+  <link rel="apple-touch-icon" href="/media/pwa/apple-touch-icon.png" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <style>
     :root {
       --primary: #6366f1;
       --primary-dark: #4f46e5;
+      --primary-light: #818cf8;
       --secondary: #8b5cf6;
       --accent: #f59e0b;
       --bg-dark: #0f172a;
       --bg-card: #1e293b;
+      --bg-elevated: #334155;
       --text: #f8fafc;
       --text-muted: #94a3b8;
       --success: #10b981;
       --error: #ef4444;
+      --warning: #f59e0b;
+      --radius-sm: 8px;
       --radius-md: 12px;
-      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+      --radius-lg: 16px;
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+      --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
     }
 
     * {
@@ -29,25 +42,66 @@
 
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, var(--bg-dark) 0%, #1e1b4b 100%);
+      background: linear-gradient(135deg, var(--bg-dark) 0%, #1e1b4b 50%, #312e81 100%);
       color: var(--text);
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 20px;
+      overflow-x: hidden;
+    }
+
+    /* Animated background */
+    .bg-animation {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: -1;
+    }
+
+    .bg-particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: var(--primary);
+      border-radius: 50%;
+      opacity: 0.3;
+      animation: float 15s infinite;
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(100vh) rotate(0deg);
+        opacity: 0;
+      }
+      10% {
+        opacity: 0.3;
+      }
+      90% {
+        opacity: 0.3;
+      }
+      100% {
+        transform: translateY(-100vh) rotate(720deg);
+        opacity: 0;
+      }
     }
 
     .offline-container {
       text-align: center;
-      max-width: 500px;
-      animation: fadeInUp 0.5s ease;
+      max-width: 600px;
+      width: 100%;
+      animation: fadeInUp 0.6s ease;
     }
 
     @keyframes fadeInUp {
       from {
         opacity: 0;
-        transform: translateY(30px);
+        transform: translateY(40px);
       }
       to {
         opacity: 1;
@@ -55,47 +109,113 @@
       }
     }
 
-    .offline-icon {
-      font-size: 80px;
+    .logo {
+      width: 100px;
+      height: 100px;
       margin-bottom: 24px;
-      animation: pulse 2s ease infinite;
+      object-fit: contain;
+      filter: drop-shadow(0 0 20px rgba(99, 102, 241, 0.4));
+      animation: logoPulse 3s ease infinite;
     }
 
-    @keyframes pulse {
+    @keyframes logoPulse {
       0%, 100% {
-        opacity: 1;
+        filter: drop-shadow(0 0 20px rgba(99, 102, 241, 0.4));
         transform: scale(1);
       }
       50% {
-        opacity: 0.7;
+        filter: drop-shadow(0 0 30px rgba(99, 102, 241, 0.6));
         transform: scale(1.05);
       }
     }
 
-    h1 {
-      font-size: 32px;
-      font-weight: 700;
-      margin-bottom: 16px;
+    .offline-icon-wrapper {
+      position: relative;
+      display: inline-block;
+      margin-bottom: 24px;
+    }
+
+    .offline-icon {
+      font-size: 80px;
       background: linear-gradient(135deg, var(--primary), var(--secondary));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+      animation: pulse 2s ease infinite;
     }
 
-    p {
+    .offline-icon-ring {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 120px;
+      height: 120px;
+      border: 2px solid var(--primary);
+      border-radius: 50%;
+      animation: ripple 2s ease-out infinite;
+      opacity: 0;
+    }
+
+    .offline-icon-ring:nth-child(2) {
+      animation-delay: 0.6s;
+    }
+
+    .offline-icon-ring:nth-child(3) {
+      animation-delay: 1.2s;
+    }
+
+    @keyframes ripple {
+      0% {
+        width: 80px;
+        height: 80px;
+        opacity: 0.8;
+      }
+      100% {
+        width: 200px;
+        height: 200px;
+        opacity: 0;
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.1);
+      }
+    }
+
+    h1 {
+      font-size: 36px;
+      font-weight: 800;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary), var(--primary-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.5px;
+    }
+
+    .subtitle {
       color: var(--text-muted);
       line-height: 1.6;
-      margin-bottom: 24px;
+      margin-bottom: 32px;
       font-size: 16px;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
     }
 
-    .offline-card {
+    .status-card {
       background: var(--bg-card);
-      border-radius: var(--radius-md);
+      border-radius: var(--radius-lg);
       padding: 24px;
       margin-bottom: 24px;
       box-shadow: var(--shadow-lg);
       border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
     }
 
     .status-indicator {
@@ -106,13 +226,14 @@
       padding: 16px;
       background: rgba(239, 68, 68, 0.1);
       border-radius: var(--radius-md);
-      border: 1px solid var(--error);
+      border: 1px solid rgba(239, 68, 68, 0.3);
       margin-bottom: 20px;
+      transition: all 0.3s ease;
     }
 
     .status-indicator.online {
       background: rgba(16, 185, 129, 0.1);
-      border-color: var(--success);
+      border-color: rgba(16, 185, 129, 0.3);
     }
 
     .status-dot {
@@ -121,11 +242,13 @@
       border-radius: 50%;
       background: var(--error);
       animation: blink 1.5s ease infinite;
+      box-shadow: 0 0 10px var(--error);
     }
 
     .status-indicator.online .status-dot {
       background: var(--success);
       animation: none;
+      box-shadow: 0 0 10px var(--success);
     }
 
     @keyframes blink {
@@ -133,112 +256,237 @@
       50% { opacity: 0.4; }
     }
 
-    .retry-btn {
-      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-      color: white;
-      border: none;
-      padding: 14px 32px;
-      border-radius: var(--radius-md);
-      font-size: 16px;
+    .status-text {
+      font-size: 15px;
       font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .btn {
       display: inline-flex;
       align-items: center;
       gap: 10px;
+      padding: 14px 28px;
+      border-radius: var(--radius-md);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: none;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
       box-shadow: var(--shadow-lg);
     }
 
-    .retry-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
-    }
-
-    .retry-btn:active {
+    .btn-primary:active {
       transform: translateY(0);
     }
 
-    .retry-btn i {
-      font-size: 18px;
+    .btn-secondary {
+      background: var(--bg-elevated);
+      color: var(--text);
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    .tips-list {
-      text-align: left;
+    .btn-secondary:hover {
+      background: var(--bg-card);
+      border-color: var(--primary);
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
       margin-top: 20px;
+      text-align: left;
     }
 
-    .tip-item {
+    .feature-item {
       display: flex;
       align-items: flex-start;
       gap: 12px;
-      padding: 12px;
+      padding: 16px;
       background: rgba(255, 255, 255, 0.05);
-      border-radius: 8px;
-      margin-bottom: 10px;
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.3s ease;
+    }
+
+    .feature-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(99, 102, 241, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .feature-icon {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border-radius: var(--radius-sm);
+      flex-shrink: 0;
+    }
+
+    .feature-icon i {
+      font-size: 18px;
+      color: white;
+    }
+
+    .feature-content {
+      flex: 1;
+    }
+
+    .feature-title {
       font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: var(--text);
+    }
+
+    .feature-desc {
+      font-size: 13px;
       color: var(--text-muted);
+      line-height: 1.4;
     }
 
-    .tip-item i {
-      color: var(--primary);
-      font-size: 16px;
-      margin-top: 2px;
-    }
-
-    .cache-info {
+    .cache-stats {
       margin-top: 24px;
       padding-top: 24px;
       border-top: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    .cache-info h3 {
+    .cache-stats h3 {
       font-size: 18px;
-      margin-bottom: 12px;
+      margin-bottom: 16px;
       color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
-    .cache-status {
+    .cache-stats h3 i {
+      color: var(--primary);
+    }
+
+    .stats-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
       gap: 12px;
-      margin-top: 16px;
     }
 
-    .cache-stat {
+    .stat-card {
       background: rgba(255, 255, 255, 0.05);
       padding: 16px;
       border-radius: var(--radius-md);
       text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.3s ease;
     }
 
-    .cache-stat-value {
-      font-size: 24px;
+    .stat-card:hover {
+      border-color: rgba(99, 102, 241, 0.3);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .stat-value {
+      font-size: 28px;
       font-weight: 700;
-      color: var(--primary);
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
       margin-bottom: 4px;
     }
 
-    .cache-stat-label {
+    .stat-label {
       font-size: 12px;
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.5px;
+      font-weight: 500;
     }
 
-    .logo {
-      width: 80px;
-      height: 80px;
-      margin-bottom: 20px;
-      object-fit: contain;
+    .tips-section {
+      margin-top: 24px;
+      padding: 20px;
+      background: rgba(99, 102, 241, 0.1);
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+
+    .tips-section h4 {
+      font-size: 16px;
+      margin-bottom: 12px;
+      color: var(--primary-light);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tips-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .tip-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 8px 0;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .tip-item i {
+      color: var(--success);
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+
+    .tip-item.warning i {
+      color: var(--warning);
+    }
+
+    /* Loading spinner */
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(99, 102, 241, 0.2);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
 
     /* Responsive */
-    @media (max-width: 480px) {
+    @media (max-width: 640px) {
       h1 {
-        font-size: 24px;
+        font-size: 28px;
       }
 
-      p {
+      .subtitle {
         font-size: 14px;
       }
 
@@ -246,93 +494,187 @@
         font-size: 60px;
       }
 
-      .cache-status {
+      .logo {
+        width: 80px;
+        height: 80px;
+      }
+
+      .action-buttons {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .features-grid {
         grid-template-columns: 1fr;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
       }
     }
   </style>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 </head>
 <body>
+  <!-- Background animation -->
+  <div class="bg-animation" id="bg-animation"></div>
+
   <div class="offline-container">
-    <img src="media/tdv-import/skin/logo.png" alt="HAI PNG" class="logo" onerror="this.style.display='none'" />
-    
-    <div class="offline-icon">
-      <i class="fas fa-wifi" style="color: var(--error);"></i>
+    <!-- Logo -->
+    <img src="/media/tdv-import/skin/logo.png" alt="HAI PNG" class="logo" 
+         onerror="this.onerror=null; this.style.background='linear-gradient(135deg, var(--primary), var(--secondary))'; this.style.borderRadius='16px';" />
+
+    <!-- Offline Icon -->
+    <div class="offline-icon-wrapper">
+      <div class="offline-icon-ring"></div>
+      <div class="offline-icon-ring"></div>
+      <div class="offline-icon-ring"></div>
+      <i class="fas fa-wifi offline-icon"></i>
     </div>
 
+    <!-- Title -->
     <h1>You're Offline</h1>
-    
-    <p>
-      It looks like you've lost your internet connection. 
-      Don't worry - you can still access cached parts of the virtual tour.
+    <p class="subtitle">
+      No worries! You can still access cached parts of the virtual tour.
+      Your connection will be automatically restored when you're back online.
     </p>
 
-    <div class="offline-card">
+    <!-- Status Card -->
+    <div class="status-card">
+      <!-- Connection Status -->
       <div class="status-indicator" id="status-indicator">
         <span class="status-dot"></span>
-        <span id="status-text">No Internet Connection</span>
+        <span class="status-text" id="status-text">No Internet Connection</span>
       </div>
 
-      <button class="retry-btn" onclick="retryConnection()">
-        <i class="fas fa-sync-alt"></i>
-        <span>Try Again</span>
-      </button>
-
-      <div class="tips-list">
-        <div class="tip-item">
-          <i class="fas fa-check-circle"></i>
-          <span>Cached rooms and floor plans are still available</span>
-        </div>
-        <div class="tip-item">
-          <i class="fas fa-check-circle"></i>
-          <span>Previously loaded panoramas can be viewed</span>
-        </div>
-        <div class="tip-item">
-          <i class="fas fa-check-circle"></i>
-          <span>Navigation between cached scenes works offline</span>
-        </div>
-        <div class="tip-item">
-          <i class="fas fa-exclamation-circle"></i>
-          <span>New rooms and high-resolution images require connection</span>
-        </div>
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <button class="btn btn-primary" onclick="retryConnection()">
+          <i class="fas fa-sync-alt"></i>
+          <span>Try Again</span>
+        </button>
+        <a href="/index.html" class="btn btn-secondary">
+          <i class="fas fa-home"></i>
+          <span>Go Home</span>
+        </a>
       </div>
 
-      <div class="cache-info">
-        <h3><i class="fas fa-database"></i> Cached Content</h3>
-        <div class="cache-status">
-          <div class="cache-stat">
-            <div class="cache-stat-value" id="cached-scenes">-</div>
-            <div class="cache-stat-label">Cached Scenes</div>
+      <!-- Features -->
+      <div class="features-grid">
+        <div class="feature-item">
+          <div class="feature-icon">
+            <i class="fas fa-check"></i>
           </div>
-          <div class="cache-stat">
-            <div class="cache-stat-value" id="cached-size">-</div>
-            <div class="cache-stat-label">Cache Size</div>
+          <div class="feature-content">
+            <div class="feature-title">Cached Scenes</div>
+            <div class="feature-desc">Previously loaded rooms are available offline</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">
+            <i class="fas fa-layer-group"></i>
+          </div>
+          <div class="feature-content">
+            <div class="feature-title">Floor Plans</div>
+            <div class="feature-desc">View cached floor plan layouts</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">
+            <i class="fas fa-compass"></i>
+          </div>
+          <div class="feature-content">
+            <div class="feature-title">Navigation</div>
+            <div class="feature-desc">Navigate between cached scenes</div>
+          </div>
+        </div>
+        <div class="feature-item warning">
+          <div class="feature-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+          </div>
+          <div class="feature-content">
+            <div class="feature-title">Limited Access</div>
+            <div class="feature-desc">New content requires internet connection</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cache Stats -->
+      <div class="cache-stats">
+        <h3><i class="fas fa-database"></i> Cached Content</h3>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value" id="stat-scenes">-</div>
+            <div class="stat-label">Scenes</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-size">-</div>
+            <div class="stat-label">Cache Size</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-ready">-</div>
+            <div class="stat-label">Ready</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-version">-</div>
+            <div class="stat-label">Version</div>
           </div>
         </div>
       </div>
     </div>
 
-    <p style="font-size: 14px;">
-      <i class="fas fa-info-circle"></i> 
-      The app will automatically reload when your connection is restored.
-    </p>
+    <!-- Tips Section -->
+    <div class="tips-section">
+      <h4><i class="fas fa-lightbulb"></i> Tips</h4>
+      <ul class="tips-list">
+        <li class="tip-item">
+          <i class="fas fa-check-circle"></i>
+          <span>The app will automatically reload when your connection is restored</span>
+        </li>
+        <li class="tip-item">
+          <i class="fas fa-check-circle"></i>
+          <span>Download more content for offline use when you're back online</span>
+        </li>
+        <li class="tip-item">
+          <i class="fas fa-check-circle"></i>
+          <span>Check your WiFi settings or mobile data connection</span>
+        </li>
+      </ul>
+    </div>
   </div>
 
   <script>
+    // Create background particles
+    function createParticles() {
+      const container = document.getElementById('bg-animation');
+      const particleCount = 20;
+
+      for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'bg-particle';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.animationDelay = Math.random() * 15 + 's';
+        particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+        container.appendChild(particle);
+      }
+    }
+
     // Monitor online status
     function updateStatus() {
       const indicator = document.getElementById('status-indicator');
       const statusText = document.getElementById('status-text');
-      
+
       if (navigator.onLine) {
         indicator.classList.add('online');
-        statusText.textContent = 'Connection Restored!';
-        
-        // Auto-reload after 1 second
+        statusText.textContent = 'Connection Restored! Reloading...';
+
+        // Auto-reload after 1.5 seconds
         setTimeout(() => {
-          window.location.reload();
-        }, 1000);
+          window.location.href = '/index.html';
+        }, 1500);
       } else {
         indicator.classList.remove('online');
         statusText.textContent = 'No Internet Connection';
@@ -340,60 +682,120 @@
     }
 
     // Retry connection
-    function retryConnection() {
+    async function retryConnection() {
+      const btn = event.currentTarget;
+      const originalContent = btn.innerHTML;
+      
+      // Show loading state
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Checking...</span>';
+      btn.disabled = true;
+
       if (navigator.onLine) {
-        window.location.reload();
-      } else {
         // Try to fetch a resource to test connection
-        fetch('/?t=' + Date.now(), { 
-          method: 'HEAD',
-          cache: 'no-cache'
-        })
-          .then(() => {
-            window.location.reload();
-          })
-          .catch(() => {
-            // Still offline - show animation
-            const btn = document.querySelector('.retry-btn');
-            btn.style.animation = 'shake 0.5s ease';
-            setTimeout(() => {
-              btn.style.animation = '';
-            }, 500);
+        try {
+          const response = await fetch('/index.html?t=' + Date.now(), {
+            method: 'HEAD',
+            cache: 'no-cache'
           });
+
+          if (response.ok) {
+            window.location.href = '/index.html';
+            return;
+          }
+        } catch (error) {
+          console.log('Connection test failed:', error);
+        }
       }
+
+      // Still offline
+      btn.innerHTML = originalContent;
+      btn.disabled = false;
+
+      // Shake animation
+      btn.style.animation = 'shake 0.5s ease';
+      setTimeout(() => {
+        btn.style.animation = '';
+      }, 500);
     }
 
-    // Listen for online/offline events
-    window.addEventListener('online', updateStatus);
-    window.addEventListener('offline', updateStatus);
-
-    // Check cache status
+    // Get cache status from service worker
     async function getCacheStatus() {
       try {
-        if ('caches' in window) {
-          const cacheNames = await caches.keys();
-          let totalItems = 0;
-          let totalSize = 0;
+        if ('serviceWorker' in navigator && 'caches' in window) {
+          // Try to get status from SW
+          if (navigator.serviceWorker.controller) {
+            const status = await new Promise((resolve) => {
+              const channel = new MessageChannel();
+              channel.port1.onmessage = (event) => {
+                resolve(event.data);
+              };
+              navigator.serviceWorker.controller.postMessage(
+                { type: 'GET_OFFLINE_STATUS' },
+                [channel.port2]
+              );
+            });
 
-          for (const name of cacheNames) {
-            if (name.startsWith('hai-tour-')) {
-              const cache = await caches.open(name);
-              const keys = await cache.keys();
-              totalItems += keys.length;
-              // Rough size estimate
-              totalSize += keys.length * 100 * 1024;
+            updateCacheStats(status);
+          } else {
+            // Fallback: check caches directly
+            const cacheNames = await caches.keys();
+            let totalItems = 0;
+            let totalSize = 0;
+
+            for (const name of cacheNames) {
+              if (name.startsWith('hai-tour-')) {
+                const cache = await caches.open(name);
+                const keys = await cache.keys();
+                totalItems += keys.length;
+                totalSize += keys.length * 100 * 1024; // Rough estimate
+              }
             }
-          }
 
-          document.getElementById('cached-scenes').textContent = totalItems;
-          document.getElementById('cached-size').textContent = formatSize(totalSize);
+            updateCacheStats({
+              totalCount: totalItems,
+              estimatedSize: totalSize,
+              isReadyForOffline: totalItems > 10,
+              version: 'unknown'
+            });
+          }
         }
       } catch (error) {
         console.error('Failed to get cache status:', error);
       }
     }
 
-    function formatSize(bytes) {
+    // Update cache stats UI
+    function updateCacheStats(status) {
+      const scenesEl = document.getElementById('stat-scenes');
+      const sizeEl = document.getElementById('stat-size');
+      const readyEl = document.getElementById('stat-ready');
+      const versionEl = document.getElementById('stat-version');
+
+      if (scenesEl) {
+        scenesEl.textContent = status.totalCount || 0;
+      }
+
+      if (sizeEl) {
+        sizeEl.textContent = formatBytes(status.estimatedSize || 0);
+      }
+
+      if (readyEl) {
+        if (status.isReadyForOffline) {
+          readyEl.textContent = 'Yes ✓';
+          readyEl.style.color = 'var(--success)';
+        } else {
+          readyEl.textContent = 'No';
+          readyEl.style.color = 'var(--warning)';
+        }
+      }
+
+      if (versionEl) {
+        versionEl.textContent = status.version || '-';
+      }
+    }
+
+    // Format bytes to human-readable string
+    function formatBytes(bytes) {
       if (bytes === 0) return '0 B';
       const k = 1024;
       const sizes = ['B', 'KB', 'MB', 'GB'];
@@ -401,15 +803,20 @@
       return Math.round(bytes / Math.pow(k, i) * 10) / 10 + ' ' + sizes[i];
     }
 
+    // Listen for online/offline events
+    window.addEventListener('online', updateStatus);
+    window.addEventListener('offline', updateStatus);
+
     // Initialize
+    createParticles();
     updateStatus();
     getCacheStatus();
 
     // Check initial online status and redirect if online
     if (navigator.onLine) {
       setTimeout(() => {
-        window.location.href = '/';
-      }, 500);
+        window.location.href = '/index.html';
+      }, 1000);
     }
   </script>
 
