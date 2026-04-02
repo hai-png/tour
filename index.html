@@ -207,8 +207,8 @@
         <i class="fas fa-share-alt"></i>
         <span data-i18n="share">Share</span>
       </button>
-      <!-- PWA Install Button - Visible in Top Bar -->
-      <button class="top-bar-btn" id="btn-install-pwa" title="Install App" style="display:none;background:linear-gradient(135deg, var(--primary), var(--primary-dark));border:2px solid rgba(255,255,255,0.2);">
+      <!-- PWA Install Button -->
+      <button class="top-bar-btn" id="btn-install-pwa" title="Install App" style="display:none;background:linear-gradient(135deg, #10b981, #059669);border:2px solid rgba(255,255,255,0.2);">
         <i class="fas fa-download"></i>
         <span>Install</span>
       </button>
@@ -1137,52 +1137,32 @@
       </div>
     </div>
 
-    <!-- Offline Download Progress Modal -->
-    <!-- PWA Install Prompt Modal -->
-    <div class="modal-overlay" id="modal-pwa-install">
-      <div class="modal-content" style="max-width:500px;">
-        <button class="modal-close" onclick="document.getElementById('modal-pwa-install').classList.remove('active')"><i class="fas fa-times"></i></button>
-        
-        <div style="text-align:center;padding:20px;">
-          <!-- Icon -->
-          <div style="width:80px;height:80px;margin:0 auto 20px;background:linear-gradient(135deg, var(--primary), var(--secondary));border-radius:20px;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 30px rgba(99, 102, 241, 0.3);">
-            <i class="fas fa-download" style="font-size:40px;color:white;"></i>
-          </div>
-          
-          <h2 style="font-size:24px;margin-bottom:8px;">Install HAI Tour App</h2>
-          <p style="color:var(--text-muted);margin-bottom:24px;" id="pwa-install-description">
-            Install this app for quick access and offline support
-          </p>
-          
-          <!-- Native Install Button (shown when available) -->
-          <button id="btn-native-install" style="display:none;width:100%;padding:16px;background:linear-gradient(135deg, var(--primary), var(--primary-dark));color:white;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 10px 30px rgba(99, 102, 241, 0.3);transition:all 0.3s ease;margin-bottom:12px;">
-            <i class="fas fa-download" style="margin-right:8px;"></i> Install App
-          </button>
-          
-          <!-- Manual Install Instructions (always shown) -->
-          <div id="manual-install-instructions" style="text-align:left;margin-bottom:24px;padding:16px;background:rgba(255,255,255,0.05);border-radius:12px;border:1px solid rgba(255,255,255,0.1);">
-            <p style="font-size:14px;margin-bottom:12px;font-weight:600;"><i class="fas fa-info-circle" style="color:var(--primary);margin-right:6px;"></i> Install via Browser:</p>
-            <ol style="font-size:13px;color:var(--text-muted);padding-left:20px;margin:0;">
-              <li style="margin-bottom:8px;">Click the browser menu <strong style="color:var(--text);">⋮</strong> (three dots)</li>
-              <li style="margin-bottom:8px;">Select <strong style="color:var(--text);">"Install HAI Tour"</strong> or <strong style="color:var(--text);">"Create shortcut"</strong></li>
-              <li style="margin-bottom:8px;">Click <strong style="color:var(--text);">Install</strong> to confirm</li>
-            </ol>
-          </div>
-          
-          <!-- iOS Instructions (hidden by default) -->
-          <div id="ios-install-instructions" style="display:none;margin-bottom:24px;padding:16px;background:rgba(255,255,255,0.05);border-radius:12px;border:1px solid rgba(255,255,255,0.1);">
-            <p style="font-size:14px;margin-bottom:12px;font-weight:600;"><i class="fab fa-apple" style="color:var(--text);margin-right:6px;"></i> For iOS (iPhone/iPad):</p>
-            <ol style="font-size:13px;color:var(--text-muted);padding-left:20px;margin:0;">
-              <li style="margin-bottom:8px;">Tap the <strong>Share</strong> button <i class="fas fa-share-square" style="color:var(--primary);"></i> (box with arrow)</li>
-              <li>Scroll down and tap <strong>"Add to Home Screen"</strong> <i class="fas fa-plus-square" style="color:var(--primary);"></i></li>
-            </ol>
-          </div>
-          
-          <!-- Reset Prompt Button (for users who dismissed it) -->
-          <button id="btn-reset-prompt" onclick="this.parentElement.parentElement.querySelector('#manual-install-instructions').scrollIntoView({behavior:'smooth'});" style="margin-top:12px;padding:10px 20px;background:transparent;color:var(--text-muted);border:1px solid rgba(255,255,255,0.2);border-radius:10px;cursor:pointer;font-size:13px;">
-            <i class="fas fa-redo" style="margin-right:6px;"></i> Didn't work? Follow manual steps above
-          </button>
+    <!-- PWA Install Inline Popup -->
+    <div id="pwa-install-popup" style="display:none;position:fixed;top:70px;right:20px;z-index:100000;min-width:300px;max-width:400px;background:var(--bg-dark);border:2px solid #10b981;border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,0.5);padding:20px;">
+      <button onclick="document.getElementById('pwa-install-popup').style.display='none'" style="position:absolute;top:8px;right:8px;background:transparent;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;"><i class="fas fa-times"></i></button>
+      
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+        <div style="width:50px;height:50px;background:linear-gradient(135deg, #10b981, #059669);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+          <i class="fas fa-download" style="font-size:24px;color:white;"></i>
         </div>
+        <div>
+          <h3 style="margin:0;font-size:18px;color:var(--text);">Install App</h3>
+          <p style="margin:0;font-size:13px;color:var(--text-muted);">Quick access & offline support</p>
+        </div>
+      </div>
+      
+      <!-- Native Install Button -->
+      <button id="btn-do-install" style="width:100%;padding:14px;background:linear-gradient(135deg, #10b981, #059669);color:white;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:12px;">
+        <i class="fas fa-download" style="margin-right:8px;"></i> Install
+      </button>
+      
+      <!-- Manual Instructions -->
+      <div id="pwa-manual-steps" style="display:none;padding:12px;background:rgba(255,255,255,0.05);border-radius:8px;">
+        <p style="font-size:13px;margin:0 0 8px 0;color:var(--text-muted);"><strong>Or install manually:</strong></p>
+        <ol style="font-size:12px;color:var(--text-muted);padding-left:18px;margin:0;">
+          <li style="margin-bottom:4px;">Click browser menu <strong>⋮</strong></li>
+          <li>Click <strong>"Install"</strong> or <strong>"Create shortcut"</strong></li>
+        </ol>
       </div>
     </div>
 

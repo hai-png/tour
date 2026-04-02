@@ -164,26 +164,60 @@ export class PWAManager {
     const installBtn = document.getElementById('btn-install-pwa');
     if (!installBtn) return;
 
-    // Always show the button after 3 seconds (for manual install flow)
+    // Show button after 2 seconds
     setTimeout(() => {
       // Check if already installed
       if (window.matchMedia('(display-mode: standalone)').matches ||
           window.navigator.standalone === true) {
-        console.log('[PWA] Already installed, hiding button');
         return;
       }
-
-      // Show button regardless of prompt availability
       installBtn.style.display = 'flex';
       installBtn.style.alignItems = 'center';
       installBtn.style.gap = '8px';
-      console.log('[PWA] Install button shown in top bar');
-    }, 3000);
+      console.log('[PWA] Install button shown');
+    }, 2000);
 
     installBtn.addEventListener('click', () => {
-      console.log('[PWA] Top bar install button clicked');
-      this.showInstallPrompt();
+      console.log('[PWA] Install button clicked');
+      this.showInstallPopup();
     });
+  }
+
+  /**
+   * Show install popup
+   */
+  showInstallPopup() {
+    const popup = document.getElementById('pwa-install-popup');
+    const installBtn = document.getElementById('btn-do-install');
+    const manualSteps = document.getElementById('pwa-manual-steps');
+    
+    if (!popup) return;
+    
+    // Show popup
+    popup.style.display = 'block';
+    
+    // Check if native install available
+    if (this.promptEvent) {
+      // Native install available
+      if (installBtn) {
+        installBtn.style.display = 'block';
+        installBtn.onclick = () => this.promptInstall();
+      }
+      if (manualSteps) manualSteps.style.display = 'none';
+    } else {
+      // Show manual steps
+      if (installBtn) {
+        installBtn.style.display = 'none';
+      }
+      if (manualSteps) {
+        manualSteps.style.display = 'block';
+      }
+    }
+    
+    // Auto-hide after 10 seconds
+    setTimeout(() => {
+      popup.style.display = 'none';
+    }, 10000);
   }
 
   /**
@@ -196,73 +230,6 @@ export class PWAManager {
       installBtn.style.alignItems = 'center';
       installBtn.style.gap = '8px';
       console.log('[PWA] Install button shown in top bar');
-    }
-  }
-
-  /**
-   * Hide install button in top bar
-   */
-  hideInstallButtonInTopBar() {
-    const installBtn = document.getElementById('btn-install-pwa');
-    if (installBtn) {
-      installBtn.style.display = 'none';
-    }
-  }
-
-  /**
-   * Show install prompt modal
-   */
-  showInstallPrompt() {
-    // Check if already installed
-    if (window.matchMedia('(display-mode: standalone)').matches ||
-        window.navigator.standalone === true) {
-      this.showNotification({
-        type: 'info',
-        title: 'Already Installed',
-        message: 'The app is already installed on your device',
-        icon: 'fa-check-circle',
-        duration: 3000
-      });
-      return;
-    }
-
-    // Check if iOS
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-    
-    // Get elements
-    const modal = document.getElementById('modal-pwa-install');
-    const nativeInstallBtn = document.getElementById('btn-native-install');
-    const manualInstructions = document.getElementById('manual-install-instructions');
-    const iosInstructions = document.getElementById('ios-install-instructions');
-    const description = document.getElementById('pwa-install-description');
-    
-    if (!modal) return;
-    
-    // Show modal
-    modal.classList.add('active');
-    
-    // Configure UI based on platform and prompt availability
-    if (isIOS) {
-      // iOS
-      if (description) description.textContent = 'Install this app on your iPhone or iPad';
-      if (nativeInstallBtn) nativeInstallBtn.style.display = 'none';
-      if (manualInstructions) manualInstructions.style.display = 'none';
-      if (iosInstructions) iosInstructions.style.display = 'block';
-    } else if (this.promptEvent) {
-      // Native install available (Chrome/Edge/Android)
-      if (description) description.textContent = 'Install this app for quick access and offline support';
-      if (nativeInstallBtn) {
-        nativeInstallBtn.style.display = 'block';
-        nativeInstallBtn.onclick = () => this.promptInstall();
-      }
-      if (manualInstructions) manualInstructions.style.display = 'none';
-      if (iosInstructions) iosInstructions.style.display = 'none';
-    } else {
-      // Fallback - show manual instructions
-      if (description) description.textContent = 'Install via your browser menu';
-      if (nativeInstallBtn) nativeInstallBtn.style.display = 'none';
-      if (manualInstructions) manualInstructions.style.display = 'block';
-      if (iosInstructions) iosInstructions.style.display = 'none';
     }
   }
 
