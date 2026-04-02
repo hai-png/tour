@@ -5,10 +5,11 @@
  * for mobile and desktop deployment.
  */
 
-const CACHE_VERSION = 'v5';
+const CACHE_VERSION = 'v6';
 const CACHE_NAME = `hai-tour-static-${CACHE_VERSION}`;
 const MEDIA_CACHE_NAME = `hai-tour-media-${CACHE_VERSION}`;
 const CDN_CACHE_NAME = `hai-tour-cdn-${CACHE_VERSION}`;
+const OFFLINE_CACHE_NAME = `hai-tour-offline-${CACHE_VERSION}`;
 
 // Core static assets (cached immediately on install)
 const STATIC_ASSETS = [
@@ -16,6 +17,8 @@ const STATIC_ASSETS = [
   './index.html',
   './css/styles.css',
   './css/ui-components.css',
+  './css/responsive.css',
+  './css/mobile-fixes.css',
   './js/main.js',
   './js/PanoramaViewer.js',
   './js/UIManager.js',
@@ -45,6 +48,9 @@ const CDN_ASSETS = [
   'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'
 ];
 
+// Media files to cache (will be dynamically populated)
+let MEDIA_ASSETS = [];
+
 // URL patterns for different caching strategies
 const CACHE_STRATEGIES = {
   // Cache-first: Best for static assets that rarely change
@@ -56,7 +62,7 @@ const CACHE_STRATEGIES = {
     /fonts\.googleapis\.com/,
     /fonts\.gstatic\.com/
   ],
-  
+
   // Network-first: Best for dynamic content
   networkFirst: [
     /^\/media\/tdv-import\/panorama_/,
@@ -64,7 +70,7 @@ const CACHE_STRATEGIES = {
     /^\/floor-plan\//,
     /^\/gallery\//
   ],
-  
+
   // Stale-while-revalidate: Best for content that updates occasionally
   staleWhileRevalidate: [
     /project\.json$/,
@@ -74,12 +80,13 @@ const CACHE_STRATEGIES = {
 };
 
 // Maximum cache size for media files (prevent unlimited growth)
-const MAX_MEDIA_CACHE_SIZE = 500 * 1024 * 1024; // 500MB
+const MAX_MEDIA_CACHE_SIZE = 1 * 1024 * 1024 * 1024; // 1GB for full offline access
+const MAX_CACHE_ITEMS = 5000; // Maximum number of cached items
 
 // Maximum age for cached items (in seconds)
 const CACHE_MAX_AGE = {
-  static: 7 * 24 * 60 * 60, // 7 days
-  media: 30 * 24 * 60 * 60, // 30 days
+  static: 30 * 24 * 60 * 60, // 30 days
+  media: 90 * 24 * 60 * 60, // 90 days for offline content
   cdn: 30 * 24 * 60 * 60    // 30 days
 };
 
@@ -106,10 +113,27 @@ self.addEventListener('install', (event) => {
           return cache.addAll(CDN_ASSETS).catch(err => {
             console.warn('[SW] Some CDN assets failed to cache:', err);
           });
+        }),
+      // Cache offline page
+      caches.open(OFFLINE_CACHE_NAME)
+        .then((cache) => {
+          console.log('[SW] Caching offline page');
+          return cache.addAll(['./offline.html', './offline.html']).catch(err => {
+            console.warn('[SW] Offline page failed to cache:', err);
+          });
         })
     ])
       .then(() => {
         console.log('[SW] Installation complete');
+        // Notify clients that SW is ready
+        return self.clients.matchAll({ type: 'window' }).then((clients) => {
+          clients.forEach((client) => {
+            client.postMessage({ 
+              type: 'SW_INSTALLED',
+              message: 'Service worker installed, ready for offline use'
+            });
+          });
+        });
       })
       .catch((error) => {
         console.error('[SW] Installation error:', error);
@@ -368,7 +392,8 @@ self.addEventListener('message', (event) => {
       Promise.all([
         caches.delete(CACHE_NAME),
         caches.delete(MEDIA_CACHE_NAME),
-        caches.delete(CDN_CACHE_NAME)
+        caches.delete(CDN_CACHE_NAME),
+        caches.delete(OFFLINE_CACHE_NAME)
       ]).then(() => {
         event.ports[0]?.postMessage({ success: true });
       })
@@ -384,7 +409,21 @@ self.addEventListener('message', (event) => {
   }
 
   if (event.data && event.data.type === 'PRECACHE_MEDIA') {
-    event.waitUntil(precacheMedia(event.data.urls));
+    event.waitUntil(precacheMedia(event.data.urls, event.data.port));
+  }
+
+  if (event.data && event.data.type === 'CACHE_ALL_MEDIA') {
+    event.waitUntil(
+      cacheAllMedia(event.data.urls, event.data.port)
+    );
+  }
+
+  if (event.data && event.data.type === 'GET_OFFLINE_STATUS') {
+    event.waitUntil(
+      getOfflineStatus().then((status) => {
+        event.ports[0]?.postMessage(status);
+      })
+    );
   }
 });
 
@@ -408,21 +447,178 @@ async function getCacheStatus() {
 }
 
 /**
+ * Get offline cache status
+ */
+async function getOfflineStatus() {
+  try {
+    const mediaCache = await caches.open(MEDIA_CACHE_NAME);
+    const mediaKeys = await mediaCache.keys();
+    
+    const staticCache = await caches.open(CACHE_NAME);
+    const staticKeys = await staticCache.keys();
+    
+    const cdnCache = await caches.open(CDN_CACHE_NAME);
+    const cdnKeys = await cdnCache.keys();
+
+    const totalItems = mediaKeys.length + staticKeys.length + cdnKeys.length;
+    
+    // Estimate size (rough approximation)
+    let estimatedSize = 0;
+    for (const key of mediaKeys) {
+      estimatedSize += 500 * 1024; // Assume 500KB per media item
+    }
+    for (const key of staticKeys) {
+      estimatedSize += 50 * 1024; // Assume 50KB per static item
+    }
+
+    return {
+      mediaCount: mediaKeys.length,
+      staticCount: staticKeys.length,
+      cdnCount: cdnKeys.length,
+      totalCount: totalItems,
+      estimatedSize: estimatedSize,
+      isReadyForOffline: mediaKeys.length > 10 // Consider ready if we have 10+ media items
+    };
+  } catch (error) {
+    console.error('[SW] Failed to get offline status:', error);
+    return {
+      mediaCount: 0,
+      staticCount: 0,
+      cdnCount: 0,
+      totalCount: 0,
+      estimatedSize: 0,
+      isReadyForOffline: false,
+      error: error.message
+    };
+  }
+}
+
+/**
  * Precache media files in background
  */
-async function precacheMedia(urls) {
+async function precacheMedia(urls, port) {
   const cache = await caches.open(MEDIA_CACHE_NAME);
-  
+  let cached = 0;
+
   for (const url of urls) {
     try {
       const response = await fetch(url);
       if (response.ok) {
         await cache.put(url, response.clone());
+        cached++;
+        
+        // Report progress
+        if (port) {
+          port.postMessage({
+            type: 'CACHE_PROGRESS',
+            cached: cached,
+            total: urls.length,
+            url: url,
+            percent: Math.round((cached / urls.length) * 100)
+          });
+        }
       }
     } catch (error) {
       console.warn('[SW] Failed to precache:', url, error);
     }
   }
+
+  // Final progress report
+  if (port) {
+    port.postMessage({
+      type: 'CACHE_COMPLETE',
+      cached: cached,
+      total: urls.length,
+      percent: 100
+    });
+  }
+}
+
+/**
+ * Cache ALL media files for full offline access
+ */
+async function cacheAllMedia(urls, port) {
+  const cache = await caches.open(MEDIA_CACHE_NAME);
+  let cached = 0;
+  let failed = 0;
+  const results = [];
+
+  console.log(`[SW] Starting full offline cache: ${urls.length} items`);
+
+  // Send start message
+  if (port) {
+    port.postMessage({
+      type: 'CACHE_START',
+      total: urls.length
+    });
+  }
+
+  for (const url of urls) {
+    try {
+      const response = await fetch(url, { cache: 'no-cache' });
+      if (response.ok) {
+        const clonedResponse = response.clone();
+        await cache.put(url, clonedResponse);
+        cached++;
+        results.push({ url, success: true });
+        
+        console.log(`[SW] Cached: ${url} (${cached}/${urls.length})`);
+      } else {
+        failed++;
+        results.push({ url, success: false, error: `HTTP ${response.status}` });
+      }
+    } catch (error) {
+      failed++;
+      results.push({ url, success: false, error: error.message });
+      console.warn(`[SW] Failed to cache: ${url}`, error);
+    }
+
+    // Report progress after each item
+    if (port) {
+      port.postMessage({
+        type: 'CACHE_PROGRESS',
+        cached: cached,
+        failed: failed,
+        total: urls.length,
+        url: url,
+        percent: Math.round(((cached + failed) / urls.length) * 100),
+        current: cached + failed,
+        results: results.slice(-1)[0] // Send only the latest result
+      });
+    }
+
+    // Small delay to prevent blocking
+    await new Promise(resolve => setTimeout(resolve, 50));
+  }
+
+  // Enforce cache size limits
+  await enforceCacheSizeLimit(MEDIA_CACHE_NAME, MAX_MEDIA_CACHE_SIZE);
+
+  // Final report
+  const finalStatus = {
+    type: 'CACHE_COMPLETE',
+    cached: cached,
+    failed: failed,
+    total: urls.length,
+    percent: 100,
+    successRate: Math.round((cached / urls.length) * 100),
+    results: results
+  };
+
+  console.log(`[SW] Offline cache complete: ${cached}/${urls.length} items cached`);
+
+  if (port) {
+    port.postMessage(finalStatus);
+  }
+
+  // Also notify all clients
+  const clients = await self.clients.matchAll();
+  clients.forEach(client => {
+    client.postMessage({
+      type: 'OFFLINE_CACHE_COMPLETE',
+      ...finalStatus
+    });
+  });
 }
 
 // Background sync for offline actions
@@ -449,7 +645,7 @@ self.addEventListener('push', (event) => {
       primaryKey: 1
     }
   };
-  
+
   event.waitUntil(
     self.registration.showNotification('HAI PNG Virtual Tour', options)
   );

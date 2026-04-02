@@ -92,6 +92,18 @@
           <div class="loading-text" data-i18n="preparingExperience">Preparing your experience...</div>
         </div>
 
+        <!-- PWA Install Progress -->
+        <div class="pwa-install-progress" id="pwa-install-progress" style="display: none;">
+          <div class="progress-header">
+            <i class="fas fa-download"></i>
+            <span>Installing app...</span>
+          </div>
+          <div class="progress-bar-container">
+            <div class="progress-bar" id="pwa-progress-bar"></div>
+          </div>
+          <div class="progress-status" id="pwa-progress-status">Initializing...</div>
+        </div>
+
         <!-- Loading Stats -->
         <div class="loading-stats">
           <div class="stat-item">
@@ -888,6 +900,40 @@
           </p>
         </div>
 
+        <!-- Offline Download Section -->
+        <div class="settings-section" style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border);">
+          <h4 style="font-size:14px;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+            <i class="fas fa-cloud-download-alt" style="color:var(--primary);"></i> Download for Offline
+          </h4>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;line-height:1.6;">
+            Download all tour content for full offline access. This may take several minutes.
+          </p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="setting-btn" id="btn-download-offline" style="flex:1;min-width:140px;padding:12px 20px;font-size:14px;gap:8px;background:linear-gradient(135deg, #10b981, #059669);color:white;">
+              <i class="fas fa-download"></i> <span>Download All</span>
+            </button>
+            <button class="setting-btn" id="btn-check-offline-status" style="flex:1;min-width:140px;padding:12px 20px;font-size:14px;gap:8px;background:rgba(255,255,255,0.1);color:var(--text);border:1px solid var(--border);">
+              <i class="fas fa-info-circle"></i> <span>Check Status</span>
+            </button>
+          </div>
+          <div id="offline-status-display" style="margin-top:12px;padding:12px;background:rgba(255,255,255,0.05);border-radius:8px;display:none;">
+            <div style="display:grid;grid-template-columns:repeat(2, 1fr);gap:8px;font-size:12px;">
+              <div>
+                <span style="color:var(--text-muted);">Cached Items:</span>
+                <strong id="offline-cached-count" style="color:var(--primary);margin-left:6px;">0</strong>
+              </div>
+              <div>
+                <span style="color:var(--text-muted);">Est. Size:</span>
+                <strong id="offline-size" style="color:var(--primary);margin-left:6px;">0 MB</strong>
+              </div>
+              <div>
+                <span style="color:var(--text-muted);">Status:</span>
+                <strong id="offline-ready" style="margin-left:6px;">Not Ready</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="settings-section" style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border);">
           <h4 style="font-size:14px;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px;">
             <i class="fas fa-info-circle" style="color:var(--primary);"></i> About
@@ -1070,6 +1116,66 @@
           <textarea placeholder="Your Message" required></textarea>
           <button type="submit">Send Message</button>
         </form>
+      </div>
+    </div>
+
+    <!-- Offline Download Progress Modal -->
+    <div class="modal-overlay" id="modal-offline-download">
+      <div class="modal-content" style="max-width:600px;">
+        <button class="modal-close" onclick="document.getElementById('modal-offline-download').classList.remove('active')"><i class="fas fa-times"></i></button>
+        <h2 class="modal-title">
+          <i class="fas fa-cloud-download-alt"></i> Downloading for Offline
+        </h2>
+        <p style="color:var(--text-muted);margin-bottom:20px;">
+          Downloading all tour content for offline access. Please keep this tab open.
+        </p>
+
+        <!-- Progress Bar -->
+        <div style="margin:20px 0;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:13px;">
+            <span id="offline-progress-text">Starting...</span>
+            <span id="offline-progress-percent">0%</span>
+          </div>
+          <div style="width:100%;height:12px;background:rgba(255,255,255,0.1);border-radius:6px;overflow:hidden;">
+            <div id="offline-progress-bar" style="width:0%;height:100%;background:linear-gradient(90deg, #10b981, #059669);transition:width 0.3s ease;"></div>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:12px;margin:20px 0;">
+          <div style="text-align:center;padding:12px;background:rgba(255,255,255,0.05);border-radius:8px;">
+            <div style="font-size:20px;font-weight:700;color:#10b981;" id="offline-stat-cached">0</div>
+            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;">Cached</div>
+          </div>
+          <div style="text-align:center;padding:12px;background:rgba(255,255,255,0.05);border-radius:8px;">
+            <div style="font-size:20px;font-weight:700;color:#f59e0b;" id="offline-stat-pending">0</div>
+            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;">Pending</div>
+          </div>
+          <div style="text-align:center;padding:12px;background:rgba(255,255,255,0.05);border-radius:8px;">
+            <div style="font-size:20px;font-weight:700;color:#ef4444;" id="offline-stat-failed">0</div>
+            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;">Failed</div>
+          </div>
+        </div>
+
+        <!-- Current File -->
+        <div style="padding:12px;background:rgba(99, 102, 241, 0.1);border-radius:8px;border-left:3px solid var(--primary);">
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">Currently downloading:</div>
+          <div style="font-size:12px;color:var(--text);word-break:break-all;" id="offline-current-file">-</div>
+        </div>
+
+        <!-- Actions -->
+        <div style="margin-top:24px;display:flex;gap:10px;justify-content:center;">
+          <button id="btn-cancel-offline-download" style="padding:10px 24px;background:rgba(239, 68, 68, 0.2);border:1px solid #ef4444;color:#ef4444;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;" onclick="document.getElementById('modal-offline-download').classList.remove('active')">
+            <i class="fas fa-times"></i> Close
+          </button>
+        </div>
+
+        <!-- Success Message (hidden by default) -->
+        <div id="offline-success-message" style="display:none;text-align:center;padding:20px;">
+          <i class="fas fa-check-circle" style="font-size:48px;color:#10b981;margin-bottom:16px;"></i>
+          <h3 style="color:var(--text);margin-bottom:8px;">Download Complete!</h3>
+          <p style="color:var(--text-muted);font-size:13px;">All content is now available offline.</p>
+        </div>
       </div>
     </div>
   </div>

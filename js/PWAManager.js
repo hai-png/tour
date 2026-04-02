@@ -15,6 +15,8 @@ export class PWAManager {
     this.installPromptShown = false;
     this.userInteracted = false;
     this.promptEvent = null;
+    this.installProgress = 0;
+    this.installStage = 'idle';
 
     // Track user interaction for install prompt
     this.trackUserInteraction();
@@ -74,39 +76,55 @@ export class PWAManager {
 
       try {
         console.log('[PWA] Registering service worker from ./sw.js...');
+        this.updateInstallProgress(10, 'Starting service worker...');
 
         this.swRegistration = await navigator.serviceWorker.register('./sw.js', {
           scope: './',
           updateViaCache: 'none'  // Always check for updates
         });
 
+        this.updateInstallProgress(30, 'Service worker registered');
         console.log('[PWA] ✅ Service Worker registered:', this.swRegistration.scope);
         console.log('[PWA] Registration state:', this.swRegistration.state);
         console.log('[PWA] Active worker:', !!this.swRegistration.active);
         console.log('[PWA] Installing worker:', !!this.swRegistration.installing);
         console.log('[PWA] Waiting worker:', !!this.swRegistration.waiting);
 
-        // Wait for service worker to be ready, then check for install prompt
-        await navigator.serviceWorker.ready;
-        console.log('[PWA] Service worker ready, checking install prompt...');
-        
-        // Dispatch a custom event to trigger install prompt check
-        window.dispatchEvent(new CustomEvent('pwa-check-install'));
-
         // Listen for updates
         this.swRegistration.addEventListener('updatefound', () => {
           console.log('[PWA] Update found!');
+          this.updateInstallProgress(50, 'Installing service worker...');
           const newWorker = this.swRegistration.installing;
 
           newWorker.addEventListener('statechange', () => {
             console.log('[PWA] Worker state change:', newWorker.state);
 
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              console.log('[PWA] New content available');
-              this.showUpdateNotification();
+            if (newWorker.state === 'installing') {
+              this.updateInstallProgress(60, 'Installing...');
+            } else if (newWorker.state === 'installed') {
+              this.updateInstallProgress(80, 'Service worker installed');
+              if (navigator.serviceWorker.controller) {
+                console.log('[PWA] New content available');
+                this.showUpdateNotification();
+              } else {
+                console.log('[PWA] Service worker ready');
+                this.updateInstallProgress(90, 'Finalizing...');
+              }
+            } else if (newWorker.state === 'activating') {
+              this.updateInstallProgress(95, 'Activating...');
+            } else if (newWorker.state === 'activated') {
+              this.updateInstallProgress(100, 'Ready');
             }
           });
         });
+
+        // Wait for service worker to be ready, then check for install prompt
+        await navigator.serviceWorker.ready;
+        this.updateInstallProgress(100, 'Ready');
+        console.log('[PWA] Service worker ready, checking install prompt...');
+
+        // Dispatch a custom event to trigger install prompt check
+        window.dispatchEvent(new CustomEvent('pwa-check-install'));
 
         // Check for updates periodically
         setInterval(() => {
@@ -122,9 +140,11 @@ export class PWAManager {
 
       } catch (error) {
         console.error('[PWA] ❌ Service Worker registration failed:', error);
+        this.updateInstallProgress(0, 'Failed to initialize');
       }
     } else {
       console.warn('[PWA] ❌ Service Worker is NOT supported in this browser');
+      this.updateInstallProgress(0, 'Not supported');
     }
   }
 
@@ -142,6 +162,47 @@ export class PWAManager {
         console.error('[PWA] Update check failed:', error);
       }
     }
+  }
+
+  /**
+   * Update install progress indicator
+   */
+  updateInstallProgress(progress, status) {
+    this.installProgress = progress;
+    this.installStage = status;
+
+    const progressEl = document.getElementById('pwa-install-progress');
+    const progressBar = document.getElementById('pwa-progress-bar');
+    const progressStatus = document.getElementById('pwa-progress-status');
+
+    if (progressEl && progressBar && progressStatus) {
+      // Show progress container
+      if (progress < 100) {
+        progressEl.style.display = 'block';
+      }
+
+      // Update progress bar width
+      progressBar.style.width = `${progress}%`;
+
+      // Update status text
+      if (status) {
+        progressStatus.textContent = status;
+      }
+
+      // Hide progress when complete
+      if (progress >= 100) {
+        setTimeout(() => {
+          progressEl.style.opacity = '0';
+          progressEl.style.transition = 'opacity 0.5s ease';
+          setTimeout(() => {
+            progressEl.style.display = 'none';
+            progressEl.style.opacity = '1';
+          }, 500);
+        }, 1500);
+      }
+    }
+
+    console.log(`[PWA] Progress: ${progress}% - ${status}`);
   }
 
   /**
@@ -223,6 +284,9 @@ export class PWAManager {
 
     // Setup install button in settings
     setTimeout(() => this.setupInstallButton(), 500);
+    
+    // Setup offline download buttons
+    setTimeout(() => this.setupOfflineDownloadButtons(), 1000);
   }
 
   /**
@@ -280,6 +344,154 @@ export class PWAManager {
 
     // Initial state update
     this.updateInstallButtonState();
+  }
+
+  /**
+   * Setup offline download buttons
+   */
+  setupOfflineDownloadButtons() {
+    const downloadBtn = document.getElementById('btn-download-offline');
+    const checkStatusBtn = document.getElementById('btn-check-offline-status');
+    const statusDisplay = document.getElementById('offline-status-display');
+
+    if (!downloadBtn || !checkStatusBtn) return;
+
+    // Download all content
+    downloadBtn.addEventListener('click', async () => {
+      console.log('[PWA] Download offline button clicked');
+      
+      // Show progress modal
+      const modal = document.getElementById('modal-offline-download');
+      if (modal) {
+        modal.classList.add('active');
+        // Reset UI
+        document.getElementById('offline-success-message').style.display = 'none';
+        document.getElementById('btn-cancel-offline-download').style.display = 'inline-block';
+      }
+
+      try {
+        const totalItems = await this.downloadForOffline(
+          // Progress callback
+          (progress) => {
+            this.updateOfflineProgressUI(progress);
+          },
+          // Complete callback
+          (result) => {
+            this.updateOfflineProgressUI(result);
+            // Show success message
+            setTimeout(() => {
+              document.getElementById('offline-success-message').style.display = 'block';
+              document.getElementById('btn-cancel-offline-download').innerHTML = '<i class="fas fa-check"></i> Done';
+            }, 500);
+          }
+        );
+
+        console.log(`[PWA] Started downloading ${totalItems} items for offline access`);
+      } catch (error) {
+        console.error('[PWA] Download failed:', error);
+        alert('Download failed: ' + error.message);
+      }
+    });
+
+    // Check offline status
+    checkStatusBtn.addEventListener('click', async () => {
+      console.log('[PWA] Check offline status clicked');
+      
+      const status = await this.getOfflineStatus();
+      
+      if (statusDisplay) {
+        statusDisplay.style.display = 'block';
+        document.getElementById('offline-cached-count').textContent = status.mediaCount || 0;
+        document.getElementById('offline-size').textContent = this.formatBytes(status.estimatedSize || 0);
+        
+        const readyEl = document.getElementById('offline-ready');
+        if (status.isReadyForOffline) {
+          readyEl.textContent = 'Ready ✓';
+          readyEl.style.color = '#10b981';
+        } else {
+          readyEl.textContent = 'Not Ready';
+          readyEl.style.color = '#ef4444';
+        }
+      }
+    });
+
+    // Listen for service worker messages about cache completion
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('message', (event) => {
+        if (event.data && event.data.type === 'OFFLINE_CACHE_COMPLETE') {
+          console.log('[PWA] Offline cache complete:', event.data);
+          this.updateOfflineProgressUI({
+            type: 'complete',
+            ...event.data
+          });
+        } else if (event.data && event.data.type === 'SW_INSTALLED') {
+          console.log('[PWA] SW Installed:', event.data);
+        }
+      });
+    }
+  }
+
+  /**
+   * Update offline download progress UI
+   */
+  updateOfflineProgressUI(data) {
+    if (data.type === 'start') {
+      document.getElementById('offline-progress-text').textContent = data.message;
+      document.getElementById('offline-progress-percent').textContent = '0%';
+      document.getElementById('offline-progress-bar').style.width = '0%';
+      document.getElementById('offline-stat-cached').textContent = '0';
+      document.getElementById('offline-stat-pending').textContent = data.total;
+      document.getElementById('offline-stat-failed').textContent = '0';
+      document.getElementById('offline-current-file').textContent = 'Initializing...';
+    } else if (data.type === 'progress') {
+      document.getElementById('offline-progress-text').textContent = `Downloading ${data.current}/${data.total}`;
+      document.getElementById('offline-progress-percent').textContent = `${data.percent}%`;
+      document.getElementById('offline-progress-bar').style.width = `${data.percent}%`;
+      document.getElementById('offline-stat-cached').textContent = data.cached;
+      document.getElementById('offline-stat-pending').textContent = data.total - data.current;
+      document.getElementById('offline-stat-failed').textContent = data.failed || 0;
+      
+      if (data.url) {
+        const fileName = data.url.split('/').pop();
+        document.getElementById('offline-current-file').textContent = fileName;
+      }
+      
+      if (data.result && data.result.url) {
+        const fileName = data.result.url.split('/').pop();
+        document.getElementById('offline-current-file').textContent = fileName + 
+          (data.result.success ? ' ✓' : ' ✗');
+      }
+    } else if (data.type === 'complete') {
+      document.getElementById('offline-progress-text').textContent = 'Download Complete!';
+      document.getElementById('offline-progress-percent').textContent = '100%';
+      document.getElementById('offline-progress-bar').style.width = '100%';
+      document.getElementById('offline-stat-cached').textContent = data.cached;
+      document.getElementById('offline-stat-pending').textContent = '0';
+      document.getElementById('offline-stat-failed').textContent = data.failed || 0;
+      document.getElementById('offline-current-file').textContent = 'All files cached successfully';
+      
+      // Update status display if visible
+      const statusDisplay = document.getElementById('offline-status-display');
+      if (statusDisplay) {
+        statusDisplay.style.display = 'block';
+        document.getElementById('offline-cached-count').textContent = data.cached;
+        document.getElementById('offline-size').textContent = this.formatBytes(data.cached * 500 * 1024);
+        const readyEl = document.getElementById('offline-ready');
+        readyEl.textContent = 'Ready ✓';
+        readyEl.style.color = '#10b981';
+      }
+    }
+  }
+
+  /**
+   * Format bytes to human-readable string
+   */
+  formatBytes(bytes) {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 10) / 10 + ' ' + sizes[i];
   }
 
   /**
@@ -536,14 +748,19 @@ export class PWAManager {
    * Prompt user to install
    */
   async promptInstall() {
+    // Show progress in loading screen
+    this.updateInstallProgress(10, 'Preparing installation...');
+
     if (!this.promptEvent) {
       console.log('[PWA] Install prompt not available');
 
       // Show iOS instructions as fallback
       if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+        this.updateInstallProgress(100, 'See instructions');
         this.showIOSInstallInstructions();
       } else {
         // Show message that app can be installed via browser menu
+        this.updateInstallProgress(100, 'Use browser menu');
         this.showBrowserInstallHint();
       }
 
@@ -554,6 +771,7 @@ export class PWAManager {
       return;
     }
 
+    this.updateInstallProgress(40, 'Launching installer...');
     this.promptEvent.prompt();
     const { outcome } = await this.promptEvent.userChoice;
 
@@ -561,7 +779,10 @@ export class PWAManager {
     this.promptEvent = null;
 
     if (outcome === 'accepted') {
+      this.updateInstallProgress(100, 'Installing...');
       this.hideInstallButton();
+    } else {
+      this.updateInstallProgress(0, 'Installation cancelled');
     }
 
     // Update button state
@@ -868,5 +1089,244 @@ export class PWAManager {
    */
   canShowInstallPrompt() {
     return this.promptEvent !== null && !this.isInstalled && !this.installPromptShown;
+  }
+
+  /**
+   * Download all content for full offline access
+   */
+  async downloadForOffline(onProgress, onComplete) {
+    if (!('serviceWorker' in navigator)) {
+      throw new Error('Service Worker not supported');
+    }
+
+    const registration = await navigator.serviceWorker.ready;
+    
+    // Create message channel for progress updates
+    const messageChannel = new MessageChannel();
+    const port = messageChannel.port1;
+    port.start();
+
+    // Handle progress messages
+    port.onmessage = (event) => {
+      const data = event.data;
+      console.log('[PWA] Cache progress:', data);
+
+      if (data.type === 'CACHE_START' && onProgress) {
+        onProgress({
+          type: 'start',
+          total: data.total,
+          message: `Starting download of ${data.total} items...`
+        });
+      } else if (data.type === 'CACHE_PROGRESS' && onProgress) {
+        onProgress({
+          type: 'progress',
+          cached: data.cached,
+          failed: data.failed,
+          total: data.total,
+          current: data.current,
+          percent: data.percent,
+          url: data.url,
+          message: `Downloading ${data.current}/${data.total} (${data.percent}%)...`,
+          result: data.results
+        });
+      } else if (data.type === 'CACHE_COMPLETE' && onComplete) {
+        onComplete({
+          type: 'complete',
+          cached: data.cached,
+          failed: data.failed,
+          total: data.total,
+          percent: data.percent,
+          successRate: data.successRate,
+          message: `Offline cache complete: ${data.cached}/${data.total} items cached (${data.successRate}% success rate)`
+        });
+      }
+    };
+
+    // Get all media URLs from the app
+    const mediaUrls = await this.discoverAllMediaUrls();
+    console.log(`[PWA] Discovered ${mediaUrls.length} media URLs to cache`);
+
+    // Send cache command with message port
+    registration.active.postMessage({
+      type: 'CACHE_ALL_MEDIA',
+      urls: mediaUrls
+    }, [messageChannel.port2]);
+
+    return mediaUrls.length;
+  }
+
+  /**
+   * Discover all media URLs in the app
+   */
+  async discoverAllMediaUrls() {
+    const urls = new Set();
+    const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '/');
+
+    // Add panoramas
+    const panoramaFiles = await this.scanDirectory('media/tdv-import/panoramas/');
+    panoramaFiles.forEach(file => {
+      urls.add(`media/tdv-import/panoramas/${file}`);
+      // Also add thumbnail versions
+      const webpFile = file.replace(/\.(jpg|jpeg|png)$/i, '.webp');
+      if (webpFile !== file) {
+        urls.add(`media/tdv-import/panoramas/${webpFile}`);
+      }
+    });
+
+    // Add hotspot images
+    const hotspotFiles = await this.scanDirectory('media/tdv-import/hotspots/');
+    hotspotFiles.forEach(file => {
+      urls.add(`media/tdv-import/hotspots/${file}`);
+    });
+
+    // Add floor plan images
+    const floorPlanFiles = await this.scanDirectory('floor-plan/');
+    floorPlanFiles.forEach(file => {
+      if (file.match(/\.(jpg|jpeg|png|webp|gif)$/i)) {
+        urls.add(`floor-plan/${file}`);
+      }
+    });
+
+    // Add gallery images
+    const galleryFiles = await this.scanDirectory('gallery/');
+    galleryFiles.forEach(file => {
+      urls.add(`gallery/${file}`);
+    });
+
+    // Add audio files
+    const audioFiles = await this.scanDirectory('media/audio/');
+    audioFiles.forEach(file => {
+      urls.add(`media/audio/${file}`);
+    });
+
+    // Add skin/images
+    const skinFiles = await this.scanDirectory('media/tdv-import/skin/');
+    skinFiles.forEach(file => {
+      urls.add(`media/tdv-import/skin/${file}`);
+    });
+
+    // Add config files
+    urls.add('media/tdv-import/project.json');
+    urls.add('media/tdv-import/hotspots.json');
+    urls.add('floor-plan/floor-plan-config.json');
+
+    // Add existing thumbnails
+    const existingThumbnails = [
+      'media/tdv-import/panorama_CFF86997_D78D_4109_41D6_D7F4B4601989_t.jpg',
+      'media/tdv-import/panorama_CFF86997_D78D_4109_41D6_D7F4B4601989_t.webp',
+      'media/tdv-import/panorama_DB744300_D775_4107_41E1_E2F79FF4509D_t.jpg',
+      'media/tdv-import/panorama_DB744300_D775_4107_41E1_E2F79FF4509D_t.webp',
+      'media/tdv-import/panorama_DC440AF5_D777_C308_41B0_13691E9AEB46_t.jpg',
+      'media/tdv-import/panorama_DC440AF5_D777_C308_41B0_13691E9AEB46_t.webp',
+      'media/tdv-import/panorama_DC4452BD_D777_C379_41E5_1EDA7259DB75_t.jpg',
+      'media/tdv-import/panorama_DC4452BD_D777_C379_41E5_1EDA7259DB75_t.webp',
+      'media/tdv-import/panorama_DC44A2AB_D774_C319_41E5_339270552D3B_t.jpg',
+      'media/tdv-import/panorama_DC44A2AB_D774_C319_41E5_339270552D3B_t.webp',
+      'media/tdv-import/panorama_DC4530B4_D777_FF08_41E4_47F896114353_t.jpg',
+      'media/tdv-import/panorama_DC4530B4_D777_FF08_41E4_47F896114353_t.webp',
+      'media/tdv-import/panorama_DC45A6C1_D777_C308_41B5_775636919F4F_t.jpg',
+      'media/tdv-import/panorama_DC45A6C1_D777_C308_41B5_775636919F4F_t.webp',
+      'media/tdv-import/panorama_DC462273_D777_4309_41E4_17EF9CCCBD4C_t.jpg',
+      'media/tdv-import/panorama_DC462273_D777_4309_41E4_17EF9CCCBD4C_t.webp',
+      'media/tdv-import/panorama_DC467556_D777_C10B_41D1_4E673AAAA286_t.jpg',
+      'media/tdv-import/panorama_DC467556_D777_C10B_41D1_4E673AAAA286_t.webp',
+      'media/tdv-import/panorama_DC47BCE3_D777_4709_41E0_0857273CB166_t.jpg',
+      'media/tdv-import/panorama_DC47BCE3_D777_4709_41E0_0857273CB166_t.webp',
+      'media/tdv-import/panorama_DC47BFD5_D777_C109_41E8_7CDCC241DDEB_t.jpg',
+      'media/tdv-import/panorama_DC47BFD5_D777_C109_41E8_7CDCC241DDEB_t.webp',
+      'media/tdv-import/panorama_DC50DD3E_D774_C17B_41E6_76ADB6C6217F_t.jpg',
+      'media/tdv-import/panorama_DC50DD3E_D774_C17B_41E6_76ADB6C6217F_t.webp',
+      'media/tdv-import/panorama_DC5B0CA0_D777_C707_41D6_CC02EF3AFBAD_t.jpg',
+      'media/tdv-import/panorama_DC5B0CA0_D777_C707_41D6_CC02EF3AFBAD_t.webp',
+      'media/tdv-import/panorama_DC5BA7E4_D777_410F_41E3_F0D566C2F4D7_t.jpg',
+      'media/tdv-import/panorama_DC5BA7E4_D777_410F_41E3_F0D566C2F4D7_t.webp',
+      'media/tdv-import/panorama_DC5C1D26_D777_410B_41E1_2D89ADE704CD_t.jpg',
+      'media/tdv-import/panorama_DC5C1D26_D777_410B_41E1_2D89ADE704CD_t.webp',
+      'media/tdv-import/panorama_DC5DE84D_D777_4F19_41B6_298BD1CC52E2_t.jpg',
+      'media/tdv-import/panorama_DC5DE84D_D777_4F19_41B6_298BD1CC52E2_t.webp',
+      'media/tdv-import/panorama_DC5E7314_D777_410F_41C9_B784BC991045_t.jpg',
+      'media/tdv-import/panorama_DC5E7314_D777_410F_41C9_B784BC991045_t.webp',
+      'media/tdv-import/panorama_DC5E97BE_D774_C17B_41E0_24BA91992222_t.jpg',
+      'media/tdv-import/panorama_DC5E97BE_D774_C17B_41E0_24BA91992222_t.webp',
+      'media/tdv-import/panorama_DC5F48A4_D774_CF0F_41BC_A28D6F8D7E53_t.jpg',
+      'media/tdv-import/panorama_DC5F48A4_D774_CF0F_41BC_A28D6F8D7E53_t.webp',
+      'media/tdv-import/panorama_DC5FADB7_D774_C109_41E0_A20BC05345FE_t.jpg',
+      'media/tdv-import/panorama_DC5FADB7_D774_C109_41E0_A20BC05345FE_t.webp'
+    ];
+    existingThumbnails.forEach(url => urls.add(url));
+
+    return Array.from(urls);
+  }
+
+  /**
+   * Scan directory for files (requires server support or manifest)
+   */
+  async scanDirectory(path) {
+    try {
+      // Try to fetch directory listing (works with some servers)
+      const response = await fetch(path, { 
+        method: 'HEAD',
+        cache: 'no-cache'
+      });
+      
+      if (!response.ok) {
+        return [];
+      }
+
+      // Try to get index file if it exists
+      try {
+        const indexResponse = await fetch(path + 'index.json');
+        if (indexResponse.ok) {
+          const data = await indexResponse.json();
+          return data.files || [];
+        }
+      } catch (e) {
+        // No index file
+      }
+
+      // Fallback: return empty array, files will be cached on-demand
+      return [];
+    } catch (error) {
+      console.warn(`[PWA] Failed to scan directory ${path}:`, error);
+      return [];
+    }
+  }
+
+  /**
+   * Get offline cache status
+   */
+  async getOfflineStatus() {
+    if (!('serviceWorker' in navigator)) {
+      return {
+        mediaCount: 0,
+        staticCount: 0,
+        totalCount: 0,
+        isReadyForOffline: false
+      };
+    }
+
+    return new Promise((resolve) => {
+      const messageChannel = new MessageChannel();
+      const port = messageChannel.port1;
+      port.start();
+
+      port.onmessage = (event) => {
+        resolve(event.data);
+      };
+
+      navigator.serviceWorker.ready.then((registration) => {
+        registration.active.postMessage({
+          type: 'GET_OFFLINE_STATUS'
+        }, [messageChannel.port2]);
+      });
+    });
+  }
+
+  /**
+   * Check if content is available offline
+   */
+  async isContentAvailableOffline() {
+    const status = await this.getOfflineStatus();
+    return status.isReadyForOffline;
   }
 }
