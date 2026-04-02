@@ -167,8 +167,8 @@ export class PWAManager {
       try {
         this.updateInstallProgress(10, 'Starting service worker...');
 
-        this.swRegistration = await navigator.serviceWorker.register('/sw.js', {
-          scope: '/',
+        this.swRegistration = await navigator.serviceWorker.register('./sw.js', {
+          scope: './',
           updateViaCache: 'none'
         });
 

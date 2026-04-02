@@ -19,16 +19,17 @@ const CACHE_NAMES = {
 
 // Static assets to cache immediately
 const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/offline.html',
-  '/css/styles.css',
-  '/css/ui-components.css',
-  '/css/responsive.css',
-  '/css/mobile-fixes.css',
-  '/js/main.js',
-  '/js/PWAManager.js'
+  './',
+  './index.html',
+  './manifest.json',
+  './offline.html',
+  './css/styles.css',
+  './css/ui-components.css',
+  './css/responsive.css',
+  './css/mobile-fixes.css',
+  './css/pwa.css',
+  './js/main.js',
+  './js/PWAManager.js'
 ];
 
 // CDN assets for offline support
@@ -105,7 +106,7 @@ self.addEventListener('install', (event) => {
       caches.open(CACHE_NAMES.offline)
         .then(cache => {
           console.log('[SW] Caching offline page...');
-          return cache.addAll(['/offline.html']).catch(err => {
+          return cache.addAll(['./offline.html']).catch(err => {
             console.warn('[SW] Offline page failed to cache:', err);
           });
         })
@@ -256,12 +257,12 @@ async function cacheFirst(request, cacheName = CACHE_NAMES.static) {
     return networkResponse;
   } catch (error) {
     console.error('[SW] Cache-first fetch failed:', error);
-    
+
     // Return offline page for navigation requests
     if (request.mode === 'navigate') {
-      return caches.match('/offline.html');
+      return caches.match('./offline.html');
     }
-    
+
     throw error;
   }
 }
@@ -273,30 +274,30 @@ async function cacheFirst(request, cacheName = CACHE_NAMES.static) {
 async function networkFirst(request, cacheName = CACHE_NAMES.media) {
   try {
     const networkResponse = await fetch(request);
-    
+
     if (networkResponse.ok) {
       const cache = await caches.open(cacheName);
       await cache.put(request, networkResponse.clone());
-      
+
       // Enforce cache size limits
       await enforceCacheSizeLimit(cacheName);
     }
-    
+
     return networkResponse;
   } catch (error) {
     console.warn('[SW] Network-first failed, trying cache:', error);
-    
+
     // Fallback to cache
     const cachedResponse = await caches.match(request);
     if (cachedResponse) {
       return cachedResponse;
     }
-    
+
     // Return offline page for navigation requests
     if (request.mode === 'navigate') {
-      return caches.match('/offline.html');
+      return caches.match('./offline.html');
     }
-    
+
     throw error;
   }
 }

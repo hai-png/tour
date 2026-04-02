@@ -7,9 +7,9 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Offline - HAI PNG Virtual Tour</title>
-  <link rel="manifest" href="/manifest.json" />
-  <link rel="icon" type="image/png" sizes="32x32" href="/media/pwa/favicon.ico" />
-  <link rel="apple-touch-icon" href="/media/pwa/apple-touch-icon.png" />
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" type="image/png" sizes="32x32" href="./media/pwa/favicon.ico" />
+  <link rel="apple-touch-icon" href="./media/pwa/apple-touch-icon.png" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <style>
     :root {
@@ -524,7 +524,7 @@
 
   <div class="offline-container">
     <!-- Logo -->
-    <img src="/media/tdv-import/skin/logo.png" alt="HAI PNG" class="logo" 
+    <img src="./media/tdv-import/skin/logo.png" alt="HAI PNG" class="logo" 
          onerror="this.onerror=null; this.style.background='linear-gradient(135deg, var(--primary), var(--secondary))'; this.style.borderRadius='16px';" />
 
     <!-- Offline Icon -->
@@ -556,7 +556,7 @@
           <i class="fas fa-sync-alt"></i>
           <span>Try Again</span>
         </button>
-        <a href="/index.html" class="btn btn-secondary">
+        <a href="./index.html" class="btn btn-secondary">
           <i class="fas fa-home"></i>
           <span>Go Home</span>
         </a>
@@ -673,7 +673,7 @@
 
         // Auto-reload after 1.5 seconds
         setTimeout(() => {
-          window.location.href = '/index.html';
+          window.location.href = './index.html';
         }, 1500);
       } else {
         indicator.classList.remove('online');
@@ -693,13 +693,13 @@
       if (navigator.onLine) {
         // Try to fetch a resource to test connection
         try {
-          const response = await fetch('/index.html?t=' + Date.now(), {
+          const response = await fetch('./index.html?t=' + Date.now(), {
             method: 'HEAD',
             cache: 'no-cache'
           });
 
           if (response.ok) {
-            window.location.href = '/index.html';
+            window.location.href = './index.html';
             return;
           }
         } catch (error) {
@@ -815,7 +815,7 @@
     // Check initial online status and redirect if online
     if (navigator.onLine) {
       setTimeout(() => {
-        window.location.href = '/index.html';
+        window.location.href = './index.html';
       }, 1000);
     }
   </script>
