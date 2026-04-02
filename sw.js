@@ -29,7 +29,12 @@ const STATIC_ASSETS = [
   './css/mobile-fixes.css',
   './css/pwa.css',
   './js/main.js',
-  './js/PWAManager.js'
+  './js/PWAManager.js',
+  './js/UIManager.js',
+  './js/HotspotManager.js',
+  './js/FloorPlanManager.js',
+  './js/GuidedTourManager.js',
+  './js/VRModeManager.js'
 ];
 
 // CDN assets for offline support

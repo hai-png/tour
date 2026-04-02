@@ -941,8 +941,28 @@ export class PWAManager {
   async discoverAllMediaUrls() {
     const urls = new Set();
 
-    // Add existing thumbnails
-    const existingThumbnails = [
+    // Full-size panorama images for offline viewing
+    const fullPanoramas = [
+      'media/tdv-import/panorama_CFF86997_D78D_4109_41D6_D7F4B4601989.jpg',
+      'media/tdv-import/panorama_DB744300_D775_4107_41E1_E2F79FF4509D.jpg',
+      'media/tdv-import/panorama_DC440AF5_D777_C308_41B0_13691E9AEB46.jpg',
+      'media/tdv-import/panorama_DC4452BD_D777_C379_41E5_1EDA7259DB75.jpg',
+      'media/tdv-import/panorama_DC44A2AB_D774_C319_41E5_339270552D3B.jpg',
+      'media/tdv-import/panorama_DC4530B4_D777_FF08_41E4_47F896114353.jpg',
+      'media/tdv-import/panorama_DC45A6C1_D777_C308_41B5_775636919F4F.jpg',
+      'media/tdv-import/panorama_DC462273_D777_4309_41E4_17EF9CCCBD4C.jpg',
+      'media/tdv-import/panorama_DC467556_D777_C10B_41D1_4E673AAAA286.jpg',
+      'media/tdv-import/panorama_DC47BCE3_D777_4709_41E0_0857273CB166.jpg',
+      'media/tdv-import/panorama_DC47BFD5_D777_C109_41E8_7CDCC241DDEB.jpg',
+      'media/tdv-import/panorama_DC50DD3E_D774_C17B_41E6_76ADB6C6217F.jpg',
+      'media/tdv-import/panorama_DC5B0CA0_D777_C707_41D6_CC02EF3AFBAD.jpg',
+      'media/tdv-import/panorama_DC5BA7E4_D777_410F_41E3_F0D566C2F4D7.jpg',
+      'media/tdv-import/panorama_DC5C1D26_D777_410B_41E1_2D89ADE704CD.jpg',
+      'media/tdv-import/panorama_DC5DE84D_D777_4F19_41B6_298BD1CC52E2.jpg'
+    ];
+
+    // Thumbnails for quick loading
+    const thumbnails = [
       'media/tdv-import/panorama_CFF86997_D78D_4109_41D6_D7F4B4601989_t.jpg',
       'media/tdv-import/panorama_CFF86997_D78D_4109_41D6_D7F4B4601989_t.webp',
       'media/tdv-import/panorama_DB744300_D775_4107_41E1_E2F79FF4509D_t.jpg',
@@ -984,13 +1004,29 @@ export class PWAManager {
       'media/tdv-import/panorama_DC5FADB7_D774_C109_41E0_A20BC05345FE_t.jpg',
       'media/tdv-import/panorama_DC5FADB7_D774_C109_41E0_A20BC05345FE_t.webp'
     ];
-    
-    existingThumbnails.forEach(url => urls.add(url));
+
+    // Add all panoramas and thumbnails
+    fullPanoramas.forEach(url => urls.add(url));
+    thumbnails.forEach(url => urls.add(url));
 
     // Add config files
     urls.add('media/tdv-import/project.json');
     urls.add('media/tdv-import/hotspots.json');
     urls.add('floor-plan/floor-plan-config.json');
+
+    // Add floor plan images
+    urls.add('floor-plan/ground-floor.jpg');
+    urls.add('floor-plan/first-floor.jpg');
+    urls.add('floor-plan/site-plan.jpg');
+
+    // Add gallery images (if any exist)
+    urls.add('gallery/gallery-1.jpg');
+    urls.add('gallery/gallery-2.jpg');
+    urls.add('gallery/gallery-3.jpg');
+
+    // Add skin/logo images
+    urls.add('media/tdv-import/skin/logo.png');
+    urls.add('media/tdv-import/skin/logo.webp');
 
     return Array.from(urls);
   }
