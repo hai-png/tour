@@ -1150,43 +1150,37 @@
           </div>
           
           <h2 style="font-size:24px;margin-bottom:8px;">Install HAI Tour App</h2>
-          <p style="color:var(--text-muted);margin-bottom:24px;">
+          <p style="color:var(--text-muted);margin-bottom:24px;" id="pwa-install-description">
             Install this app for quick access and offline support
           </p>
           
-          <!-- Benefits -->
-          <div style="text-align:left;margin-bottom:24px;">
-            <div style="display:flex;align-items:center;gap:12px;padding:12px;background:rgba(16, 185, 129, 0.1);border-radius:10px;margin-bottom:8px;">
-              <i class="fas fa-bolt" style="color:#10b981;font-size:18px;"></i>
-              <span>Instant access from your home screen</span>
-            </div>
-            <div style="display:flex;align-items:center;gap:12px;padding:12px;background:rgba(99, 102, 241, 0.1);border-radius:10px;margin-bottom:8px;">
-              <i class="fas fa-wifi" style="color:var(--primary);font-size:18px;"></i>
-              <span>Works offline after initial load</span>
-            </div>
-            <div style="display:flex;align-items:center;gap:12px;padding:12px;background:rgba(139, 92, 246, 0.1);border-radius:10px;">
-              <i class="fas fa-rocket" style="color:var(--secondary);font-size:18px;"></i>
-              <span>Fast, app-like experience</span>
-            </div>
-          </div>
-          
-          <!-- Install Button -->
-          <button id="btn-confirm-install" style="width:100%;padding:16px;background:linear-gradient(135deg, var(--primary), var(--primary-dark));color:white;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 10px 30px rgba(99, 102, 241, 0.3);transition:all 0.3s ease;">
-            <i class="fas fa-download" style="margin-right:8px;"></i> Install Now
+          <!-- Native Install Button (shown when available) -->
+          <button id="btn-native-install" style="display:none;width:100%;padding:16px;background:linear-gradient(135deg, var(--primary), var(--primary-dark));color:white;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 10px 30px rgba(99, 102, 241, 0.3);transition:all 0.3s ease;margin-bottom:12px;">
+            <i class="fas fa-download" style="margin-right:8px;"></i> Install App
           </button>
           
-          <!-- iOS Instructions (hidden by default) -->
-          <div id="ios-install-instructions" style="display:none;margin-top:20px;padding:16px;background:rgba(255,255,255,0.05);border-radius:12px;border:1px solid rgba(255,255,255,0.1);">
-            <p style="font-size:14px;margin-bottom:12px;"><strong>For iOS devices:</strong></p>
+          <!-- Manual Install Instructions (always shown) -->
+          <div id="manual-install-instructions" style="text-align:left;margin-bottom:24px;padding:16px;background:rgba(255,255,255,0.05);border-radius:12px;border:1px solid rgba(255,255,255,0.1);">
+            <p style="font-size:14px;margin-bottom:12px;font-weight:600;"><i class="fas fa-info-circle" style="color:var(--primary);margin-right:6px;"></i> Install via Browser:</p>
             <ol style="font-size:13px;color:var(--text-muted);padding-left:20px;margin:0;">
-              <li>Tap the <strong>Share</strong> button <i class="fas fa-share-square" style="color:var(--primary);"></i></li>
+              <li style="margin-bottom:8px;">Click the browser menu <strong style="color:var(--text);">⋮</strong> (three dots)</li>
+              <li style="margin-bottom:8px;">Select <strong style="color:var(--text);">"Install HAI Tour"</strong> or <strong style="color:var(--text);">"Create shortcut"</strong></li>
+              <li style="margin-bottom:8px;">Click <strong style="color:var(--text);">Install</strong> to confirm</li>
+            </ol>
+          </div>
+          
+          <!-- iOS Instructions (hidden by default) -->
+          <div id="ios-install-instructions" style="display:none;margin-bottom:24px;padding:16px;background:rgba(255,255,255,0.05);border-radius:12px;border:1px solid rgba(255,255,255,0.1);">
+            <p style="font-size:14px;margin-bottom:12px;font-weight:600;"><i class="fab fa-apple" style="color:var(--text);margin-right:6px;"></i> For iOS (iPhone/iPad):</p>
+            <ol style="font-size:13px;color:var(--text-muted);padding-left:20px;margin:0;">
+              <li style="margin-bottom:8px;">Tap the <strong>Share</strong> button <i class="fas fa-share-square" style="color:var(--primary);"></i> (box with arrow)</li>
               <li>Scroll down and tap <strong>"Add to Home Screen"</strong> <i class="fas fa-plus-square" style="color:var(--primary);"></i></li>
             </ol>
           </div>
           
-          <!-- Maybe Later -->
-          <button onclick="document.getElementById('modal-pwa-install').classList.remove('active')" style="margin-top:12px;padding:12px 24px;background:transparent;color:var(--text-muted);border:1px solid rgba(255,255,255,0.2);border-radius:10px;cursor:pointer;font-size:14px;">
-            Maybe Later
+          <!-- Reset Prompt Button (for users who dismissed it) -->
+          <button id="btn-reset-prompt" onclick="this.parentElement.parentElement.querySelector('#manual-install-instructions').scrollIntoView({behavior:'smooth'});" style="margin-top:12px;padding:10px 20px;background:transparent;color:var(--text-muted);border:1px solid rgba(255,255,255,0.2);border-radius:10px;cursor:pointer;font-size:13px;">
+            <i class="fas fa-redo" style="margin-right:6px;"></i> Didn't work? Follow manual steps above
           </button>
         </div>
       </div>

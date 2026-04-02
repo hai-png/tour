@@ -229,55 +229,40 @@ export class PWAManager {
     // Check if iOS
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     
-    // Update button text based on install availability
-    const confirmBtn = document.getElementById('btn-confirm-install');
-    const iosInstructions = document.getElementById('ios-install-instructions');
-    
-    if (isIOS) {
-      if (iosInstructions) {
-        iosInstructions.style.display = 'block';
-      }
-      if (confirmBtn) {
-        confirmBtn.innerHTML = '<i class="fas fa-external-link-alt" style="margin-right:8px;"></i> Open Share Menu';
-      }
-    } else if (this.promptEvent) {
-      if (confirmBtn) {
-        confirmBtn.innerHTML = '<i class="fas fa-download" style="margin-right:8px;"></i> Install Now';
-      }
-    } else {
-      if (confirmBtn) {
-        confirmBtn.innerHTML = '<i class="fas fa-info-circle" style="margin-right:8px;"></i> Show Install Instructions';
-      }
-    }
-
-    // Show modal
+    // Get elements
     const modal = document.getElementById('modal-pwa-install');
-    if (modal) {
-      modal.classList.add('active');
-    }
-
-    // Setup confirm install button
-    if (confirmBtn) {
-      confirmBtn.onclick = () => {
-        if (this.promptEvent) {
-          // Native install available
-          this.promptInstall();
-        } else if (isIOS) {
-          // iOS - just close modal, instructions are shown
-          modal.classList.remove('active');
-          this.showNotification({
-            type: 'info',
-            title: 'iOS Install',
-            message: 'Use Safari Share menu → Add to Home Screen',
-            icon: 'fa-info-circle',
-            duration: 8000
-          });
-        } else {
-          // Desktop - show browser install hint
-          modal.classList.remove('active');
-          this.showBrowserInstallHint();
-        }
-      };
+    const nativeInstallBtn = document.getElementById('btn-native-install');
+    const manualInstructions = document.getElementById('manual-install-instructions');
+    const iosInstructions = document.getElementById('ios-install-instructions');
+    const description = document.getElementById('pwa-install-description');
+    
+    if (!modal) return;
+    
+    // Show modal
+    modal.classList.add('active');
+    
+    // Configure UI based on platform and prompt availability
+    if (isIOS) {
+      // iOS
+      if (description) description.textContent = 'Install this app on your iPhone or iPad';
+      if (nativeInstallBtn) nativeInstallBtn.style.display = 'none';
+      if (manualInstructions) manualInstructions.style.display = 'none';
+      if (iosInstructions) iosInstructions.style.display = 'block';
+    } else if (this.promptEvent) {
+      // Native install available (Chrome/Edge/Android)
+      if (description) description.textContent = 'Install this app for quick access and offline support';
+      if (nativeInstallBtn) {
+        nativeInstallBtn.style.display = 'block';
+        nativeInstallBtn.onclick = () => this.promptInstall();
+      }
+      if (manualInstructions) manualInstructions.style.display = 'none';
+      if (iosInstructions) iosInstructions.style.display = 'none';
+    } else {
+      // Fallback - show manual instructions
+      if (description) description.textContent = 'Install via your browser menu';
+      if (nativeInstallBtn) nativeInstallBtn.style.display = 'none';
+      if (manualInstructions) manualInstructions.style.display = 'block';
+      if (iosInstructions) iosInstructions.style.display = 'none';
     }
   }
 
@@ -405,9 +390,25 @@ export class PWAManager {
       this.promptEvent = e;
       this.isInstalled = false;
       console.log('[PWA] ✅ beforeinstallprompt event fired!');
+      console.log('[PWA] promptEvent stored, native install available');
       
-      // Show install button in top bar
+      // Show install button in top bar immediately
       this.showInstallButtonInTopBar();
+    });
+
+    // Listen for when prompt doesn't fire (debugging)
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        if (!this.promptEvent) {
+          console.log('[PWA] ⚠️ No prompt event after 5 seconds');
+          console.log('[PWA] Possible reasons:');
+          console.log('[PWA]   1. User previously dismissed install prompt');
+          console.log('[PWA]   2. Not enough user engagement');
+          console.log('[PWA]   3. Browser doesn\'t support install prompts');
+          console.log('[PWA]   4. Already installed');
+          console.log('[PWA] Will show manual install instructions instead');
+        }
+      }, 5000);
     });
 
     // App installed
@@ -426,7 +427,7 @@ export class PWAManager {
     // Setup buttons
     setTimeout(() => this.setupInstallButton(), 500);
     setTimeout(() => this.setupOfflineDownloadButtons(), 1000);
-    setTimeout(() => this.setupTopBarInstallButton(), 1000);
+    setTimeout(() => this.setupTopBarInstallButton(), 3000);
 
     // Track user interaction
     this.trackUserInteraction();
