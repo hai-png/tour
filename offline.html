@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#6366f1" />
+  <title>Offline - HAI PNG Virtual Tour</title>
+  <style>
+    :root {
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --secondary: #8b5cf6;
+      --accent: #f59e0b;
+      --bg-dark: #0f172a;
+      --bg-card: #1e293b;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --success: #10b981;
+      --error: #ef4444;
+      --radius-md: 12px;
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, var(--bg-dark) 0%, #1e1b4b 100%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .offline-container {
+      text-align: center;
+      max-width: 500px;
+      animation: fadeInUp 0.5s ease;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .offline-icon {
+      font-size: 80px;
+      margin-bottom: 24px;
+      animation: pulse 2s ease infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+      50% {
+        opacity: 0.7;
+        transform: scale(1.05);
+      }
+    }
+
+    h1 {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    p {
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 24px;
+      font-size: 16px;
+    }
+
+    .offline-card {
+      background: var(--bg-card);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 16px;
+      background: rgba(239, 68, 68, 0.1);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--error);
+      margin-bottom: 20px;
+    }
+
+    .status-indicator.online {
+      background: rgba(16, 185, 129, 0.1);
+      border-color: var(--success);
+    }
+
+    .status-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--error);
+      animation: blink 1.5s ease infinite;
+    }
+
+    .status-indicator.online .status-dot {
+      background: var(--success);
+      animation: none;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .retry-btn {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      border: none;
+      padding: 14px 32px;
+      border-radius: var(--radius-md);
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .retry-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+    }
+
+    .retry-btn:active {
+      transform: translateY(0);
+    }
+
+    .retry-btn i {
+      font-size: 18px;
+    }
+
+    .tips-list {
+      text-align: left;
+      margin-top: 20px;
+    }
+
+    .tip-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      margin-bottom: 10px;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .tip-item i {
+      color: var(--primary);
+      font-size: 16px;
+      margin-top: 2px;
+    }
+
+    .cache-info {
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .cache-info h3 {
+      font-size: 18px;
+      margin-bottom: 12px;
+      color: var(--text);
+    }
+
+    .cache-status {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .cache-stat {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 16px;
+      border-radius: var(--radius-md);
+      text-align: center;
+    }
+
+    .cache-stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+
+    .cache-stat-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .logo {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 20px;
+      object-fit: contain;
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 24px;
+      }
+
+      p {
+        font-size: 14px;
+      }
+
+      .offline-icon {
+        font-size: 60px;
+      }
+
+      .cache-status {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+</head>
+<body>
+  <div class="offline-container">
+    <img src="media/tdv-import/skin/logo.png" alt="HAI PNG" class="logo" onerror="this.style.display='none'" />
+    
+    <div class="offline-icon">
+      <i class="fas fa-wifi" style="color: var(--error);"></i>
+    </div>
+
+    <h1>You're Offline</h1>
+    
+    <p>
+      It looks like you've lost your internet connection. 
+      Don't worry - you can still access cached parts of the virtual tour.
+    </p>
+
+    <div class="offline-card">
+      <div class="status-indicator" id="status-indicator">
+        <span class="status-dot"></span>
+        <span id="status-text">No Internet Connection</span>
+      </div>
+
+      <button class="retry-btn" onclick="retryConnection()">
+        <i class="fas fa-sync-alt"></i>
+        <span>Try Again</span>
+      </button>
+
+      <div class="tips-list">
+        <div class="tip-item">
+          <i class="fas fa-check-circle"></i>
+          <span>Cached rooms and floor plans are still available</span>
+        </div>
+        <div class="tip-item">
+          <i class="fas fa-check-circle"></i>
+          <span>Previously loaded panoramas can be viewed</span>
+        </div>
+        <div class="tip-item">
+          <i class="fas fa-check-circle"></i>
+          <span>Navigation between cached scenes works offline</span>
+        </div>
+        <div class="tip-item">
+          <i class="fas fa-exclamation-circle"></i>
+          <span>New rooms and high-resolution images require connection</span>
+        </div>
+      </div>
+
+      <div class="cache-info">
+        <h3><i class="fas fa-database"></i> Cached Content</h3>
+        <div class="cache-status">
+          <div class="cache-stat">
+            <div class="cache-stat-value" id="cached-scenes">-</div>
+            <div class="cache-stat-label">Cached Scenes</div>
+          </div>
+          <div class="cache-stat">
+            <div class="cache-stat-value" id="cached-size">-</div>
+            <div class="cache-stat-label">Cache Size</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p style="font-size: 14px;">
+      <i class="fas fa-info-circle"></i> 
+      The app will automatically reload when your connection is restored.
+    </p>
+  </div>
+
+  <script>
+    // Monitor online status
+    function updateStatus() {
+      const indicator = document.getElementById('status-indicator');
+      const statusText = document.getElementById('status-text');
+      
+      if (navigator.onLine) {
+        indicator.classList.add('online');
+        statusText.textContent = 'Connection Restored!';
+        
+        // Auto-reload after 1 second
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      } else {
+        indicator.classList.remove('online');
+        statusText.textContent = 'No Internet Connection';
+      }
+    }
+
+    // Retry connection
+    function retryConnection() {
+      if (navigator.onLine) {
+        window.location.reload();
+      } else {
+        // Try to fetch a resource to test connection
+        fetch('/?t=' + Date.now(), { 
+          method: 'HEAD',
+          cache: 'no-cache'
+        })
+          .then(() => {
+            window.location.reload();
+          })
+          .catch(() => {
+            // Still offline - show animation
+            const btn = document.querySelector('.retry-btn');
+            btn.style.animation = 'shake 0.5s ease';
+            setTimeout(() => {
+              btn.style.animation = '';
+            }, 500);
+          });
+      }
+    }
+
+    // Listen for online/offline events
+    window.addEventListener('online', updateStatus);
+    window.addEventListener('offline', updateStatus);
+
+    // Check cache status
+    async function getCacheStatus() {
+      try {
+        if ('caches' in window) {
+          const cacheNames = await caches.keys();
+          let totalItems = 0;
+          let totalSize = 0;
+
+          for (const name of cacheNames) {
+            if (name.startsWith('hai-tour-')) {
+              const cache = await caches.open(name);
+              const keys = await cache.keys();
+              totalItems += keys.length;
+              // Rough size estimate
+              totalSize += keys.length * 100 * 1024;
+            }
+          }
+
+          document.getElementById('cached-scenes').textContent = totalItems;
+          document.getElementById('cached-size').textContent = formatSize(totalSize);
+        }
+      } catch (error) {
+        console.error('Failed to get cache status:', error);
+      }
+    }
+
+    function formatSize(bytes) {
+      if (bytes === 0) return '0 B';
+      const k = 1024;
+      const sizes = ['B', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return Math.round(bytes / Math.pow(k, i) * 10) / 10 + ' ' + sizes[i];
+    }
+
+    // Initialize
+    updateStatus();
+    getCacheStatus();
+
+    // Check initial online status and redirect if online
+    if (navigator.onLine) {
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 500);
+    }
+  </script>
+
+  <style>
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+  </style>
+</body>
+</html>

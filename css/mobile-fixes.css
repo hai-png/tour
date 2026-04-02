@@ -1,0 +1,200 @@
+/* ============================================================
+   HAI PNG Virtual Tour - Mobile Edge Case Fixes
+   Only handles specific edge cases, not main responsive breakpoints
+   Main responsive CSS is in responsive.css
+   ============================================================ */
+
+/* ============================================================
+   LOADING SCREEN - Ensure full viewport coverage
+   ============================================================ */
+
+.loading-overlay {
+  position: fixed !important;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.loading-content {
+  max-height: 100vh;
+  overflow-y: auto;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+#btn-start-tour {
+  min-height: 50px;
+  margin-top: 20px;
+  flex-shrink: 0;
+}
+
+/* Small height screens */
+@media (max-height: 600px) {
+  .loading-content {
+    padding: 10px;
+  }
+
+  .loading-header {
+    gap: 12px;
+  }
+
+  .loading-logo {
+    height: 40px;
+  }
+
+  .loading-header h1 {
+    font-size: 20px;
+  }
+
+  .loading-header p {
+    font-size: 12px;
+  }
+}
+
+/* Very small height */
+@media (max-height: 500px) {
+  .loading-logo {
+    height: 30px;
+  }
+
+  .loading-header h1 {
+    font-size: 16px;
+  }
+
+  .loading-header p {
+    display: none;
+  }
+}
+
+/* ============================================================
+   PWA INSTALL BUTTON
+   ============================================================ */
+
+#pwa-install-btn {
+  position: fixed !important;
+  bottom: 80px !important;
+  right: 20px !important;
+  z-index: 99999 !important;
+  padding: 14px 24px !important;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark)) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: var(--radius-md) !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  box-shadow: var(--shadow-lg) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  animation: fadeInUp 0.3s ease !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+#pwa-install-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+}
+
+@media (max-width: 767px) {
+  #pwa-install-btn {
+    bottom: 140px !important;
+    right: 20px !important;
+    padding: 12px 20px !important;
+    font-size: 13px !important;
+  }
+}
+
+.ios-install-instructions {
+  z-index: 99998 !important;
+}
+
+/* ============================================================
+   MOBILE GESTURES - Touch interaction
+   ============================================================ */
+
+#panorama-canvas {
+  touch-action: none;
+  cursor: grab;
+}
+
+#panorama-canvas:active {
+  cursor: grabbing;
+}
+
+body {
+  overscroll-behavior-y: contain;
+}
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -20px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@keyframes fadeOutUp {
+  from {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -20px);
+  }
+}
+
+@keyframes fadeOutDown {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+
+/* ============================================================
+   PERFORMANCE - Hardware acceleration
+   ============================================================ */
+
+.loading-logo,
+.spinner,
+#pwa-install-btn,
+.modal-content {
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

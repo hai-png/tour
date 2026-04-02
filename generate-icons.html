@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PWA Icon Generator</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #1a3a5c;
+      margin-bottom: 10px;
+    }
+    .status {
+      padding: 15px;
+      border-radius: 8px;
+      margin: 20px 0;
+      font-size: 14px;
+    }
+    .status.info {
+      background: #e3f2fd;
+      color: #1976d2;
+      border: 1px solid #90caf9;
+    }
+    .status.success {
+      background: #e8f5e9;
+      color: #388e3c;
+      border: 1px solid #81c784;
+    }
+    .status.error {
+      background: #ffebee;
+      color: #d32f2f;
+      border: 1px solid #ef5350;
+    }
+    button {
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .icon-preview {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+    .icon-item {
+      text-align: center;
+      padding: 10px;
+      background: #f9f9f9;
+      border-radius: 8px;
+    }
+    .icon-item img {
+      width: 64px;
+      height: 64px;
+      object-fit: contain;
+      margin-bottom: 8px;
+    }
+    .icon-item span {
+      font-size: 11px;
+      color: #666;
+      display: block;
+    }
+    .progress {
+      margin-top: 20px;
+    }
+    .progress-bar {
+      height: 4px;
+      background: #e0e0e0;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #6366f1, #4f46e5);
+      width: 0%;
+      transition: width 0.3s;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>PWA Icon Generator</h1>
+    <p>Generate PWA icons from the HAI PNG logo</p>
+
+    <div id="status" class="status info">
+      Click the button below to generate all required PWA icons.
+    </div>
+
+    <button id="generateBtn" onclick="generateIcons()">
+      <i class="fas fa-download"></i> Generate Icons
+    </button>
+
+    <div class="progress" id="progress" style="display: none;">
+      <div class="progress-bar">
+        <div class="progress-bar-fill" id="progressBar"></div>
+      </div>
+      <p id="progressText" style="font-size: 13px; color: #666; margin-top: 8px;"></p>
+    </div>
+
+    <div class="icon-preview" id="iconPreview"></div>
+  </div>
+
+  <script>
+    const ICON_SIZES = [192, 512];
+    const APPLE_SIZES = [60, 76, 120, 144, 152, 167, 180];
+
+    async function generateIcons() {
+      const btn = document.getElementById('generateBtn');
+      const status = document.getElementById('status');
+      const progress = document.getElementById('progress');
+      const progressBar = document.getElementById('progressBar');
+      const progressText = document.getElementById('progressText');
+      const preview = document.getElementById('iconPreview');
+
+      btn.disabled = true;
+      progress.style.display = 'block';
+      preview.innerHTML = '';
+
+      try {
+        // Load the source logo
+        status.className = 'status info';
+        status.textContent = 'Loading source logo...';
+
+        const logo = await loadImage('media/tdv-import/skin/logo.png');
+        const totalIcons = ICON_SIZES.length + APPLE_SIZES.length + 2; // +2 for default apple icon and favicon
+        let completed = 0;
+
+        // Generate standard icons
+        for (const size of ICON_SIZES) {
+          progressText.textContent = `Generating icon ${size}x${size}...`;
+          const canvas = createIcon(logo, size);
+          await downloadCanvas(canvas, `media/pwa/icon-${size}x${size}.png`);
+          addPreview(size, canvas.toDataURL());
+          completed++;
+          progressBar.style.width = `${(completed / totalIcons) * 100}%`;
+        }
+
+        // Generate Apple touch icons
+        for (const size of APPLE_SIZES) {
+          progressText.textContent = `Generating Apple touch icon ${size}x${size}...`;
+          const canvas = createIcon(logo, size);
+          await downloadCanvas(canvas, `media/pwa/apple-touch-icon-${size}x${size}.png`);
+          addPreview(size, canvas.toDataURL());
+          completed++;
+          progressBar.style.width = `${(completed / totalIcons) * 100}%`;
+        }
+
+        // Generate default Apple touch icon (180x180)
+        progressText.textContent = 'Generating default Apple touch icon...';
+        const defaultAppleCanvas = createIcon(logo, 180);
+        await downloadCanvas(defaultAppleCanvas, 'media/pwa/apple-touch-icon.png');
+        completed++;
+        progressBar.style.width = `${(completed / totalIcons) * 100}%`;
+
+        // Generate favicon
+        progressText.textContent = 'Generating favicon...';
+        const faviconCanvas = createIcon(logo, 32);
+        await downloadCanvas(faviconCanvas, 'media/pwa/favicon.ico');
+        completed++;
+        progressBar.style.width = '100%';
+
+        status.className = 'status success';
+        status.innerHTML = `✓ All icons generated successfully!<br>
+                           <strong>Important:</strong> Your browser downloaded the icons. 
+                           You need to manually move them to the <code>media/pwa/</code> folder.`;
+
+        btn.disabled = false;
+        btn.textContent = 'Generate Again';
+
+      } catch (error) {
+        console.error('Icon generation failed:', error);
+        status.className = 'status error';
+        status.textContent = `✗ Error: ${error.message}`;
+        btn.disabled = false;
+      }
+    }
+
+    function loadImage(src) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error(`Failed to load ${src}`));
+        img.src = src;
+      });
+    }
+
+    function createIcon(source, size) {
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+
+      // Clear canvas
+      ctx.clearRect(0, 0, size, size);
+
+      // Calculate size to fit logo with padding (60% of icon size for safe zone)
+      const logoSize = size * 0.6;
+
+      // Calculate position to center the logo
+      const x = (size - logoSize) / 2;
+      const y = (size - logoSize) / 2;
+
+      // Draw logo centered
+      ctx.drawImage(source, x, y, logoSize, logoSize);
+
+      return canvas;
+    }
+
+    async function downloadCanvas(canvas, filename) {
+      return new Promise((resolve) => {
+        canvas.toBlob((blob) => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = filename.split('/').pop();
+          a.click();
+          URL.revokeObjectURL(url);
+          setTimeout(resolve, 100);
+        }, 'image/png');
+      });
+    }
+
+    function addPreview(size, dataUrl) {
+      const preview = document.getElementById('iconPreview');
+      const item = document.createElement('div');
+      item.className = 'icon-item';
+      item.innerHTML = `
+        <img src="${dataUrl}" alt="${size}x${size}" />
+        <span>${size}x${size}</span>
+      `;
+      preview.appendChild(item);
+    }
+  </script>
+</head>
+<body>
+</body>
+</html>

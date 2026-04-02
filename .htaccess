@@ -1,0 +1,246 @@
+# =============================================================================
+# HAI PNG Virtual Tour - Apache Configuration
+# =============================================================================
+# For production deployment on Apache web servers
+# Place this file in the root of your deployment directory
+# =============================================================================
+
+# Enable Rewrite Engine
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Redirect HTTP to HTTPS (uncomment for production with SSL)
+    # RewriteCond %{HTTPS} off
+    # RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # Handle SPA routing - redirect all non-file requests to index.html
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ /index.html [L,QSA]
+</IfModule>
+
+# =============================================================================
+# CACHING - Improve performance with browser caching
+# =============================================================================
+
+<IfModule mod_expires.c>
+    ExpiresActive On
+
+    # HTML - No cache
+    ExpiresByType text/html "access plus 0 seconds"
+
+    # CSS and JavaScript - Cache for 1 week
+    ExpiresByType text/css "access plus 1 week"
+    ExpiresByType application/javascript "access plus 1 week"
+    ExpiresByType application/x-javascript "access plus 1 week"
+
+    # Images - Cache for 1 month
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/gif "access plus 1 month"
+    ExpiresByType image/webp "access plus 1 month"
+    ExpiresByType image/svg+xml "access plus 1 month"
+    ExpiresByType image/x-icon "access plus 1 month"
+
+    # Fonts - Cache for 1 month
+    ExpiresByType font/woff2 "access plus 1 month"
+    ExpiresByType font/woff "access plus 1 month"
+    ExpiresByType font/ttf "access plus 1 month"
+    ExpiresByType application/font-woff "access plus 1 month"
+    ExpiresByType application/x-font-ttf "access plus 1 month"
+
+    # JSON - Cache for 1 hour (config files)
+    ExpiresByType application/json "access plus 1 hour"
+
+    # Service Worker - No cache (must be fresh)
+    ExpiresByType application/x-javascript "access plus 0 seconds"
+</IfModule>
+
+# Cache-Control headers
+<IfModule mod_headers.c>
+    # HTML - No cache
+    <FilesMatch "\.(html|htm)$">
+        Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+        Header set Pragma "no-cache"
+        Header set Expires 0
+    </FilesMatch>
+
+    # Service Worker - No cache
+    <FilesMatch "sw\.js$">
+        Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+        Header set Pragma "no-cache"
+        Header set Expires 0
+    </FilesMatch>
+
+    # Manifest - Short cache
+    <FilesMatch "manifest\.json$">
+        Header set Cache-Control "public, max-age=3600"
+    </FilesMatch>
+
+    # CSS and JavaScript - Long cache with revalidation
+    <FilesMatch "\.(css|js)$">
+        Header set Cache-Control "public, max-age=604800, must-revalidate"
+    </FilesMatch>
+
+    # Images - Long cache
+    <FilesMatch "\.(jpg|jpeg|png|gif|webp|svg|ico)$">
+        Header set Cache-Control "public, max-age=2592000, immutable"
+    </FilesMatch>
+
+    # Fonts - Long cache
+    <FilesMatch "\.(woff2|woff|ttf|eot)$">
+        Header set Cache-Control "public, max-age=2592000, immutable"
+    </FilesMatch>
+
+    # JSON config files - Short cache
+    <FilesMatch "\.json$">
+        Header set Cache-Control "public, max-age=3600"
+    </FilesMatch>
+</IfModule>
+
+# =============================================================================
+# SECURITY HEADERS
+# =============================================================================
+
+<IfModule mod_headers.c>
+    # Prevent clickjacking attacks
+    Header always set X-Frame-Options "SAMEORIGIN"
+
+    # Prevent MIME type sniffing
+    Header always set X-Content-Type-Options "nosniff"
+
+    # XSS Protection
+    Header always set X-XSS-Protection "1; mode=block"
+
+    # Referrer Policy
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+    # Content Security Policy (adjust as needed for your CDN resources)
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://unpkg.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https: http:; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self';"
+
+    # Permissions Policy (formerly Feature Policy)
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), fullscreen=(self)"
+
+    # Cross-Origin Policies
+    Header always set Cross-Origin-Opener-Policy "same-origin"
+    Header always set Cross-Origin-Embedder-Policy "require-corp"
+</IfModule>
+
+# =============================================================================
+# COMPRESSION - Gzip compression for faster loading
+# =============================================================================
+
+<IfModule mod_deflate.c>
+    # Compress text, HTML, JavaScript, CSS, SVG, and JSON files
+    AddOutputFilterByType DEFLATE
+        application/javascript
+        application/json
+        application/x-javascript
+        text/html
+        text/css
+        text/plain
+        text/xml
+        application/xml
+        image/svg+xml
+        font/woff2
+        application/x-font-ttf
+</IfModule>
+
+# =============================================================================
+# MIME TYPES - Ensure correct content types
+# =============================================================================
+
+<IfModule mod_mime.c>
+    # Web fonts
+    AddType font/woff2 .woff2
+    AddType font/woff .woff
+    AddType font/ttf .ttf
+    AddType application/font-woff .woff
+
+    # WebP images
+    AddType image/webp .webp
+
+    # JavaScript modules
+    AddType application/javascript .js
+    AddType application/x-javascript .mjs
+
+    # JSON
+    AddType application/json .json
+
+    # Manifest
+    AddType application/manifest+json .webmanifest
+</IfModule>
+
+# =============================================================================
+# PWA SPECIFIC SETTINGS
+# =============================================================================
+
+# Ensure service worker is served with correct MIME type
+<FilesMatch "sw\.js$">
+    ForceType application/javascript
+</FilesMatch>
+
+# Ensure manifest is served with correct MIME type
+<FilesMatch "manifest\.json$">
+    ForceType application/manifest+json
+</FilesMatch>
+
+# =============================================================================
+# BLOCK ACCESS TO SENSITIVE FILES
+# =============================================================================
+
+# Block access to hidden files (except .well-known for Let's Encrypt)
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Allow .well-known for SSL certificates
+<IfModule mod_rewrite.c>
+    RewriteCond %{REQUEST_URI} !^/.well-known/
+    RewriteRule ^\. - [F]
+</IfModule>
+
+# Block access to backup and source files
+<FilesMatch "\.(bak|config|sql|fla|psd|ini|log|sh|inc|swp|dist)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Block access to README and documentation files
+<FilesMatch "^(README|DEPLOYMENT|CHANGELOG).*\.(md|txt)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# =============================================================================
+# CUSTOM ERROR PAGES
+# =============================================================================
+
+# Uncomment and customize if you have custom error pages
+# ErrorDocument 404 /404.html
+# ErrorDocument 500 /500.html
+# ErrorDocument 403 /403.html
+
+# =============================================================================
+# PERFORMANCE - Keep-Alive and ETags
+# =============================================================================
+
+# Enable Keep-Alive
+<IfModule mod_headers.c>
+    Header set Connection keep-alive
+</IfModule>
+
+# Disable ETags (use Last-Modified instead)
+<IfModule mod_headers.c>
+    Header unset ETag
+</IfModule>
+FileETag None
+
+# =============================================================================
+# UTF-8 ENCODING
+# =============================================================================
+
+AddDefaultCharset UTF-8
+AddCharset UTF-8 .html .css .js .xml .json .rss .atom

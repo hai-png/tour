@@ -1,6 +1,7 @@
 /**
  * Panorama Viewer - Three.js based cubic panorama renderer
  * ============================================================
+ * Supports mouse and touch gestures for mobile/desktop
  */
 
 import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js';
@@ -14,9 +15,25 @@ export class PanoramaViewer {
     this.yaw = 0;
     this.pitch = 0;
     this.fov = 75;
+    
+    // Mouse/touch state
     this.isDragging = false;
     this.lastMouseX = 0;
     this.lastMouseY = 0;
+    
+    // Touch gesture state
+    this.touchStartX = 0;
+    this.touchStartY = 0;
+    this.lastTouchX = 0;
+    this.lastTouchY = 0;
+    this.lastTouchDistance = 0;
+    this.isPinching = false;
+    this.touchStartTime = 0;
+    
+    // Sensitivity settings
+    this.touchSensitivity = 0.3; // Lower = slower movement
+    this.mouseSensitivity = 0.2;
+    this.pinchedSensitivity = 0.05;
 
     this.faceMap = { 'right': 0, 'left': 1, 'top': 2, 'bottom': 3, 'front': 4, 'back': 5 };
     this.faceDirs = { 'front': 'f', 'back': 'b', 'left': 'l', 'right': 'r', 'top': 'u', 'bottom': 'd' };
@@ -176,7 +193,17 @@ export class PanoramaViewer {
    * Set mouse/touch sensitivity for camera movement
    */
   setSensitivity(sensitivity) {
-    this.sensitivity = Math.max(0.5, Math.min(2.0, sensitivity));
+    this.mouseSensitivity = Math.max(0.1, Math.min(1.0, sensitivity));
+    this.touchSensitivity = this.mouseSensitivity * 1.5;
+  }
+
+  /**
+   * Calculate distance between two touch points
+   */
+  getTouchDistance(touch1, touch2) {
+    const dx = touch1.clientX - touch2.clientX;
+    const dy = touch1.clientY - touch2.clientY;
+    return Math.sqrt(dx * dx + dy * dy);
   }
 
   setupInteraction() {
@@ -184,12 +211,12 @@ export class PanoramaViewer {
     this.raycaster = new THREE.Raycaster();
     this.mouse = new THREE.Vector2();
 
+    // ===== MOUSE EVENTS =====
     canvas.addEventListener('mousedown', e => {
       this.isDragging = true;
       this.lastMouseX = e.clientX;
       this.lastMouseY = e.clientY;
       canvas.style.cursor = 'grabbing';
-      // Update last interaction for auto-rotate (use performance.now() for consistency)
       if (this.tourPlayer) {
         this.tourPlayer.lastInteraction = performance.now();
       }
@@ -209,15 +236,15 @@ export class PanoramaViewer {
         canvas.style.cursor = intersects.length > 0 ? 'pointer' : 'grab';
         return;
       }
-      // Drag to look - natural drag direction with sensitivity
-      const sensitivity = this.sensitivity || 1.0;
-      this.yaw -= (e.clientX - this.lastMouseX) * 0.2 * sensitivity;
-      this.pitch -= (e.clientY - this.lastMouseY) * 0.2 * sensitivity;
+      
+      // Drag to look with sensitivity
+      this.yaw -= (e.clientX - this.lastMouseX) * this.mouseSensitivity;
+      this.pitch -= (e.clientY - this.lastMouseY) * this.mouseSensitivity;
       this.pitch = Math.max(-90, Math.min(90, this.pitch));
       this.updateCamera();
       this.lastMouseX = e.clientX;
       this.lastMouseY = e.clientY;
-      // Update last interaction for auto-rotate (use performance.now() for consistency)
+      
       if (this.tourPlayer) {
         this.tourPlayer.lastInteraction = performance.now();
       }
@@ -226,7 +253,6 @@ export class PanoramaViewer {
     canvas.addEventListener('mouseup', e => {
       this.isDragging = false;
       canvas.style.cursor = 'grab';
-      // Update last interaction for auto-rotate (use performance.now() for consistency)
       if (this.tourPlayer) {
         this.tourPlayer.lastInteraction = performance.now();
       }
@@ -266,8 +292,7 @@ export class PanoramaViewer {
           if (modal && iframe) {
             iframe.src = `https://www.youtube.com/embed/${youtubeId}?autoplay=1&rel=0`;
             modal.classList.add('active');
-            
-            // Clear iframe when modal closes
+
             const closeBtn = modal.querySelector('.modal-close');
             if (closeBtn) {
               closeBtn.onclick = (e) => {
@@ -283,15 +308,121 @@ export class PanoramaViewer {
     });
 
     canvas.addEventListener('wheel', e => {
+      e.preventDefault();
       this.fov += e.deltaY * 0.05;
       this.fov = Math.max(30, Math.min(120, this.fov));
       this.camera.fov = this.fov;
       this.camera.updateProjectionMatrix();
-      // Update last interaction for auto-rotate (use performance.now() for consistency)
       if (this.tourPlayer) {
         this.tourPlayer.lastInteraction = performance.now();
       }
     }, { passive: false });
+
+    // ===== TOUCH EVENTS - Enhanced for mobile =====
+    
+    // Touch start
+    canvas.addEventListener('touchstart', e => {
+      e.preventDefault();
+      this.touchStartTime = Date.now();
+      
+      if (e.touches.length === 1) {
+        // Single touch - start dragging
+        this.isDragging = true;
+        const touch = e.touches[0];
+        this.lastTouchX = touch.clientX;
+        this.lastTouchY = touch.clientY;
+        this.touchStartX = touch.clientX;
+        this.touchStartY = touch.clientY;
+      } else if (e.touches.length === 2) {
+        // Two touches - start pinching
+        this.isPinching = true;
+        this.lastTouchDistance = this.getTouchDistance(e.touches[0], e.touches[1]);
+        this.isDragging = false;
+      }
+    }, { passive: false });
+
+    // Touch move
+    canvas.addEventListener('touchmove', e => {
+      e.preventDefault();
+      
+      if (e.touches.length === 1 && this.isDragging && !this.isPinching) {
+        // Single finger drag - look around
+        const touch = e.touches[0];
+        const dx = touch.clientX - this.lastTouchX;
+        const dy = touch.clientY - this.lastTouchY;
+        
+        this.yaw -= dx * this.touchSensitivity;
+        this.pitch -= dy * this.touchSensitivity;
+        this.pitch = Math.max(-90, Math.min(90, this.pitch));
+        this.updateCamera();
+        
+        this.lastTouchX = touch.clientX;
+        this.lastTouchY = touch.clientY;
+        
+        if (this.tourPlayer) {
+          this.tourPlayer.lastInteraction = performance.now();
+        }
+      } else if (e.touches.length === 2 && this.isPinching) {
+        // Pinch to zoom
+        const newDistance = this.getTouchDistance(e.touches[0], e.touches[1]);
+        const delta = this.lastTouchDistance - newDistance;
+        
+        this.fov += delta * this.pinchedSensitivity;
+        this.fov = Math.max(30, Math.min(120, this.fov));
+        this.camera.fov = this.fov;
+        this.camera.updateProjectionMatrix();
+        
+        this.lastTouchDistance = newDistance;
+        
+        if (this.tourPlayer) {
+          this.tourPlayer.lastInteraction = performance.now();
+        }
+      }
+    }, { passive: false });
+
+    // Touch end
+    canvas.addEventListener('touchend', e => {
+      const touchCount = e.touches.length;
+      
+      if (touchCount === 0) {
+        // All touches ended
+        this.isDragging = false;
+        this.isPinching = false;
+        
+        // Check for tap (short touch without much movement)
+        const touchDuration = Date.now() - this.touchStartTime;
+        if (touchDuration < 200) {
+          // Consider it a tap - check for hotspot clicks
+          this.mouse.x = ((this.touchStartX - canvas.getBoundingClientRect().left) / canvas.clientWidth) * 2 - 1;
+          this.mouse.y = -((this.touchStartY - canvas.getBoundingClientRect().top) / canvas.clientHeight) * 2 + 1;
+          this.raycaster.setFromCamera(this.mouse, this.camera);
+
+          const hotspots = this.sceneGroup.children.filter(c => c.userData.isHotspot);
+          const hotspotIntersects = this.raycaster.intersectObjects(hotspots);
+
+          if (hotspotIntersects.length > 0 && hotspotIntersects[0].object.userData.targetSceneId) {
+            const targetId = hotspotIntersects[0].object.userData.targetSceneId;
+            const index = this.tourPlayer.project.scenes.findIndex(s => s.id === targetId);
+            if (index !== -1) {
+              this.tourPlayer.loadScene(index);
+            }
+          }
+        }
+      } else if (touchCount === 1) {
+        // One touch ended, switch to single-finger drag
+        this.isPinching = false;
+        this.isDragging = true;
+        const touch = e.touches[0];
+        this.lastTouchX = touch.clientX;
+        this.lastTouchY = touch.clientY;
+      }
+    });
+
+    // Touch cancel
+    canvas.addEventListener('touchcancel', e => {
+      this.isDragging = false;
+      this.isPinching = false;
+    });
   }
 
   animate() {

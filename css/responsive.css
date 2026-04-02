@@ -1,0 +1,783 @@
+/* ============================================================
+   HAI PNG Virtual Tour - Responsive Breakpoints
+   Industry-standard mobile-first responsive system
+   
+   Breakpoints:
+   - Mobile:    max-width: 555px
+   - Tablet:    556px - 768px
+   - Small Desktop: 769px - 1024px
+   - Desktop:   min-width: 1025px
+   ============================================================ */
+
+/* ============================================================
+   TABLET (556px - 768px) - Width-based, orientation agnostic
+   Fixes: floor plan size, quick tools position, gallery overlap
+   ============================================================ */
+
+@media (min-width: 556px) and (max-width: 768px) {
+  :root {
+    --edge: 12px;
+    --gallery-w: 220px;
+  }
+
+  /* Floor Plan - Top Right, align TOP with branding TOP */
+  .floor-plan-container {
+    position: absolute !important;
+    top: 10px !important;
+    right: var(--edge) !important;
+    left: auto !important;
+    bottom: auto !important;
+    width: 220px !important;
+    max-height: calc(100vh - 100px) !important;
+  }
+
+  .floor-plan-header {
+    padding: 10px 12px;
+  }
+
+  .floor-plan-header h4 {
+    font-size: 12px;
+  }
+
+  .floor-plan-name {
+    font-size: 11px;
+  }
+
+  .floor-plan-content {
+    min-height: 140px !important;
+    max-height: 280px !important;
+    padding: 12px !important;
+    overflow: hidden !important;
+  }
+
+  #floor-plan-canvas {
+    height: 110px !important;
+    max-height: 110px !important;
+  }
+
+  .floor-plan-radar {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  /* Quick Tools - LEFT side, vertically centered (transparent) */
+  .quick-tools {
+    position: absolute !important;
+    left: var(--edge) !important;
+    right: auto !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    padding: 6px 4px !important;
+    gap: 6px !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .quick-tool-btn {
+    min-width: 44px !important;
+    min-height: 44px !important;
+    padding: 8px 6px !important;
+    background: transparent !important;
+    border: none !important;
+  }
+
+  .quick-tool-btn span {
+    display: none !important;
+  }
+
+  .quick-tool-btn i {
+    font-size: 16px !important;
+    color: #ffffff !important;
+  }
+
+  .quick-tool-btn:hover {
+    background: transparent !important;
+  }
+
+  .quick-tool-btn:hover i {
+    color: var(--primary-light) !important;
+  }
+
+  /* Gallery Widget - SAME ROW as room list, right side */
+  .gallery-widget {
+    position: absolute !important;
+    bottom: var(--edge) !important;
+    right: var(--edge) !important;
+    left: auto !important;
+    z-index: 101 !important;
+  }
+
+  .gallery-widget-bar {
+    height: 64px !important;
+    min-width: 220px !important;
+  }
+
+  .gallery-preview-thumb,
+  .gallery-preview-count {
+    width: 48px !important;
+    height: 48px !important;
+  }
+
+  .gallery-widget-info {
+    display: inline-flex !important;
+  }
+
+  .gallery-grid-btn {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  /* Room List - SAME ROW as gallery, left side */
+  .room-list-horizontal {
+    position: absolute !important;
+    bottom: var(--edge) !important;
+    left: var(--edge) !important;
+    right: calc(var(--gallery-w) + 32px) !important;
+    margin-right: 0 !important;
+    height: 64px !important;
+  }
+
+  .room-nav-btn {
+    width: 44px !important;
+    height: 44px !important;
+  }
+
+  .room-list-scroll {
+    height: 48px !important;
+  }
+
+  .room-item-horizontal {
+    width: 84px !important;
+    height: 48px !important;
+  }
+
+  .room-item-horizontal .room-name-overlay {
+    font-size: 9px !important;
+    padding: 3px 6px !important;
+  }
+
+  /* Top Center Bar */
+  .top-center-bar {
+    padding: 8px 12px !important;
+    max-width: calc(100% - 280px) !important;
+  }
+
+  .top-bar-btn {
+    padding: 8px 10px !important;
+    min-width: 40px !important;
+  }
+
+  .top-bar-btn span {
+    display: none !important;
+  }
+
+  .top-bar-btn i {
+    font-size: 15px !important;
+  }
+
+  /* Brand */
+  .brand-container {
+    padding: 8px 12px !important;
+    gap: 8px !important;
+  }
+
+  .brand-logo {
+    height: 28px !important;
+  }
+
+  .brand-text h1 {
+    font-size: 13px !important;
+  }
+
+  .brand-text p {
+    display: none !important;
+  }
+
+  /* Current Room */
+  .current-room-container {
+    top: 65px !important;
+    max-width: calc(100% - 160px) !important;
+  }
+
+  .current-room-container #current-room-name {
+    font-size: 15px !important;
+    padding: 6px 10px !important;
+  }
+
+  .current-room-data {
+    padding: 8px 10px !important;
+  }
+}
+
+/* ============================================================
+   MOBILE (max-width: 555px) - Compact layout
+   Floor plan and gallery on same row, room list below
+   Quick tools on RIGHT side
+   ============================================================ */
+
+@media (max-width: 555px) {
+  :root {
+    --edge: 8px;
+    --gallery-w: 0;
+  }
+
+  /* Floor Plan - Bottom Left */
+  .floor-plan-container {
+    position: absolute !important;
+    bottom: 72px !important;
+    left: var(--edge) !important;
+    right: auto !important;
+    top: auto !important;
+    width: calc(50% - var(--edge) - 4px) !important;
+    max-width: 180px !important;
+    max-height: 200px !important;
+  }
+
+  .floor-plan-header {
+    padding: 6px 8px !important;
+    height: 32px !important;
+  }
+
+  .floor-plan-header h4 {
+    font-size: 10px !important;
+    gap: 4px !important;
+  }
+
+  .floor-plan-name {
+    font-size: 8px !important;
+    text-align: left !important;
+  }
+
+  .floor-plan-content {
+    padding: 6px !important;
+    min-height: auto !important;
+    max-height: 160px !important;
+    overflow: hidden !important;
+  }
+
+  .floor-plan-container:not(.collapsed) .floor-plan-content {
+    min-height: 80px !important;
+  }
+
+  #floor-plan-canvas {
+    height: 80px !important;
+    max-height: 80px !important;
+  }
+
+  .floor-plan-radar {
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  /* Gallery Widget - Bottom Right (same row as floor plan) */
+  .gallery-widget {
+    position: absolute !important;
+    bottom: 72px !important;
+    right: var(--edge) !important;
+    left: auto !important;
+    width: calc(50% - var(--edge) - 4px) !important;
+    max-width: 140px !important;
+  }
+
+  .gallery-widget-bar {
+    width: 100% !important;
+    min-height: 32px !important;
+    padding: 4px 6px !important;
+    gap: 4px !important;
+    justify-content: center !important;
+  }
+
+  .gallery-preview-thumb,
+  .gallery-preview-count {
+    width: 26px !important;
+    height: 26px !important;
+    border-radius: 6px !important;
+  }
+
+  .gallery-preview-count {
+    margin-left: -4px !important;
+  }
+
+  .gallery-preview-count span {
+    font-size: 8px !important;
+  }
+
+  .gallery-widget-info {
+    display: none !important;
+  }
+
+  .gallery-grid-btn {
+    width: 26px !important;
+    height: 26px !important;
+    margin-left: auto !important;
+  }
+
+  .gallery-grid-btn i {
+    font-size: 12px !important;
+  }
+
+  /* Room List - Bottom, full width (below floor plan + gallery) */
+  .room-list-horizontal {
+    position: absolute !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    margin-right: 0 !important;
+    height: 56px !important;
+    padding: 6px 8px !important;
+    gap: 6px !important;
+  }
+
+  .room-nav-btn {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  .room-list-scroll {
+    height: 42px !important;
+  }
+
+  .room-item-horizontal {
+    width: 64px !important;
+    height: 42px !important;
+  }
+
+  .room-item-horizontal .room-name-overlay {
+    font-size: 8px !important;
+    padding: 2px 4px !important;
+  }
+
+  /* Quick Tools - RIGHT side, VERTICALLY CENTERED */
+  .quick-tools {
+    position: absolute !important;
+    left: auto !important;
+    right: var(--edge) !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    padding: 4px 3px !important;
+    gap: 4px !important;
+    max-height: calc(100vh - 200px) !important;
+    overflow-y: auto !important;
+  }
+
+  .quick-tool-btn {
+    min-width: 36px !important;
+    min-height: 36px !important;
+    padding: 4px !important;
+  }
+
+  .quick-tool-btn span {
+    display: none !important;
+  }
+
+  .quick-tool-btn i {
+    font-size: 14px !important;
+  }
+
+  /* Brand */
+  .brand-container {
+    padding: 6px 8px !important;
+    gap: 6px !important;
+    height: 42px !important;
+  }
+
+  .brand-logo {
+    height: 20px !important;
+  }
+
+  .brand-text h1 {
+    font-size: 11px !important;
+  }
+
+  .brand-text p {
+    display: none !important;
+  }
+
+  .brand-info-btn,
+  .brand-contact-btn {
+    width: 24px !important;
+    height: 24px !important;
+  }
+
+  .brand-info-btn i,
+  .brand-contact-btn i {
+    font-size: 10px !important;
+  }
+
+  /* Current Room */
+  .current-room-container {
+    top: 58px !important;
+    max-width: calc(100% - 60px) !important;
+  }
+
+  .current-room-container #current-room-name {
+    font-size: 13px !important;
+    padding: 4px 8px !important;
+  }
+
+  .current-room-data {
+    display: none !important;
+  }
+
+  /* Top Center Bar */
+  .top-center-bar {
+    padding: 6px 8px !important;
+    max-width: calc(100% - 120px) !important;
+    min-height: 38px !important;
+  }
+
+  .top-bar-btn {
+    padding: 4px 6px !important;
+    min-width: 32px !important;
+    min-height: 28px !important;
+  }
+
+  .top-bar-btn span {
+    display: none !important;
+  }
+
+  .top-bar-btn i {
+    font-size: 12px !important;
+  }
+
+  .guided-tour-controls {
+    display: none !important;
+  }
+
+  .guided-tour-controls.active {
+    display: flex !important;
+  }
+}
+
+/* ============================================================
+   SMALL DESKTOP / LARGE TABLET (769px - 1024px)
+   Desktop layout with adjusted sizes
+   ============================================================ */
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  :root {
+    --edge: 14px;
+    --gallery-w: 260px;
+  }
+
+  /* Floor Plan - Top Right, align TOP with branding TOP */
+  .floor-plan-container {
+    position: absolute !important;
+    top: 10px !important;
+    right: var(--edge) !important;
+    width: 260px !important;
+  }
+
+  .floor-plan-content {
+    min-height: 200px !important;
+  }
+
+  #floor-plan-canvas {
+    height: 170px !important;
+  }
+
+  /* Quick Tools - Left side */
+  .quick-tools {
+    left: var(--edge) !important;
+    right: auto !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    padding: 8px 6px !important;
+    gap: 6px !important;
+  }
+
+  .quick-tool-btn {
+    min-width: 46px !important;
+    min-height: 46px !important;
+  }
+
+  .quick-tool-btn span {
+    display: none !important;
+  }
+
+  /* Gallery - SAME ROW as room list, on right */
+  .gallery-widget {
+    position: absolute !important;
+    bottom: var(--edge) !important;
+    right: var(--edge) !important;
+    left: auto !important;
+    z-index: 101 !important;
+  }
+
+  .gallery-widget-bar {
+    height: 68px !important;
+    min-width: 260px !important;
+    border-radius: var(--radius-lg) !important;
+  }
+
+  .gallery-preview-thumb,
+  .gallery-preview-count {
+    width: 52px !important;
+    height: 52px !important;
+  }
+
+  .gallery-widget-info {
+    display: inline-flex !important;
+  }
+
+  .gallery-widget-info h4 {
+    font-size: 13px !important;
+  }
+
+  .gallery-widget-info p {
+    font-size: 10px !important;
+  }
+
+  .gallery-grid-btn {
+    width: 44px !important;
+    height: 44px !important;
+  }
+
+  /* Room List - SAME ROW as gallery, left side */
+  .room-list-horizontal {
+    position: absolute !important;
+    bottom: var(--edge) !important;
+    left: var(--edge) !important;
+    right: calc(var(--gallery-w) + 32px) !important;
+    margin-right: 0 !important;
+    height: 68px !important;
+  }
+
+  .room-list-scroll {
+    height: 52px !important;
+  }
+
+  .room-item-horizontal {
+    width: 90px !important;
+    height: 52px !important;
+  }
+
+  /* Top Bar */
+  .top-center-bar {
+    max-width: calc(100% - 320px) !important;
+  }
+
+  .top-bar-btn span {
+    display: none !important;
+  }
+}
+
+/* ============================================================
+   LANDSCAPE ORIENTATION - Height-based adjustments
+   Applied on top of width-based breakpoints
+   ============================================================ */
+
+@media (orientation: landscape) and (max-width: 1024px) {
+  /* Floor Plan - Top Right, align TOP with branding */
+  @media (min-width: 556px) {
+    .floor-plan-container {
+      position: absolute !important;
+      top: 10px !important;
+      right: var(--edge) !important;
+      bottom: auto !important;
+    }
+
+    .floor-plan-content {
+      min-height: 140px !important;
+    }
+
+    #floor-plan-canvas {
+      height: 110px !important;
+    }
+  }
+
+  /* Quick Tools - LEFT side, transparent background, centered vertically */
+  .quick-tools {
+    left: var(--edge) !important;
+    right: auto !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .quick-tool-btn {
+    background: transparent !important;
+    border: none !important;
+  }
+
+  .quick-tool-btn i {
+    color: #ffffff !important;
+  }
+
+  /* Gallery - same row as room list */
+  .gallery-widget {
+    bottom: var(--edge) !important;
+  }
+
+  /* Room List */
+  .room-list-horizontal {
+    height: 56px !important;
+  }
+
+  .room-list-scroll {
+    height: 40px !important;
+  }
+}
+
+/* Very short screens (landscape mobile) */
+@media (orientation: landscape) and (max-height: 500px) {
+  :root {
+    --edge: 8px;
+  }
+
+  /* Brand - compact */
+  .brand-container {
+    height: auto !important;
+    padding: 6px 10px !important;
+  }
+
+  .brand-logo {
+    height: 20px !important;
+  }
+
+  .brand-text h1 {
+    font-size: 11px !important;
+  }
+
+  .brand-text p {
+    display: none !important;
+  }
+
+  /* Current Room - under brand at top */
+  .current-room-container {
+    top: 50px !important;
+    bottom: auto !important;
+  }
+
+  .current-room-container #current-room-name {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9) !important;
+  }
+
+  .current-room-data {
+    display: none !important;
+  }
+
+  /* Floor Plan - top right */
+  .floor-plan-container {
+    position: absolute !important;
+    top: var(--edge) !important;
+    right: var(--edge) !important;
+    bottom: auto !important;
+    width: 200px !important;
+  }
+
+  .floor-plan-content {
+    min-height: 100px !important;
+    padding: 8px !important;
+  }
+
+  #floor-plan-canvas {
+    height: 70px !important;
+  }
+
+  .floor-plan-radar {
+    width: 24px !important;
+    height: 24px !important;
+  }
+
+  /* Quick Tools - right edge, vertically centered */
+  .quick-tools {
+    position: absolute !important;
+    right: var(--edge) !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    padding: 4px 3px !important;
+    gap: 3px !important;
+  }
+
+  .quick-tool-btn {
+    min-width: 34px !important;
+    min-height: 34px !important;
+    padding: 4px !important;
+  }
+
+  .quick-tool-btn span {
+    display: none !important;
+  }
+
+  .quick-tool-btn i {
+    font-size: 13px !important;
+  }
+
+  /* Room List + Gallery same row */
+  .room-list-horizontal {
+    margin-right: 220px !important;
+    height: 48px !important;
+    padding: 4px 8px !important;
+  }
+
+  .room-nav-btn {
+    width: 34px !important;
+    height: 34px !important;
+  }
+
+  .room-list-scroll {
+    height: 36px;
+  }
+
+  .room-item-horizontal {
+    width: 56px;
+    height: 36px;
+  }
+
+  .room-item-horizontal .room-name-overlay {
+    font-size: 7px;
+    padding: 2px 4px;
+  }
+
+  /* Gallery */
+  .gallery-widget {
+    bottom: var(--edge);
+    right: var(--edge);
+  }
+
+  .gallery-widget-bar {
+    height: 40px;
+    padding: 4px 8px;
+    min-width: 160px;
+  }
+
+  .gallery-preview-thumb,
+  .gallery-preview-count {
+    width: 30px;
+    height: 30px;
+  }
+
+  .gallery-widget-info {
+    display: none;
+  }
+
+  .gallery-grid-btn {
+    width: 28px;
+    height: 28px;
+  }
+
+  /* Top Bar */
+  .top-center-bar {
+    height: auto;
+    min-height: 36px;
+    padding: 4px 8px;
+  }
+
+  .top-bar-btn {
+    padding: 4px 6px;
+    min-width: 30px;
+  }
+
+  .top-bar-btn span {
+    display: none;
+  }
+}
