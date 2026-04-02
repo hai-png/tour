@@ -148,25 +148,23 @@ export class PWAManager {
       this.isInstalled = false;
       console.log('[PWA] ✅ beforeinstallprompt event fired!');
       console.log('[PWA] promptEvent set:', !!this.promptEvent);
-      console.log('[PWA] userInteracted:', this.userInteracted);
 
-      // Update install button state
+      // Update install button state immediately
       this.updateInstallButtonState();
 
-      // Show install button after a short delay and user interaction
+      // Show install button after a short delay (no user interaction required)
       setTimeout(() => {
         console.log('[PWA] Checking if should show install button...');
-        console.log('[PWA] userInteracted:', this.userInteracted);
         console.log('[PWA] installPromptShown:', this.installPromptShown);
         console.log('[PWA] promptEvent:', !!this.promptEvent);
 
-        if (this.userInteracted && !this.installPromptShown && this.promptEvent) {
+        if (!this.installPromptShown && this.promptEvent) {
           console.log('[PWA] Showing install button');
           this.showInstallButton();
         } else {
           console.log('[PWA] NOT showing install button - conditions not met');
         }
-      }, 1000);
+      }, 500);
     });
 
     // App installed
@@ -208,7 +206,7 @@ export class PWAManager {
       if (!installBtnText || !installHint || !installHintText) return;
 
       // Check if already installed
-      if (window.matchMedia('(display-mode: standalone)').matches || 
+      if (window.matchMedia('(display-mode: standalone)').matches ||
           window.navigator.standalone === true) {
         installBtnText.textContent = 'App Installed ✓';
         installBtn.disabled = true;
@@ -234,8 +232,8 @@ export class PWAManager {
         installBtnText.textContent = 'Install Not Available';
         installBtn.disabled = true;
         installHint.style.display = 'block';
-        installHintText.textContent = window.isSecureContext 
-          ? 'Install prompt will appear after more interaction with the app'
+        installHintText.textContent = window.isSecureContext
+          ? 'Install prompt will appear shortly'
           : 'Requires HTTPS or localhost connection';
       }
     };
