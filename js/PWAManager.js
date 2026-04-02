@@ -164,6 +164,22 @@ export class PWAManager {
     const installBtn = document.getElementById('btn-install-pwa');
     if (!installBtn) return;
 
+    // Always show the button after 3 seconds (for manual install flow)
+    setTimeout(() => {
+      // Check if already installed
+      if (window.matchMedia('(display-mode: standalone)').matches ||
+          window.navigator.standalone === true) {
+        console.log('[PWA] Already installed, hiding button');
+        return;
+      }
+
+      // Show button regardless of prompt availability
+      installBtn.style.display = 'flex';
+      installBtn.style.alignItems = 'center';
+      installBtn.style.gap = '8px';
+      console.log('[PWA] Install button shown in top bar');
+    }, 3000);
+
     installBtn.addEventListener('click', () => {
       console.log('[PWA] Top bar install button clicked');
       this.showInstallPrompt();
@@ -211,10 +227,26 @@ export class PWAManager {
     }
 
     // Check if iOS
-    if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
-      const iosInstructions = document.getElementById('ios-install-instructions');
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    
+    // Update button text based on install availability
+    const confirmBtn = document.getElementById('btn-confirm-install');
+    const iosInstructions = document.getElementById('ios-install-instructions');
+    
+    if (isIOS) {
       if (iosInstructions) {
         iosInstructions.style.display = 'block';
+      }
+      if (confirmBtn) {
+        confirmBtn.innerHTML = '<i class="fas fa-external-link-alt" style="margin-right:8px;"></i> Open Share Menu';
+      }
+    } else if (this.promptEvent) {
+      if (confirmBtn) {
+        confirmBtn.innerHTML = '<i class="fas fa-download" style="margin-right:8px;"></i> Install Now';
+      }
+    } else {
+      if (confirmBtn) {
+        confirmBtn.innerHTML = '<i class="fas fa-info-circle" style="margin-right:8px;"></i> Show Install Instructions';
       }
     }
 
@@ -225,9 +257,27 @@ export class PWAManager {
     }
 
     // Setup confirm install button
-    const confirmBtn = document.getElementById('btn-confirm-install');
     if (confirmBtn) {
-      confirmBtn.onclick = () => this.promptInstall();
+      confirmBtn.onclick = () => {
+        if (this.promptEvent) {
+          // Native install available
+          this.promptInstall();
+        } else if (isIOS) {
+          // iOS - just close modal, instructions are shown
+          modal.classList.remove('active');
+          this.showNotification({
+            type: 'info',
+            title: 'iOS Install',
+            message: 'Use Safari Share menu → Add to Home Screen',
+            icon: 'fa-info-circle',
+            duration: 8000
+          });
+        } else {
+          // Desktop - show browser install hint
+          modal.classList.remove('active');
+          this.showBrowserInstallHint();
+        }
+      };
     }
   }
 
