@@ -40,6 +40,10 @@ export class GuidedTourManager {
       view: scene.initialView || { yaw: 0, pitch: 0, fov: 75 }
     }));
     console.log('[GuidedTour] Created', this.steps.length, 'tour steps');
+    // Log each step's narration to verify uniqueness
+    this.steps.forEach((step, i) => {
+      console.log(`[GuidedTour] Step ${i}: "${step.sceneName}" -> "${step.narration.substring(0, 60)}..."`);
+    });
   }
 
   getNarrationForScene(index, sceneName) {
@@ -83,13 +87,18 @@ export class GuidedTourManager {
     };
 
     // Find matching narration based on scene name
-    const cleanName = sceneName.replace(/^\d+_/, '');
-    
+    const cleanName = sceneName.replace(/^\d+_/, '').toLowerCase().trim();
+
     for (const [key, narration] of Object.entries(narrations)) {
-      if (sceneName.includes(key) || cleanName.includes(key.replace(/^\d+_/, ''))) {
+      const cleanKey = key.replace(/^\d+_/, '').toLowerCase().trim();
+      // Match if scene name equals or contains the key
+      if (sceneName === key || cleanName === cleanKey || sceneName.includes(key) || cleanName.includes(cleanKey)) {
+        console.log(`[GuidedTour] Matched "${sceneName}" -> key: "${key}"`);
         return narration;
       }
     }
+    
+    console.warn(`[GuidedTour] No narration match for "${sceneName}", using fallback`);
 
     // Fallback narration
     return `Welcome to ${sceneName.replace(/_/g, ' ')}. This space features quality finishes and thoughtful design, contributing to the overall luxury and comfort of this beautiful property.`;
@@ -218,19 +227,18 @@ export class GuidedTourManager {
     const btn = document.getElementById('btn-tour-pause');
 
     if (this.isPaused) {
+      btn.innerHTML = '<i class="fas fa-pause"></i>';
+      btn.title = 'Pause';
+      // Re-enable auto-rotate when resuming (with normal delay)
+      if (this.tourPlayer) {
+        this.tourPlayer.enableAutoRotate(true);
+      }
+      this.playCurrentStep();
+    } else {
       btn.innerHTML = '<i class="fas fa-play"></i>';
       btn.title = 'Resume';
       // Disable auto-rotate when paused
       if (this.tourPlayer) this.tourPlayer.autoRotate = false;
-    } else {
-      btn.innerHTML = '<i class="fas fa-pause"></i>';
-      btn.title = 'Pause';
-      // Re-enable auto-rotate when resuming
-      if (this.tourPlayer) {
-        this.tourPlayer.autoRotateDelay = 0;
-        this.tourPlayer.autoRotate = true;
-      }
-      this.playCurrentStep();
     }
   }
 
@@ -259,11 +267,8 @@ export class GuidedTourManager {
     const infoCard = document.getElementById('guided-tour-info-card');
     if (infoCard) infoCard.style.display = 'none';
 
-    // Restore original auto-rotate settings and disable
+    // Restore auto-rotate (disable during guided tour)
     if (this.tourPlayer) {
-      if (this.originalAutoRotateDelay !== undefined) {
-        this.tourPlayer.autoRotateDelay = this.originalAutoRotateDelay;
-      }
       this.tourPlayer.autoRotate = false;
     }
 
@@ -329,10 +334,9 @@ export class GuidedTourManager {
    */
   startAutoRotation() {
     if (this.tourPlayer) {
-      // Save original auto-rotate delay and set to 0 for immediate rotation
-      this.originalAutoRotateDelay = this.tourPlayer.autoRotateDelay;
-      this.tourPlayer.autoRotateDelay = 0; // Start immediately
-      this.tourPlayer.enableAutoRotate(true); // Use the new method
+      // Don't override the auto-rotate delay - use the default (3 seconds)
+      // Just enable auto-rotate and set lastInteraction to the past so it starts
+      this.tourPlayer.enableAutoRotate(true);
       this.rotationStartYaw = this.tourPlayer.viewer.getYaw();
       this.totalRotation = 0;
       this.lastYaw = this.rotationStartYaw;
@@ -349,6 +353,7 @@ export class GuidedTourManager {
 
     const step = this.steps[this.currentStep];
     console.log('[GuidedTour] Playing step', this.currentStep, ':', step.sceneName);
+    console.log('[GuidedTour] Narration for this step:', step.narration.substring(0, 80) + '...');
     this.updateStepHighlight();
 
     // Load scene
@@ -394,10 +399,10 @@ export class GuidedTourManager {
   }
 
   showNarration(text) {
-    // Update floating info card with narration
+    // Update floating info card with narration ONLY (no scene name or description)
     const infoCard = document.getElementById('guided-tour-info-card');
     const description = document.getElementById('info-card-description');
-    
+
     if (infoCard && description) {
       infoCard.style.display = 'block';
       description.textContent = text;

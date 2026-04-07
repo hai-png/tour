@@ -6,7 +6,7 @@
  * them via the Service Worker. The tour is fully offline-ready
  * immediately — no extra "download for offline" step needed.
  *
- * Version: 11.0.0
+ * Version: 12.0.0
  */
 
 export class PWAManager {
@@ -63,10 +63,44 @@ export class PWAManager {
       case 'CACHE_COMPLETE':
         this._mediaPrecached = true;
         this.updateOfflineProgressUI({ type: 'complete', ...data });
-        this.notify({ type: 'success', title: 'Ready for Offline', message: `${data.cached} items cached`, icon: 'fa-wifi' });
+        // Show install prompt after precaching completes if not already installed
+        if (!this.isInstalled && !this.installPromptShown) {
+          this.showInstallButton();
+        }
         break;
       case 'OFFLINE_CACHE_COMPLETE':
         this._mediaPrecached = true;
+        // Enable start button if precaching was already done
+        const startBtn = document.getElementById('btn-start-tour');
+        if (startBtn) {
+          startBtn.disabled = false;
+          startBtn.title = 'Ready for offline use';
+        }
+        // Update status text
+        const statusText = document.getElementById('loading-status-text');
+        const btnSubtitle = document.getElementById('btn-start-subtitle');
+        if (statusText) statusText.textContent = 'Ready!';
+        if (btnSubtitle) btnSubtitle.textContent = 'Ready for offline use';
+        // Show install prompt after precaching completes
+        if (!this.isInstalled && !this.installPromptShown) {
+          this.showInstallButton();
+        }
+        // Hide progress after a delay
+        setTimeout(() => {
+          const prepProgress = document.getElementById('offline-prep-progress');
+          if (prepProgress) prepProgress.style.display = 'none';
+        }, 3000);
+        break;
+      case 'PRECACHE_FAILED':
+        console.warn('[PWA] Install-time precaching failed:', data.error);
+        this.notify({ 
+          type: 'warning', 
+          title: 'Offline Mode Incomplete', 
+          message: 'Some media may not be available offline. Retrying precache...', 
+          icon: 'fa-exclamation-triangle' 
+        });
+        // Retry precaching after a delay
+        setTimeout(() => this.precacheAllMedia(), 3000);
         break;
     }
   }
@@ -95,8 +129,30 @@ export class PWAManager {
 
       await navigator.serviceWorker.ready;
 
-      // Precache ALL media on first boot (automatic, no user action)
-      await this.precacheAllMedia();
+      // Check if media is already cached from a previous session
+      const status = await this.getOfflineStatus();
+      if (status.isReadyForOffline && status.mediaCount > 100) {
+        console.log(`[PWA] Media already cached from previous session (${status.mediaCount} items). Enabling start button.`);
+        this._mediaPrecached = true;
+        const startBtn = document.getElementById('btn-start-tour');
+        if (startBtn) {
+          startBtn.disabled = false;
+          startBtn.title = 'Ready for offline use';
+        }
+        // Update UI to show ready state
+        const statusText = document.getElementById('loading-status-text');
+        const btnSubtitle = document.getElementById('btn-start-subtitle');
+        if (statusText) statusText.textContent = 'Ready!';
+        if (btnSubtitle) btnSubtitle.textContent = 'Ready for offline use';
+        // Hide progress if it was shown
+        setTimeout(() => {
+          const prepProgress = document.getElementById('offline-prep-progress');
+          if (prepProgress) prepProgress.style.display = 'none';
+        }, 500);
+      } else {
+        // Precache ALL media on first boot (automatic, no user action)
+        await this.precacheAllMedia();
+      }
 
       // Check for SW updates every hour
       setInterval(() => this.checkForUpdates(), 3600000);
@@ -116,23 +172,84 @@ export class PWAManager {
   /* ── Dynamic media URL discovery + precaching ────────────── */
   async precacheAllMedia() {
     // Don't re-precache if already done in this session
-    if (this._mediaPrecached) return;
+    if (this._mediaPrecached) {
+      console.log('[PWA] Media already precached, skipping');
+      return;
+    }
+
+    // Don't try to precache when offline
+    if (!navigator.onLine) {
+      console.log('[PWA] Offline - skipping precache, using cached content');
+      return;
+    }
 
     try {
       const urls = await this.discoverAllMediaUrls();
-      if (!urls.length) return;
+      if (!urls.length) {
+        console.warn('[PWA] No media URLs discovered - offline mode will be limited');
+        this.notify({ 
+          type: 'warning', 
+          title: 'Limited Offline Mode', 
+          message: 'No media files found. Some content won\'t be available offline.', 
+          icon: 'fa-exclamation-triangle' 
+        });
+        return;
+      }
 
-      console.log(`[PWA] Discovering ${urls.length} media URLs — precaching for full offline…`);
+      console.log(`[PWA] Starting precache of ${urls.length} media URLs for full offline support...`);
+
+      // Show progress UI immediately
+      this.updateOfflineProgressUI({ type: 'start', total: urls.length, message: 'Preparing offline content...' });
 
       const reg = await navigator.serviceWorker.ready;
+      if (!reg.active) {
+        console.error('[PWA] Service worker not active');
+        return;
+      }
+      
       const mc = new MessageChannel();
-      mc.port1.onmessage = (e) => this.handleSWMessage(e);
-      mc.port1.start();
 
-      reg.active.postMessage({ type: 'PRECACHE_MEDIA', urls }, [mc.port2]);
-      this._mediaPrecached = true;
+      // Return a promise that resolves when precaching is complete
+      await new Promise((resolve, reject) => {
+        mc.port1.onmessage = (e) => {
+          const { type, ...data } = e.data;
+          this.handleSWMessage(e);
+
+          if (type === 'CACHE_COMPLETE') {
+            this._mediaPrecached = true;
+            resolve();
+          }
+        };
+        mc.port1.start();
+        mc.port1.onmessageerror = reject;
+
+        reg.active.postMessage({ type: 'PRECACHE_MEDIA', urls }, [mc.port2]);
+
+        // Timeout after 5 minutes in case SW is unresponsive
+        setTimeout(() => {
+          if (!this._mediaPrecached) {
+            console.warn('[PWA] Precache timed out after 5 minutes');
+            this.notify({ 
+              type: 'warning', 
+              title: 'Precache Timeout', 
+              message: 'Precaching took too long. Some media may not be cached for offline use.', 
+              icon: 'fa-clock' 
+            });
+            this._mediaPrecached = true;
+            resolve();
+          }
+        }, 300000);
+      });
+
+      console.log('[PWA] Precaching complete - all media now available offline');
     } catch (err) {
       console.error('[PWA] Failed to precache media:', err);
+      this.notify({ 
+        type: 'error', 
+        title: 'Precache Failed', 
+        message: `Failed to cache media for offline use: ${err.message}`, 
+        icon: 'fa-exclamation-circle' 
+      });
     }
   }
 
@@ -153,10 +270,19 @@ export class PWAManager {
 
         // Panorama cube faces — resolve {face} template
         if (scene.panoramaUrl?.includes('{face}')) {
-          const base = scene.panoramaUrl.replace('{face}', '');
-          for (const face of ['front', 'back', 'left', 'right', 'top', 'bottom']) {
-            urls.add(base + face + '.jpg');
-            urls.add(base + face + '.webp');
+          // Example: media/tdv-import/panoramas/panorama_XXX_0/{face}.jpg
+          // Extract base path and extension from the template
+          const templateMatch = scene.panoramaUrl.match(/^(.*){face}(\.[a-z]+)$/i);
+          if (templateMatch) {
+            const basePath = templateMatch[1];
+            const ext = templateMatch[2];
+            for (const face of ['front', 'back', 'left', 'right', 'top', 'bottom']) {
+              urls.add(basePath + face + ext);
+              // Also add webp variant if not already webp
+              if (!ext.includes('webp')) {
+                urls.add(basePath + face + '.webp');
+              }
+            }
           }
         } else if (scene.panoramaUrl) {
           urls.add(scene.panoramaUrl);
@@ -166,7 +292,6 @@ export class PWAManager {
 
     // Skin / logo
     urls.add('media/tdv-import/skin/logo.png');
-    urls.add('media/tdv-import/skin/logo.webp');
 
     // 2. Fetch hotspots.json
     const hotspots = await this._safeJson('media/tdv-import/hotspots.json');
@@ -186,8 +311,13 @@ export class PWAManager {
     const fp = await this._safeJson('floor-plan/floor-plan-config.json');
     if (fp?.floors) {
       for (const floor of fp.floors) {
-        if (floor.image) urls.add(floor.image);
-        if (floor.referenceImage) urls.add(floor.referenceImage);
+        if (floor.image) {
+          // Convert .png to .webp since only webp files exist on disk
+          urls.add(floor.image.replace(/\.png$/i, '.webp'));
+        }
+        if (floor.referenceImage) {
+          urls.add(floor.referenceImage.replace(/\.png$/i, '.webp'));
+        }
       }
     }
     // Actual files on disk are .webp
@@ -199,8 +329,33 @@ export class PWAManager {
     urls.add('floor-plan/first_floor_hotspot_position_with_initial_view.webp');
     urls.add('floor-plan/second_floor_hotspot_position_with_initial_view.webp');
     urls.add('floor-plan/third_floor_hotspot_position_with_initial_view.webp');
+    // Additional floor plan images
+    urls.add('floor-plan/brave_screensho.webp');
+    urls.add('floor-plan/Gemini_Generated_Image_7t4s0p7t4s0p7t4s.webp');
+    urls.add('floor-plan/Gemini_Generated_Image_dptkn5dptkn5dptk.webp');
 
-    // 4. Gallery images
+    // 4. Extra panorama scenes not in project.json but exist on disk
+    // These are referenced by the app but not in the main project config
+    urls.add('media/tdv-import/panoramas/panorama_CFF86997_D78D_4109_41D6_D7F4B4601989_0/front.jpg');
+    urls.add('media/tdv-import/panoramas/panorama_CFF86997_D78D_4109_41D6_D7F4B4601989_0/back.jpg');
+    urls.add('media/tdv-import/panoramas/panorama_CFF86997_D78D_4109_41D6_D7F4B4601989_0/left.jpg');
+    urls.add('media/tdv-import/panoramas/panorama_CFF86997_D78D_4109_41D6_D7F4B4601989_0/right.jpg');
+    urls.add('media/tdv-import/panoramas/panorama_CFF86997_D78D_4109_41D6_D7F4B4601989_0/top.jpg');
+    urls.add('media/tdv-import/panoramas/panorama_CFF86997_D78D_4109_41D6_D7F4B4601989_0/bottom.jpg');
+    urls.add('media/tdv-import/panoramas/panorama_DC47BFD5_D777_C109_41E8_7CDCC241DDEB_0/front.jpg');
+    urls.add('media/tdv-import/panoramas/panorama_DC47BFD5_D777_C109_41E8_7CDCC241DDEB_0/back.jpg');
+    urls.add('media/tdv-import/panoramas/panorama_DC47BFD5_D777_C109_41E8_7CDCC241DDEB_0/left.jpg');
+    urls.add('media/tdv-import/panoramas/panorama_DC47BFD5_D777_C109_41E8_7CDCC241DDEB_0/right.jpg');
+    urls.add('media/tdv-import/panoramas/panorama_DC47BFD5_D777_C109_41E8_7CDCC241DDEB_0/top.jpg');
+    urls.add('media/tdv-import/panoramas/panorama_DC47BFD5_D777_C109_41E8_7CDCC241DDEB_0/bottom.jpg');
+    urls.add('media/tdv-import/panoramas/panorama_DC5C1D26_D777_410B_41E1_2D89ADE704CD_0/front.jpg');
+    urls.add('media/tdv-import/panoramas/panorama_DC5C1D26_D777_410B_41E1_2D89ADE704CD_0/back.jpg');
+    urls.add('media/tdv-import/panoramas/panorama_DC5C1D26_D777_410B_41E1_2D89ADE704CD_0/left.jpg');
+    urls.add('media/tdv-import/panoramas/panorama_DC5C1D26_D777_410B_41E1_2D89ADE704CD_0/right.jpg');
+    urls.add('media/tdv-import/panoramas/panorama_DC5C1D26_D777_410B_41E1_2D89ADE704CD_0/top.jpg');
+    urls.add('media/tdv-import/panoramas/panorama_DC5C1D26_D777_410B_41E1_2D89ADE704CD_0/bottom.jpg');
+
+    // 5. Gallery images
     urls.add('gallery/Entrance view.webp');
     urls.add('gallery/GF-DINING ROOM 2.webp');
     urls.add('gallery/GF-LIVING ROOM 2.webp');
@@ -234,8 +389,12 @@ export class PWAManager {
       this.promptEvent = e;
       this.isInstalled = false;
 
+      console.log('[PWA] beforeinstallprompt event received - showing install button');
       const btn = document.getElementById('btn-install-app');
-      if (btn) btn.style.display = 'flex';
+      if (btn) {
+        btn.style.display = 'flex';
+        btn.disabled = false;
+      }
     });
 
     window.addEventListener('appinstalled', () => {
@@ -243,6 +402,7 @@ export class PWAManager {
       this.promptEvent = null;
       const btn = document.getElementById('btn-install-app');
       if (btn) btn.style.display = 'none';
+      console.log('[PWA] App installed successfully');
     });
 
     window.addEventListener('online', () => {
@@ -257,7 +417,11 @@ export class PWAManager {
     // Track first interaction for install eligibility
     const mark = () => {
       this.userInteracted = true;
-      if (this.promptEvent && !this.installPromptShown) this.showInstallButton();
+      console.log('[PWA] User interaction detected, checking install prompt...');
+      if (this.promptEvent && !this.installPromptShown) {
+        console.log('[PWA] Showing install button after interaction');
+        this.showInstallButton();
+      }
       ['click', 'keydown', 'touchstart'].forEach(e => document.removeEventListener(e, mark));
     };
     ['click', 'keydown', 'touchstart'].forEach(e => document.addEventListener(e, mark, { once: true, passive: true }));
@@ -380,6 +544,60 @@ export class PWAManager {
 
   /* ── Offline progress UI ──────────────────────────────────── */
   updateOfflineProgressUI(data) {
+    // Update loading screen progress bar (if visible)
+    const prepProgress = document.getElementById('offline-prep-progress');
+    const statusText = document.getElementById('loading-status-text');
+    const prepText = document.getElementById('offline-progress-text');
+    const prepBar = document.getElementById('offline-progress-bar');
+    const prepPercent = document.getElementById('offline-progress-percent');
+    const prepCached = document.getElementById('offline-stat-cached');
+    const prepPending = document.getElementById('offline-stat-pending');
+    const prepFailed = document.getElementById('offline-stat-failed');
+    const prepFile = document.getElementById('offline-current-file');
+    const btnSubtitle = document.getElementById('btn-start-subtitle');
+
+    if (data.type === 'start') {
+      // Show progress bar in loading screen
+      if (prepProgress) prepProgress.style.display = 'block';
+      if (statusText) statusText.textContent = 'Preparing offline content...';
+      if (prepText) prepText.textContent = `Preparing ${data.total} items for offline use...`;
+      if (prepBar) prepBar.style.width = '0%';
+      if (prepPercent) prepPercent.textContent = '0%';
+      if (prepCached) prepCached.textContent = '0';
+      if (prepPending) prepPending.textContent = data.total;
+      if (prepFailed) prepFailed.textContent = '0';
+      if (prepFile) prepFile.textContent = 'Starting download…';
+      if (btnSubtitle) btnSubtitle.textContent = 'Preparing offline content...';
+    } else if (data.type === 'progress') {
+      if (statusText) statusText.textContent = `Downloading ${data.cached}/${data.total}...`;
+      if (prepText) prepText.textContent = `Downloading ${data.cached}/${data.total}`;
+      if (prepPercent) prepPercent.textContent = `${data.percent}%`;
+      if (prepBar) prepBar.style.width = `${data.percent}%`;
+      if (prepCached) prepCached.textContent = data.cached;
+      if (prepPending) prepPending.textContent = data.total - data.cached - (data.failed || 0);
+      if (prepFailed) prepFailed.textContent = data.failed || 0;
+      if (prepFile && data.url) prepFile.textContent = data.url.split('/').pop();
+      if (btnSubtitle) btnSubtitle.textContent = `${data.percent}% complete`;
+    } else if (data.type === 'complete') {
+      if (statusText) statusText.textContent = 'Ready!';
+      if (prepText) prepText.textContent = 'Download Complete! Ready for offline.';
+      if (prepPercent) prepPercent.textContent = '100%';
+      if (prepBar) prepBar.style.width = '100%';
+      if (prepCached) prepCached.textContent = data.cached;
+      if (prepPending) prepPending.textContent = '0';
+      if (prepFailed) prepFailed.textContent = data.failed || 0;
+      if (prepFile) prepFile.textContent = `All files cached (${data.cached} items)`;
+      if (btnSubtitle) btnSubtitle.textContent = 'Ready for offline use';
+      
+      // Enable the start tour button
+      const startBtn = document.getElementById('btn-start-tour');
+      if (startBtn) {
+        startBtn.disabled = false;
+        startBtn.title = 'Ready for offline use';
+      }
+    }
+
+    // Also update the old elements for backwards compatibility
     const text = document.getElementById('offline-progress-text');
     const pct = document.getElementById('offline-progress-percent');
     const bar = document.getElementById('offline-progress-bar');

@@ -4,10 +4,10 @@
  * Full offline-first: precaches ALL media on first boot so the
  * entire tour works offline with zero additional download steps.
  *
- * Version: 11.0.0
+ * Version: 12.0.0
  */
 
-const CACHE_VERSION = 'v11';
+const CACHE_VERSION = 'v12';
 const CACHE_NAMES = {
   shell:  `hai-tour-shell-${CACHE_VERSION}`,
   cdn:    `hai-tour-cdn-${CACHE_VERSION}`,
@@ -73,6 +73,19 @@ self.addEventListener('install', (event) => {
       ]);
 
       console.log('[SW] Shell + CDN precached');
+      
+      // Precache ALL media during installation to ensure full offline availability
+      try {
+        await precacheAllMediaOnInstall();
+      } catch (err) {
+        console.error('[SW] Media precaching during install failed:', err);
+        // Notify clients that precaching failed so they can retry
+        const clients = await self.clients.matchAll();
+        clients.forEach(c => c.postMessage({ 
+          type: 'PRECACHE_FAILED', 
+          error: err.message 
+        }));
+      }
     })()
   );
 });
@@ -110,22 +123,46 @@ self.addEventListener('fetch', (event) => {
   // Same-origin → try cache, fall back to network, then offline page
   if (url.origin === self.location.origin) {
     event.respondWith(
-      caches.match(request).then(cached => {
+      (async () => {
+        // Try matching with both URL forms (with and without ./)
+        const requestUrl = request.url;
+        const urlPath = url.pathname;
+        
+        // Try original request first
+        let cached = await caches.match(request);
         if (cached) return cached;
-        return fetch(request).then(response => {
+        
+        // Try with ./ prefix
+        if (!urlPath.startsWith('./')) {
+          const withPrefix = './' + urlPath;
+          cached = await caches.match(withPrefix);
+          if (cached) return cached;
+        }
+        
+        // Try without ./ prefix
+        if (urlPath.startsWith('./')) {
+          const withoutPrefix = urlPath.substring(2);
+          cached = await caches.match(withoutPrefix);
+          if (cached) return cached;
+        }
+        
+        // Not in cache - try network
+        try {
+          const response = await fetch(request);
           if (response.ok) {
             const clone = response.clone();
             const cacheName = isMediaUrl(url.pathname) ? CACHE_NAMES.media : CACHE_NAMES.shell;
             caches.open(cacheName).then(c => c.put(request, clone));
           }
           return response;
-        }).catch(() => {
+        } catch {
+          // Network failed - return offline page or error response
           if (request.mode === 'navigate' || request.headers.get('accept')?.includes('text/html')) {
             return caches.match('./offline.html');
           }
-          throw new Error('Offline');
-        });
-      })
+          return new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
+        }
+      })()
     );
     return;
   }
@@ -138,14 +175,235 @@ self.addEventListener('fetch', (event) => {
       }
       return response;
     }).catch(() => {
+      // Don't throw - return offline page or a failed response
       if (request.mode === 'navigate') return caches.match('./offline.html');
-      throw new Error('Offline');
+      // Return a network error response gracefully
+      return new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
     })
   );
 });
 
 function isMediaUrl(pathname) {
   return /\.(jpg|jpeg|png|webp|gif|svg|mp4|webm|ogg)$/i.test(pathname);
+}
+
+// ── Precache ALL media on install (for full offline support) ─
+async function precacheAllMediaOnInstall() {
+  console.log('[SW] Starting install-time media precaching...');
+  
+  const urls = await discoverAllMediaUrlsForPrecache();
+  if (!urls.length) {
+    console.log('[SW] No media URLs to precache during install');
+    return;
+  }
+
+  console.log(`[SW] Precaching ${urls.length} media items during install...`);
+  
+  // Notify clients that precaching has started
+  const initialClients = await self.clients.matchAll();
+  initialClients.forEach(c => c.postMessage({ 
+    type: 'CACHE_START', 
+    total: urls.length,
+    message: `Preparing ${urls.length} items for offline use...`
+  }));
+  
+  const cache = await caches.open(CACHE_NAMES.media);
+  let cached = 0, failed = 0;
+  const failures = [];
+  
+  // Use batch processing for better performance
+  const batchSize = 10;
+  for (let i = 0; i < urls.length; i += batchSize) {
+    const batch = urls.slice(i, i + batchSize);
+    const results = await Promise.allSettled(
+      batch.map(async (url) => {
+        try {
+          // Normalize URL to ensure consistent form
+          const normalizedUrl = url.startsWith('./') ? url : './' + url;
+          const altUrl = normalizedUrl.startsWith('./') ? normalizedUrl.substring(2) : './' + normalizedUrl;
+          
+          const resp = await fetch(normalizedUrl, { cache: 'no-cache' });
+          if (!resp.ok) {
+            if (failures.length < 5) {
+              failures.push({ url: normalizedUrl, status: resp.status, statusText: resp.statusText });
+            }
+            console.warn(`[SW] Failed to fetch ${normalizedUrl}: ${resp.status} ${resp.statusText}`);
+            return false;
+          }
+          // Store with normalized URL
+          await cache.put(normalizedUrl, resp.clone());
+          // Also store without ./ prefix for broader matching
+          await cache.put(altUrl, resp);
+          return true;
+        } catch (err) {
+          if (failures.length < 5) {
+            failures.push({ url: url, error: err.message });
+          }
+          console.warn(`[SW] Error caching ${url}:`, err.message);
+          return false;
+        }
+      })
+    );
+    
+    cached += results.filter(r => r.status === 'fulfilled' && r.value).length;
+    failed += results.filter(r => r.status === 'fulfilled' && !r.value).length;
+    
+    // Send progress update to clients
+    const percent = Math.round(((cached + failed) / urls.length) * 100);
+    const clients = await self.clients.matchAll();
+    clients.forEach(c => c.postMessage({
+      type: 'CACHE_PROGRESS',
+      cached, failed, total: urls.length,
+      percent,
+      url: batch[batch.length - 1] || '',
+    }));
+    
+    console.log(`[SW] Install precache: ${cached + failed}/${urls.length} (${percent}%)`);
+    
+    // Yield to avoid blocking the main thread
+    if ((cached + failed) % 10 === 0) {
+      await new Promise(r => setTimeout(r, 10));
+    }
+  }
+
+  console.log(`[SW] Install-time precache complete: ${cached}/${urls.length} cached`);
+  if (failures.length > 0) {
+    console.error(`[SW] First ${failures.length} install-time failures:`, JSON.stringify(failures, null, 2));
+  }
+  
+  // Notify all clients that precaching is complete
+  const clients = await self.clients.matchAll();
+  clients.forEach(c => c.postMessage({ 
+    type: 'OFFLINE_CACHE_COMPLETE', 
+    cached, 
+    failed, 
+    total: urls.length 
+  }));
+}
+
+// ── URL discovery for install-time precaching ────────────────
+async function discoverAllMediaUrlsForPrecache() {
+  const urls = new Set();
+
+  // Helper for safe JSON fetch
+  const safeJson = async (url) => {
+    try {
+      const r = await fetch(url, { cache: 'no-cache' });
+      return r.ok ? await r.json() : null;
+    } catch { return null; }
+  };
+
+  // 1. Project scenes
+  const project = await safeJson('./media/tdv-import/project.json');
+  if (project?.scenes) {
+    for (const scene of project.scenes) {
+      // Thumbnail
+      if (scene.thumbnailUrl) {
+        urls.add(scene.thumbnailUrl);
+        // Also add webp variant if it's a jpg/jpeg
+        const webp = scene.thumbnailUrl.replace(/\.(jpg|jpeg)$/i, '.webp');
+        if (webp !== scene.thumbnailUrl) urls.add(webp);
+      }
+      
+      // Panorama cube faces — handle {face} template properly
+      if (scene.panoramaUrl?.includes('{face}')) {
+        // Example: media/tdv-import/panoramas/panorama_XXX_0/{face}.jpg
+        // Extract base path and extension from the template
+        const templateMatch = scene.panoramaUrl.match(/^(.*){face}(\.[a-z]+)$/i);
+        if (templateMatch) {
+          const basePath = templateMatch[1]; // e.g., media/.../panorama_XXX_0/
+          const ext = templateMatch[2]; // e.g., .jpg
+          for (const face of ['front', 'back', 'left', 'right', 'top', 'bottom']) {
+            urls.add(basePath + face + ext);
+            // Also add webp variant if not already webp
+            if (!ext.includes('webp')) {
+              urls.add(basePath + face + '.webp');
+            }
+          }
+        }
+      } else if (scene.panoramaUrl) {
+        urls.add(scene.panoramaUrl);
+      }
+    }
+  }
+
+  // Skin / logo
+  urls.add('./media/tdv-import/skin/logo.png');
+  urls.add('./media/tdv-import/skin/logo.webp');
+
+  // 2. Hotspots
+  const hotspots = await safeJson('./media/tdv-import/hotspots.json');
+  if (hotspots?.hotspots) {
+    for (const hs of hotspots.hotspots) {
+      if (hs.sprite?.url) {
+        // Add original URL and webp variant
+        urls.add(hs.sprite.url);
+        urls.add(hs.sprite.url.replace(/\.png$/i, '.webp'));
+      }
+      if (hs.minimap?.url) urls.add(hs.minimap.url);
+      if (hs.image) urls.add(hs.image);
+    }
+  }
+
+  // 3. Floor plan config
+  const fp = await safeJson('./floor-plan/floor-plan-config.json');
+  if (fp?.floors) {
+    for (const floor of fp.floors) {
+      if (floor.image) {
+        // Convert .png to .webp since only webp files exist on disk
+        const url = floor.image.replace(/^\.\//, './').replace(/\.png$/i, '.webp');
+        urls.add(url);
+      }
+      if (floor.referenceImage) {
+        const url = floor.referenceImage.replace(/^\.\//, './').replace(/\.png$/i, '.webp');
+        urls.add(url);
+      }
+    }
+  }
+  // Known floor plan images
+  ['./floor-plan/ground.webp', './floor-plan/first.webp', './floor-plan/second.webp', 
+   './floor-plan/third.webp', './floor-plan/ground_floor_hotspot_position_with_initial_view.webp',
+   './floor-plan/first_floor_hotspot_position_with_initial_view.webp',
+   './floor-plan/second_floor_hotspot_position_with_initial_view.webp',
+   './floor-plan/third_floor_hotspot_position_with_initial_view.webp',
+   './floor-plan/brave_screensho.webp',
+   './floor-plan/Gemini_Generated_Image_7t4s0p7t4s0p7t4s.webp',
+   './floor-plan/Gemini_Generated_Image_dptkn5dptkn5dptk.webp'
+  ].forEach(u => urls.add(u));
+
+  // 4. Panorama cubes (known directories)
+  const panoPrefixes = [
+    './media/tdv-import/panoramas/panorama_CFF86997_D78D_4109_41D6_D7F4B4601989_0/',
+    './media/tdv-import/panoramas/panorama_DC47BFD5_D777_C109_41E8_7CDCC241DDEB_0/',
+    './media/tdv-import/panoramas/panorama_DC5C1D26_D777_410B_41E1_2D89ADE704CD_0/',
+  ];
+  const faces = ['front.jpg', 'back.jpg', 'left.jpg', 'right.jpg', 'top.jpg', 'bottom.jpg'];
+  for (const prefix of panoPrefixes) {
+    for (const face of faces) {
+      urls.add(prefix + face);
+    }
+  }
+
+  // 5. Gallery images
+  [
+    './gallery/Entrance view.webp',
+    './gallery/GF-DINING ROOM 2.webp',
+    './gallery/GF-LIVING ROOM 2.webp',
+    './gallery/GF-OPEN KITCHEN 1.webp',
+    './gallery/MINI SALON.webp',
+    './gallery/MNI SALON 2.webp',
+    './gallery/Scene 67.webp',
+    './gallery/Scene 68.webp',
+    './gallery/Scene 70.webp',
+    './gallery/Scene 71_1.webp',
+    './gallery/Scene 74_1.webp',
+    './gallery/Scene 77.webp',
+    './gallery/Scene 78.webp',
+    './gallery/Scene 80.webp',
+    './gallery/Scene 81.webp',
+  ].forEach(u => urls.add(u));
+
+  return Array.from(urls);
 }
 
 // ── Cache-First helper ────────────────────────────────────────
@@ -208,16 +466,34 @@ async function precacheMedia(urls, port) {
 
   port?.postMessage({ type: 'CACHE_START', total });
 
+  // Log first few failures to help diagnose issues
+  const failures = [];
+
   for (const url of urls) {
     try {
-      const resp = await fetch(url, { cache: 'no-cache' });
-      if (resp.ok) {
-        await cache.put(url, resp.clone());
-        cached++;
-      } else {
+      // Normalize URL to ensure consistent form
+      const normalizedUrl = url.startsWith('./') ? url : './' + url;
+      const altUrl = normalizedUrl.startsWith('./') ? normalizedUrl.substring(2) : './' + normalizedUrl;
+      
+      const resp = await fetch(normalizedUrl, { cache: 'no-cache' });
+      if (!resp.ok) {
+        if (failures.length < 5) {
+          failures.push({ url: normalizedUrl, status: resp.status, statusText: resp.statusText });
+        }
+        console.warn(`[SW] Failed to fetch ${normalizedUrl}: ${resp.status} ${resp.statusText}`);
         failed++;
+      } else {
+        // Store with normalized URL
+        await cache.put(normalizedUrl, resp.clone());
+        // Also store without ./ prefix for broader matching
+        await cache.put(altUrl, resp);
+        cached++;
       }
-    } catch {
+    } catch (err) {
+      if (failures.length < 5) {
+        failures.push({ url: url, error: err.message });
+      }
+      console.warn(`[SW] Error caching ${url}:`, err.message);
       failed++;
     }
 
@@ -242,6 +518,9 @@ async function precacheMedia(urls, port) {
   };
 
   console.log(`[SW] Precache complete: ${cached}/${total}`);
+  if (failures.length > 0) {
+    console.error(`[SW] First ${failures.length} failures:`, JSON.stringify(failures, null, 2));
+  }
   port?.postMessage(result);
 
   // Notify all clients

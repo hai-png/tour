@@ -53,71 +53,144 @@
   <div id="viewer-container">
     <canvas id="panorama-canvas"></canvas>
 
-    <!-- Loading Screen - Enhanced with Settings -->
+    <!-- Loading Screen - Revamped -->
     <div id="loading" class="loading-overlay">
       <div class="loading-content">
-        <div class="loading-header">
-          <img src="media/tdv-import/skin/logo.webp" alt="HAI PNG" class="loading-logo" onerror="this.onerror=null; this.src='media/tdv-import/skin/logo.png';" />
-          <h1>HAI PNG Virtual Tour</h1>
-          <p>Explore luxury living in the heart of Port Moresby</p>
+        <!-- Animated Background Particles -->
+        <div class="loading-particles">
+          <div class="particle"></div>
+          <div class="particle"></div>
+          <div class="particle"></div>
+          <div class="particle"></div>
+          <div class="particle"></div>
+          <div class="particle"></div>
+          <div class="particle"></div>
+          <div class="particle"></div>
         </div>
 
-        <!-- Settings Panel -->
-        <div class="loading-settings" id="loading-settings">
-          <h3 data-i18n="tourPreferences">Tour Preferences</h3>
-          <p class="settings-intro" data-i18n="selectPreferences">Select your preferences before starting the tour</p>
-          
-          <div class="setting-option">
-            <label class="toggle-label">
-              <input type="checkbox" id="setting-auto-rotate" checked />
-              <span class="toggle-switch"></span>
-              <span class="toggle-text" data-i18n="autoRotate">Auto-Rotate</span>
-            </label>
-            <p class="setting-description" data-i18n="autoRotateDesc">Enable smooth automatic camera rotation</p>
+        <div class="loading-main">
+          <!-- Header -->
+          <div class="loading-header">
+            <div class="loading-logo-wrapper">
+              <img src="media/tdv-import/skin/logo.webp" alt="HAI PNG" class="loading-logo" onerror="this.onerror=null; this.src='media/tdv-import/skin/logo.png';" />
+              <div class="logo-glow"></div>
+            </div>
+            <h1>HAI PNG Virtual Tour</h1>
+            <p class="loading-subtitle">Experience luxury living in Port Moresby</p>
           </div>
-          
-          <div class="setting-option">
-            <label class="toggle-label">
-              <input type="checkbox" id="setting-guided-tour" />
-              <span class="toggle-switch"></span>
-              <span class="toggle-text" data-i18n="startWithGuidedTour">Start Guided Tour</span>
-            </label>
-            <p class="setting-description" data-i18n="guidedTourDesc">Begin with an automated narrated tour</p>
-          </div>
-        </div>
 
-        <div class="loading-spinner">
-          <div class="spinner"></div>
-          <div class="loading-text" data-i18n="preparingExperience">Preparing your experience...</div>
-        </div>
+          <!-- Progress Section -->
+          <div class="loading-progress-section">
+            <div class="loading-status">
+              <div class="spinner-modern"></div>
+              <span class="loading-status-text" id="loading-status-text">Initializing...</span>
+            </div>
 
-        <!-- Loading Stats -->
-        <div class="loading-stats">
-          <div class="stat-item">
-            <i class="fas fa-image"></i>
-            <span id="stat-total-scenes">0</span>
-            <span class="stat-label" data-i18n="roomsCount">Rooms</span>
+            <!-- Offline Progress Bar -->
+            <div class="offline-prep-progress" id="offline-prep-progress">
+              <div class="prep-progress-header">
+                <i class="fas fa-cloud-download-alt prep-progress-icon"></i>
+                <span class="prep-progress-text" id="offline-progress-text">Preparing offline content...</span>
+              </div>
+              <div class="prep-progress-bar-wrapper">
+                <div class="prep-progress-bar">
+                  <div class="prep-progress-bar-fill" id="offline-progress-bar" style="width: 0%"></div>
+                  <div class="prep-progress-shimmer"></div>
+                </div>
+                <span class="prep-progress-percent" id="offline-progress-percent">0%</span>
+              </div>
+              <div class="prep-progress-stats">
+                <span class="prep-stat">
+                  <i class="fas fa-check-circle"></i>
+                  <span id="offline-stat-cached">0</span>
+                  <span class="stat-label">Cached</span>
+                </span>
+                <span class="prep-stat">
+                  <i class="fas fa-clock"></i>
+                  <span id="offline-stat-pending">0</span>
+                  <span class="stat-label">Pending</span>
+                </span>
+                <span class="prep-stat">
+                  <i class="fas fa-exclamation-circle"></i>
+                  <span id="offline-stat-failed">0</span>
+                  <span class="stat-label">Failed</span>
+                </span>
+              </div>
+              <div class="prep-current-file" id="offline-current-file"></div>
+            </div>
           </div>
-          <div class="stat-item">
-            <i class="fas fa-map-marker-alt"></i>
-            <span id="stat-total-hotspots">0</span>
-            <span class="stat-label" data-i18n="hotspotsCount">Hotspots</span>
-          </div>
-          <div class="stat-item">
-            <i class="fas fa-layer-group"></i>
-            <span id="stat-total-floors">0</span>
-            <span class="stat-label" data-i18n="floorsCount">Floors</span>
-          </div>
-          <div class="stat-item">
-            <i class="fas fa-play-circle"></i>
-            <span>1</span>
-            <span class="stat-label" data-i18n="guidedTourCount">Guided Tour</span>
-          </div>
-        </div>
 
-        <button class="btn-primary" id="btn-start-tour">
-          <i class="fas fa-play"></i> <span data-i18n="startVirtualTour">Start Virtual Tour</span>
-        </button>
+          <!-- Stats Grid -->
+          <div class="loading-stats-modern">
+            <div class="stat-card">
+              <div class="stat-icon">
+                <i class="fas fa-images"></i>
+              </div>
+              <div class="stat-value" id="stat-total-scenes">0</div>
+              <div class="stat-label-modern">Rooms</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">
+                <i class="fas fa-map-marker-alt"></i>
+              </div>
+              <div class="stat-value" id="stat-total-hotspots">0</div>
+              <div class="stat-label-modern">Hotspots</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">
+                <i class="fas fa-layer-group"></i>
+              </div>
+              <div class="stat-value" id="stat-total-floors">0</div>
+              <div class="stat-label-modern">Floors</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">
+                <i class="fas fa-play-circle"></i>
+              </div>
+              <div class="stat-value">1</div>
+              <div class="stat-label-modern">Guided Tour</div>
+            </div>
+          </div>
+
+          <!-- Settings Panel -->
+          <div class="loading-settings-modern" id="loading-settings">
+            <h3><i class="fas fa-sliders-h"></i> Tour Preferences</h3>
+
+            <div class="setting-option-modern">
+              <label class="toggle-label-modern">
+                <input type="checkbox" id="setting-auto-rotate" checked />
+                <span class="toggle-switch-modern"></span>
+                <span class="toggle-text-modern">
+                  <span class="toggle-title">Auto-Rotate</span>
+                  <span class="toggle-desc">Smooth automatic camera rotation</span>
+                </span>
+              </label>
+            </div>
+
+            <div class="setting-option-modern">
+              <label class="toggle-label-modern">
+                <input type="checkbox" id="setting-guided-tour" />
+                <span class="toggle-switch-modern"></span>
+                <span class="toggle-text-modern">
+                  <span class="toggle-title">Guided Tour</span>
+                  <span class="toggle-desc">Start with automated narration</span>
+                </span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Start Button -->
+          <button class="btn-start-tour-modern" id="btn-start-tour" disabled>
+            <span class="btn-icon">
+              <i class="fas fa-play"></i>
+            </span>
+            <span class="btn-text">
+              <span class="btn-title">Start Virtual Tour</span>
+              <span class="btn-subtitle" id="btn-start-subtitle">Preparing content...</span>
+            </span>
+            <span class="btn-shimmer"></span>
+          </button>
+        </div>
       </div>
     </div>
 

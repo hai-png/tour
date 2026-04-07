@@ -370,6 +370,13 @@ export class UIManager {
   }
 
   startTour() {
+    // Check if the button is disabled (precaching not complete)
+    const startBtn = document.getElementById('btn-start-tour');
+    if (startBtn && startBtn.disabled) {
+      console.log('[UI] Start button disabled - precaching not complete yet');
+      return;
+    }
+
     // Read settings from loading screen
     const autoRotateEnabled = document.getElementById('setting-auto-rotate')?.checked ?? true;
     const startGuidedTour = document.getElementById('setting-guided-tour')?.checked ?? false;
@@ -555,6 +562,26 @@ export class UIManager {
   }
 
   initEventListeners() {
+    // ── Pause auto-rotate on any click within the viewer or on any interactive element ──
+    document.addEventListener('click', () => {
+      if (this.tourPlayer) {
+        this.tourPlayer.lastInteraction = performance.now();
+      }
+    }, { passive: true });
+
+    // Also pause on touch, scroll, and key presses
+    document.addEventListener('touchstart', () => {
+      if (this.tourPlayer) this.tourPlayer.lastInteraction = performance.now();
+    }, { passive: true });
+
+    document.addEventListener('wheel', () => {
+      if (this.tourPlayer) this.tourPlayer.lastInteraction = performance.now();
+    }, { passive: true });
+
+    document.addEventListener('keydown', () => {
+      if (this.tourPlayer) this.tourPlayer.lastInteraction = performance.now();
+    }, { passive: true });
+
     // Action buttons
     document.getElementById('btn-settings')?.addEventListener('click', () => {
       this.openModal('settings');
@@ -578,25 +605,31 @@ export class UIManager {
     });
 
     document.getElementById('btn-fullscreen')?.addEventListener('click', () => {
+      if (this.tourPlayer) this.tourPlayer.lastInteraction = performance.now();
       document.getElementById('viewer-container').requestFullscreen();
     });
 
     document.getElementById('btn-reset')?.addEventListener('click', () => {
+      if (this.tourPlayer) this.tourPlayer.lastInteraction = performance.now();
       this.tourPlayer.resetView();
     });
 
     // Capture viewport button
     document.getElementById('btn-capture-viewport')?.addEventListener('click', () => {
+      if (this.tourPlayer) this.tourPlayer.lastInteraction = performance.now();
       if (this.tourPlayer.captureViewManager) {
         this.tourPlayer.captureViewManager.captureView();
       }
     });
 
-    // Zoom controls
+    // Zoom buttons
     document.getElementById('btn-zoom-in')?.addEventListener('click', () => {
+      if (this.tourPlayer) this.tourPlayer.lastInteraction = performance.now();
       this.adjustZoom(10);
     });
+
     document.getElementById('btn-zoom-out')?.addEventListener('click', () => {
+      if (this.tourPlayer) this.tourPlayer.lastInteraction = performance.now();
       this.adjustZoom(-10);
     });
 
@@ -926,7 +959,11 @@ export class UIManager {
     const metaEl = document.querySelector('.info-card-meta');
 
     if (titleEl) titleEl.textContent = scene.name;
-    if (descEl) descEl.textContent = scene.metadata?.description || `Explore ${scene.name}`;
+    // Don't set fallback description during guided tour - let narration handle it
+    const isGuidedTourActive = document.getElementById('viewer-container')?.classList.contains('guided-tour-active');
+    if (descEl && !isGuidedTourActive) {
+      descEl.textContent = scene.metadata?.description || '';
+    }
     if (metaEl) {
       const sceneIndex = this.tourPlayer.project.scenes.findIndex(s => s.id === scene.id);
       metaEl.innerHTML = `
@@ -939,7 +976,7 @@ export class UIManager {
     const propNameEl = document.getElementById('prop-room-name');
     const propDescEl = document.getElementById('prop-room-desc');
     if (propNameEl) propNameEl.textContent = scene.name;
-    if (propDescEl) propDescEl.textContent = scene.metadata?.description || `Explore ${scene.name}`;
+    if (propDescEl) propDescEl.textContent = scene.metadata?.description || '';
 
     // Update current room display in top bar
     const currentRoomEl = document.getElementById('current-room-name');
