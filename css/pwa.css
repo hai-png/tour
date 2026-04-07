@@ -520,3 +520,77 @@
     display: none !important;
   }
 }
+
+/* ── Notification (CSS-class based, no inline styles) ──────── */
+.pwa-notification {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-card, #1e293b);
+  border-radius: var(--radius-md, 12px);
+  padding: 14px 20px;
+  color: var(--text, #f8fafc);
+  font-size: 14px;
+  z-index: 10000;
+  box-shadow: var(--shadow-lg, 0 10px 15px -3px rgba(0,0,0,0.4));
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: min(500px, calc(100vw - 40px));
+  width: 100%;
+  animation: pwaNotifIn 0.3s ease;
+}
+
+.pwa-notification.success { border-left: 3px solid var(--success, #10b981); }
+.pwa-notification.warning  { border-left: 3px solid var(--warning, #f59e0b); }
+.pwa-notification.error    { border-left: 3px solid var(--error, #ef4444); }
+.pwa-notification.info     { border-left: 3px solid var(--primary, #6366f1); }
+
+.notif-body { flex: 1; }
+.notif-header { display: flex; align-items: center; gap: 8px; }
+.notif-header i { font-size: 16px; }
+.notif-header .fa-wifi { color: var(--primary, #6366f1); }
+.notif-header .fa-sync-alt { color: var(--primary, #6366f1); }
+.notif-header .fa-download { color: var(--success, #10b981); }
+.notif-body p { margin: 4px 0 0; font-size: 13px; opacity: 0.85; }
+.notif-custom { margin-top: 10px; }
+
+.notif-action-btn {
+  background: var(--primary, #6366f1);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+.notif-action-btn:hover { background: var(--primary-dark, #4f46e5); }
+
+.notif-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted, #94a3b8);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px;
+  transition: color 0.2s;
+}
+.notif-close-btn:hover { color: var(--text, #f8fafc); }
+
+@keyframes pwaNotifIn {
+  from { opacity: 0; transform: translate(-50%, -20px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+
+@media (max-width: 640px) {
+  .pwa-notification {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .notif-action-btn { width: 100%; text-align: center; }
+}
