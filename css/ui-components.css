@@ -113,6 +113,14 @@
   width: auto;
 }
 
+/* Square logo in property info modal */
+.property-info-logo img.logo-square {
+  height: 56px;
+  width: 56px;
+  border-radius: 12px;
+  object-fit: contain;
+}
+
 .property-info-title h2 {
   font-size: 22px;
   font-weight: 700;

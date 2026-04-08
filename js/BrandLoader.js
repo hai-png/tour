@@ -172,6 +172,25 @@ export class BrandLoader {
   }
 
   /**
+   * Detect if a logo is square or horizontal by checking its dimensions
+   */
+  detectLogoType(imagePath, callback) {
+    const img = new Image();
+    img.onload = () => {
+      const aspectRatio = img.width / img.height;
+      // Square: aspect ratio between 0.8 and 1.2
+      // Horizontal: aspect ratio > 1.2
+      const isSquare = aspectRatio >= 0.8 && aspectRatio <= 1.2;
+      callback(isSquare);
+    };
+    img.onerror = () => {
+      // If image fails to load, assume it's not square (safe default)
+      callback(false);
+    };
+    img.src = imagePath;
+  }
+
+  /**
    * Update loading screen with brand-specific content
    */
   updateLoadingScreen() {
@@ -187,10 +206,22 @@ export class BrandLoader {
     // Update loading logo
     const loadingLogo = document.querySelector('.loading-logo');
     if (loadingLogo && brand.logo) {
-      loadingLogo.src = this.resolveAssetPath(brand.logo);
+      const logoPath = this.resolveAssetPath(brand.logo);
+      loadingLogo.src = logoPath;
       loadingLogo.alt = brand.companyName;
+      
+      // Check if logo is square (icon) vs horizontal (banner)
+      this.detectLogoType(logoPath, (isSquare) => {
+        if (isSquare) {
+          loadingLogo.classList.add('logo-square');
+        } else {
+          loadingLogo.classList.remove('logo-square');
+        }
+      });
+      
       loadingLogo.onerror = () => {
         loadingLogo.src = 'media/tdv-import/skin/logo.webp';
+        loadingLogo.classList.remove('logo-square');
       };
     }
 
@@ -206,23 +237,47 @@ export class BrandLoader {
       loadingSubtitle.textContent = brand.tagline;
     }
 
-    // Update brand container logo
+    // Update brand container logo (top-left branding)
     const brandLogo = document.querySelector('.brand-logo');
     if (brandLogo && brand.logo) {
-      brandLogo.src = this.resolveAssetPath(brand.logo);
+      const logoPath = this.resolveAssetPath(brand.logo);
+      brandLogo.src = logoPath;
       brandLogo.alt = brand.shortName;
+      
+      // Detect logo type for proper sizing
+      this.detectLogoType(logoPath, (isSquare) => {
+        if (isSquare) {
+          brandLogo.classList.add('logo-square');
+        } else {
+          brandLogo.classList.remove('logo-square');
+        }
+      });
+      
       brandLogo.onerror = () => {
         brandLogo.src = 'media/tdv-import/skin/logo.webp';
+        brandLogo.classList.remove('logo-square');
       };
     }
 
     // Update property info modal logo
     const propertyInfoLogo = document.querySelector('.property-info-logo img');
     if (propertyInfoLogo && brand.logo) {
-      propertyInfoLogo.src = this.resolveAssetPath(brand.logo);
+      const logoPath = this.resolveAssetPath(brand.logo);
+      propertyInfoLogo.src = logoPath;
       propertyInfoLogo.alt = brand.companyName;
+      
+      // Detect logo type
+      this.detectLogoType(logoPath, (isSquare) => {
+        if (isSquare) {
+          propertyInfoLogo.classList.add('logo-square');
+        } else {
+          propertyInfoLogo.classList.remove('logo-square');
+        }
+      });
+      
       propertyInfoLogo.onerror = () => {
         propertyInfoLogo.src = 'media/tdv-import/skin/logo.webp';
+        propertyInfoLogo.classList.remove('logo-square');
       };
     }
 

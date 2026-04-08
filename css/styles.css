@@ -446,6 +446,15 @@ body {
   animation: logoFloat 3s ease-in-out infinite;
 }
 
+/* Square logos (app icons) - display differently */
+.loading-logo.logo-square {
+  height: 100px;
+  width: 100px;
+  border-radius: 20px;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 32px rgba(99, 102, 241, 0.4));
+}
+
 @keyframes logoFloat {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-10px); }
@@ -1412,6 +1421,14 @@ body {
   width: auto;
   filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2));
   flex-shrink: 0;
+}
+
+/* Square logo in brand container */
+.brand-logo.logo-square {
+  height: 32px;
+  width: 32px;
+  border-radius: 6px;
+  object-fit: contain;
 }
 
 .brand-text {
