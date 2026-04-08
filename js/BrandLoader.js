@@ -636,13 +636,15 @@ export class BrandLoader {
 
     // Update favicons with brand icon
     if (pwa.icon192) {
-      const iconPath = this.resolveAssetPath(pwa.icon192);
+      const iconPath = `${this.getBasePath()}/_brands/${this.brandSlug}/${pwa.icon192}`;
       // Update standard favicon
-      const favicon = document.querySelector('link[rel="icon"], link[rel="shortcut icon"]');
-      if (favicon) favicon.href = iconPath;
+      document.querySelectorAll('link[rel="icon"], link[rel="shortcut icon"]').forEach(link => {
+        link.href = iconPath;
+      });
       // Update apple-touch-icon
-      const appleIcon = document.querySelector('link[rel="apple-touch-icon"]');
-      if (appleIcon) appleIcon.href = iconPath;
+      document.querySelectorAll('link[rel="apple-touch-icon"]').forEach(link => {
+        link.href = iconPath;
+      });
     }
 
     console.log('[BrandLoader] Meta tags updated');
