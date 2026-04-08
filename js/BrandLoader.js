@@ -67,7 +67,8 @@ export class BrandLoader {
    */
   getHeroImagePath() {
     if (!this.brandConfig || !this.brandConfig.hero) return null;
-    return this.resolveAssetPath(this.brandConfig.hero);
+    // Hero images are in _brands/{slug}/
+    return this.resolveAssetPath(`_brands/${this.brandSlug}/${this.brandConfig.hero}`);
   }
 
   /**
