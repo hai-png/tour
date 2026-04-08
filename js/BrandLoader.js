@@ -206,7 +206,9 @@ export class BrandLoader {
     // Update loading logo
     const loadingLogo = document.querySelector('.loading-logo');
     if (loadingLogo && brand.logo) {
-      const logoPath = this.resolveAssetPath(brand.logo);
+      // Logo is in _brands/{slug}/, construct full path
+      const logoPath = this.resolveAssetPath(`_brands/${this.brandSlug}/${brand.logo}`);
+      console.log(`[BrandLoader] Loading logo: ${logoPath}`);
       loadingLogo.src = logoPath;
       loadingLogo.alt = brand.companyName;
       
@@ -220,6 +222,7 @@ export class BrandLoader {
       });
       
       loadingLogo.onerror = () => {
+        console.warn(`[BrandLoader] Failed to load logo: ${logoPath}, using fallback`);
         loadingLogo.src = 'media/tdv-import/skin/logo.webp';
         loadingLogo.classList.remove('logo-square');
       };
@@ -240,7 +243,8 @@ export class BrandLoader {
     // Update brand container logo (top-left branding)
     const brandLogo = document.querySelector('.brand-logo');
     if (brandLogo && brand.logo) {
-      const logoPath = this.resolveAssetPath(brand.logo);
+      const logoPath = this.resolveAssetPath(`_brands/${this.brandSlug}/${brand.logo}`);
+      console.log(`[BrandLoader] Loading brand logo: ${logoPath}`);
       brandLogo.src = logoPath;
       brandLogo.alt = brand.shortName;
       
@@ -254,6 +258,7 @@ export class BrandLoader {
       });
       
       brandLogo.onerror = () => {
+        console.warn(`[BrandLoader] Failed to load brand logo: ${logoPath}, using fallback`);
         brandLogo.src = 'media/tdv-import/skin/logo.webp';
         brandLogo.classList.remove('logo-square');
       };
@@ -262,7 +267,8 @@ export class BrandLoader {
     // Update property info modal logo
     const propertyInfoLogo = document.querySelector('.property-info-logo img');
     if (propertyInfoLogo && brand.logo) {
-      const logoPath = this.resolveAssetPath(brand.logo);
+      const logoPath = this.resolveAssetPath(`_brands/${this.brandSlug}/${brand.logo}`);
+      console.log(`[BrandLoader] Loading property info logo: ${logoPath}`);
       propertyInfoLogo.src = logoPath;
       propertyInfoLogo.alt = brand.companyName;
       
@@ -276,6 +282,7 @@ export class BrandLoader {
       });
       
       propertyInfoLogo.onerror = () => {
+        console.warn(`[BrandLoader] Failed to load property logo: ${logoPath}, using fallback`);
         propertyInfoLogo.src = 'media/tdv-import/skin/logo.webp';
         propertyInfoLogo.classList.remove('logo-square');
       };
