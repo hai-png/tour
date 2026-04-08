@@ -39,6 +39,26 @@ export class BrandLoader {
   }
 
   /**
+   * Get the base path for the repo (handles GitHub Pages subdirectory)
+   */
+  getBasePath() {
+    // GitHub Pages repos are served from /reponame/ not /
+    const path = window.location.pathname;
+    // Remove trailing slash and get repo name
+    const parts = path.split('/').filter(Boolean);
+    if (parts.length > 0) {
+      // Check if first segment is a brand - if so, base is just /
+      const knownBrands = ['ayat', 'demahope', 'gift', 'hosea', 'metropolitan', 'temer'];
+      if (knownBrands.includes(parts[0].toLowerCase())) {
+        return '/';
+      }
+      // Otherwise it's the repo name
+      return `/${parts[0]}`;
+    }
+    return '';
+  }
+
+  /**
    * Load brand configuration JSON
    */
   async loadBrandConfig() {
@@ -48,10 +68,12 @@ export class BrandLoader {
     }
 
     try {
+      const basePath = this.getBasePath();
+      
       // Try multiple possible paths for brand config
       const possiblePaths = [
+        `${basePath}/_brands/${this.brandSlug}/brand-config.json`,
         `/_brands/${this.brandSlug}/brand-config.json`,
-        `/tour-player/_brands/${this.brandSlug}/brand-config.json`,
         `./_brands/${this.brandSlug}/brand-config.json`,
       ];
 
