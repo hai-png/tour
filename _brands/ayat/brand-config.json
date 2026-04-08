@@ -1,0 +1,315 @@
+{
+  "version": "1.0.0",
+
+  "hero": "hero.webp",
+
+  "brand": {
+    "companyName": "Ayat Real Estate Share Company",
+    "shortName": "Ayat Real Estate",
+    "tagline": "Pioneer Real Estate Developer in Addis Ababa",
+    "logo": "ayat_logo.daf534f7.webp",
+    "developerLogo": "ayat_logo.daf534f7.webp"
+  },
+
+  "theme": {
+    "primary": "#7B1E1E",
+    "primaryDark": "#4A0F0F",
+    "primaryLight": "#A52A2A",
+    "primaryAlpha": "rgba(123,30,30,.15)",
+    "success": "#22c55e",
+    "warning": "#f59e0b",
+    "error": "#ef4444",
+    "info": "#3b82f6",
+    "background": "#f4f5f7",
+    "card": "#ffffff",
+    "cardAlt": "#f9fafb",
+    "input": "#ffffff",
+    "textPrimary": "#1a1a2e",
+    "textSecondary": "#555570",
+    "textMuted": "#8888a0",
+    "borderLight": "rgba(0,0,0,.08)",
+    "borderMedium": "rgba(0,0,0,.14)",
+    "dark": {
+      "background": "#1A0A0A",
+      "card": "#2A1515",
+      "cardAlt": "#3A1F1F",
+      "input": "#452828",
+      "textPrimary": "#e8e8e8",
+      "textSecondary": "#b0b8c4",
+      "textMuted": "#7a8594",
+      "borderLight": "rgba(255,255,255,.08)",
+      "borderMedium": "rgba(255,255,255,.15)"
+    }
+  },
+
+  "pwa": {
+    "name": "Ayat Property Tours",
+    "shortName": "Ayat Tours",
+    "description": "Explore properties with Ayat Real Estate — Pioneer Real Estate Developer in Addis Ababa, Ethiopia since 1988",
+    "themeColor": "#7B1E1E",
+    "backgroundColor": "#7B1E1E",
+    "icon192": "icon-192.png",
+    "icon512": "icon-512.png"
+  },
+
+  "contact": {
+    "phones": [
+      {
+        "label": "Hotline",
+        "value": "+251976606060",
+        "tel": "tel:+251976606060",
+        "display": "0976 60 60 60",
+        "primary": true
+      },
+      {
+        "label": "Fax",
+        "value": "+251115511976",
+        "tel": "tel:+251115511976",
+        "display": "+251 (0) 11 55 11 976"
+      }
+    ],
+    "emails": [
+      {
+        "label": "Inquiry",
+        "value": "info@ayatrealestate.com",
+        "mailto": "mailto:info@ayatrealestate.com",
+        "primary": true
+      }
+    ],
+    "whatsapp": {
+      "enabled": true,
+      "number": "+251976606060",
+      "display": "0976 60 60 60",
+      "message": "Hello Ayat Real Estate, I'm interested in learning more about your properties."
+    },
+    "social": {
+      "facebook": { "enabled": true, "url": "https://www.facebook.com/ayatshareco/", "handle": "@ayatshareco" },
+      "instagram": { "enabled": true, "url": "https://www.instagram.com/ayatshareco/", "handle": "@ayatshareco" },
+      "youtube": { "enabled": true, "url": "https://www.youtube.com/@ayatshareco", "handle": "Ayat Share Company" },
+      "telegram": { "enabled": true, "url": "https://t.me/ayatshareco", "handle": "@ayatshareco" },
+      "linkedin": { "enabled": false },
+      "tiktok": { "enabled": false }
+    },
+    "address": "CMC - behind Micheal Church, Addis Ababa, Ethiopia | P.O.Box: 3372",
+    "website": "https://ayatrealestate.com/",
+    "businessHours": "Monday–Saturday: 8:00 AM – 5:00 PM | Sunday: Closed"
+  },
+
+  "project": {
+    "name": "Ayat CMC Residential",
+    "description": "Luxury residential apartments in CMC, Addis Ababa. 2-4 bedroom units ranging from 40-161 m². Blending luxury, comfort, and community seamlessly.",
+    "location": "CMC - behind Micheal Church, Addis Ababa",
+    "buildingType": "Mixed Use Residential",
+    "buildingSize": "B+G+15",
+    "deliveryTime": "24 Months",
+    "coordinates": { "lat": 9.0400, "lng": 38.7900 }
+  },
+
+  "projects": {
+    "cmc-residential": {
+      "name": "CMC Residential",
+      "location": "CMC - behind Micheal Church, Addis Ababa",
+      "description": "Luxury residential apartments with 2-4 bedrooms, 40-161 m²",
+      "status": "selling",
+      "type": "Mixed Use",
+      "buildingSize": "B+G+15"
+    },
+    "ayat-grand-mall": {
+      "name": "Ayat Grand Mall",
+      "location": "CMC - behind St. Micheal Church",
+      "description": "Commercial shopping center",
+      "status": "selling",
+      "type": "Commercial"
+    },
+    "hill-bottom": {
+      "name": "Hill Bottom Apartments",
+      "location": "Derartu Tulu Square",
+      "description": "Residential apartments",
+      "status": "selling",
+      "type": "Residential"
+    }
+  },
+
+  "amenities": [
+    "Power Supply (24hr Generator)",
+    "Elevator",
+    "Escalators",
+    "Security (CCTV 24/7)",
+    "Parking Lot",
+    "Shopping Access",
+    "Transportation"
+  ],
+
+  "unitTypes": {
+    "duplex": { "name": "Duplex", "bedrooms": 3, "bathrooms": 2, "finish": "Full Finished" },
+    "flat": { "name": "Flat", "bedrooms": 2, "bathrooms": 1, "finish": "Full Finished / Semi-Finished" },
+    "penthouse": { "name": "Penthouse", "bedrooms": 4, "bathrooms": 3, "finish": "Luxury Finished" },
+    "villa": { "name": "Villa", "bedrooms": 5, "bathrooms": 3, "finish": "Full Finished" },
+    "condo": { "name": "Condominium", "bedrooms": 2, "bathrooms": 1, "finish": "Semi-Finished" },
+    "commercial": { "name": "Commercial Space", "bedrooms": 0, "bathrooms": 1, "finish": "Semi-Finished" }
+  },
+
+  "auth": {
+    "adminEmails": ["admin@ayatrealestate.com"]
+  },
+
+  "contactForm": {
+    "enabled": true,
+    "endpoint": "https://ayatrealestate.com/wp-admin/admin-ajax.php",
+    "fields": [
+      { "name": "contact_name", "label": "Your Name", "type": "text", "required": true, "placeholder": "Your Name" },
+      { "name": "contact_email", "label": "Your Email", "type": "email", "required": true, "placeholder": "Your Email" },
+      { "name": "contact_phone", "label": "Your Phone", "type": "tel", "required": false, "placeholder": "Your Phone" },
+      { "name": "contact_content", "label": "Message", "type": "textarea", "required": true, "placeholder": "Type your message..." }
+    ],
+    "submitButton": { "label": "Send Message", "icon": "send" }
+  },
+
+  "displaySettings": {
+    "showPhones": true,
+    "showEmails": true,
+    "showSocial": true,
+    "showWhatsApp": true,
+    "showContactForm": true,
+    "showBusinessHours": true
+  },
+
+  "ui": {
+    "labels": {
+      "detailsPanel": "Details",
+      "searchPanel": "Unit Search",
+      "searchPlaceholder": "Search units...",
+      "searchButton": "Search",
+      "resetButton": "Reset",
+      "galleryLabel": "Gallery",
+      "contactButton": "Contact",
+      "detailsButton": "Details",
+      "installButton": "Install",
+      "adminLoginTitle": "Admin Login",
+      "floorPlanTitle": "3D Floor Plan",
+      "panoramaTitle": "Panorama",
+      "adminAccessTitle": "Admin Access",
+      "availabilityTitle": "Availability",
+      "enterButton": "Explore Now",
+      "loadingFloorPlan": "Loading 3D Floor Plan...",
+      "loadingGeneric": "Loading..."
+    },
+    "filters": {
+      "allTypes": "All Types",
+      "allStatus": "All Status",
+      "allFloors": "All Floors"
+    },
+    "statusLabels": {
+      "available": "Available",
+      "reserved": "Reserved",
+      "sold": "Sold",
+      "unavailable": "Unavailable"
+    },
+    "unitDetail": {
+      "typeLabel": "Type",
+      "floorLabel": "Floor",
+      "areaLabel": "Area",
+      "priceLabel": "Price",
+      "viewAreaDetails": "View Area Details",
+      "areaNet": "Net",
+      "areaCommon": "Common",
+      "areaTotal": "Total",
+      "floorPlan": "Floor Plan",
+      "panorama": "Panorama",
+      "action3DPlan": "3D Plan"
+    },
+    "projectDetail": {
+      "locationLabel": "Location",
+      "structureLabel": "Structure",
+      "lotLabel": "Lot",
+      "deliveryLabel": "Delivery",
+      "unitsLabel": "Units",
+      "floorsLabel": "Floors",
+      "parkingLabel": "Parking",
+      "basementLabel": "Basement",
+      "amenitiesSection": "Amenities & Features",
+      "nearbySection": "Nearby",
+      "contactSection": "Contact Us",
+      "openInMaps": "Open in Maps",
+      "callButton": "Call",
+      "emailButton": "Email",
+      "whatsappButton": "WhatsApp",
+      "shareButton": "Share"
+    },
+    "contact": {
+      "sectionPhones": "Phone Numbers",
+      "sectionEmail": "Email",
+      "sectionWhatsApp": "WhatsApp",
+      "sectionSocial": "Follow Us",
+      "sectionForm": "Send Message",
+      "chatWithUs": "Chat with us",
+      "callNow": "Call Now",
+      "whatsappLabel": "WhatsApp",
+      "emailLabel": "Email",
+      "shareLabel": "Share",
+      "messageSuccess": "Thank you! Your message has been sent successfully.",
+      "messageError": "Sorry, there was an error sending your message. Please try again."
+    },
+    "install": {
+      "title": "Install This App",
+      "description": "Add this app to your home screen or desktop for offline access anytime.",
+      "button": "Install Now",
+      "successMessage": "App installed successfully!",
+      "dismissMessage": "Install dismissed. You can try again anytime."
+    },
+    "update": {
+      "title": "New Version Available",
+      "description": "Update to get the latest features and improvements.",
+      "button": "Update Now"
+    },
+    "intro": {
+      "loadingText": "Loading Tour...",
+      "loadingLocation": "Loading...",
+      "tagline": "Pioneer Real Estate Developer"
+    },
+    "empty": {
+      "noUnitsFound": "No units found",
+      "noUnitsAdmin": "📭 No units found",
+      "addDataHint": "Add data to Firebase /availability/ path"
+    }
+  },
+
+  "seo": {
+    "metaDescription": "Explore properties with Ayat Real Estate Share Company — Pioneer Real Estate Developer in Addis Ababa, Ethiopia. Duplexes, flats, penthouses, villas.",
+    "offlinePageTitle": "Offline - Ayat Real Estate"
+  },
+
+  "messages": {
+    "auth": {
+      "invalidEmail": "Invalid email address.",
+      "accountDisabled": "Account disabled. Contact admin.",
+      "authFailed": "Authentication failed.",
+      "invalidCredentials": "Invalid credentials.",
+      "signIn": "Sign In",
+      "signingIn": "Signing in...",
+      "signedIn": "Signed in successfully.",
+      "signedOut": "Signed out successfully.",
+      "signInBtn": "Sign In"
+    },
+    "availability": {
+      "updating": "Updating...",
+      "updated": "Availability updated.",
+      "offline": "Offline - changes will sync when online.",
+      "updateFailed": "Update failed.",
+      "unsaved": "Unsaved",
+      "statusLabel": "Status",
+      "notesLabel": "Notes (optional)",
+      "notesPlaceholder": "Add notes...",
+      "loginBtn": "Login",
+      "offlineMessage": "Offline - changes will sync when connection is restored"
+    },
+    "connection": {
+      "restored": "Connection restored - syncing changes...",
+      "offline": "You are now offline - changes will sync when connected.",
+      "offlineReady": "Ready for offline"
+    },
+    "share": {
+      "linkCopied": "Link copied to clipboard!"
+    }
+  }
+}

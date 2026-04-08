@@ -1,0 +1,199 @@
+{
+  "version": "1.1.0",
+
+  "hero": "hero.jpg",
+
+  "brand": {
+    "companyName": "Metropolitan Real Estate PLC",
+    "shortName": "Metropolitan",
+    "tagline": "Discover Luxury, Quality and Safety",
+    "logo": "logo.png",
+    "developerLogo": "logo.png"
+  },
+  "theme": {
+    "primary": "#0B1B35",
+    "primaryDark": "#060F1F",
+    "primaryLight": "#163967",
+    "primaryAlpha": "rgba(11,27,53,.15)",
+    "success": "#22c55e",
+    "warning": "#f59e0b",
+    "error": "#ef4444",
+    "info": "#3b82f6",
+    "background": "#f4f5f7",
+    "card": "#ffffff",
+    "cardAlt": "#f9fafb",
+    "input": "#ffffff",
+    "textPrimary": "#1a1a2e",
+    "textSecondary": "#555570",
+    "textMuted": "#8888a0",
+    "borderLight": "rgba(0,0,0,.08)",
+    "borderMedium": "rgba(0,0,0,.14)",
+    "dark": {
+      "background": "#060F1F",
+      "card": "#0B1B35",
+      "cardAlt": "#163967",
+      "input": "#1A4070",
+      "textPrimary": "#e8e8e8",
+      "textSecondary": "#b0b8c4",
+      "textMuted": "#7a8594",
+      "borderLight": "rgba(255,255,255,.08)",
+      "borderMedium": "rgba(255,255,255,.15)"
+    }
+  },
+  "pwa": {
+    "name": "Metropolitan Property Tours",
+    "shortName": "Metropolitan",
+    "description": "Explore extraordinary living experiences with Metropolitan Real Estate — Where attention to detail meets exceptional living",
+    "themeColor": "#0B1B35",
+    "backgroundColor": "#0B1B35",
+    "icon192": "icon-192.png",
+    "icon512": "icon-512.png"
+  },
+  "contact": {
+    "phones": [
+      {
+        "label": "Ethiopia",
+        "value": "+251973404040",
+        "tel": "tel:+251973404040",
+        "display": "+251 973 40 40 40",
+        "primary": true
+      },
+      {
+        "label": "Ethiopia Alt",
+        "value": "+251973303030",
+        "tel": "tel:+251973303030",
+        "display": "+251 973 30 30 30"
+      },
+      {
+        "label": "USA",
+        "value": "+14802802242",
+        "tel": "tel:+14802802242",
+        "display": "+1 480 280 2242"
+      },
+      {
+        "label": "Short Code",
+        "value": "9896",
+        "tel": "tel:9896",
+        "display": "9896"
+      }
+    ],
+    "emails": [
+      {
+        "label": "General Inquiry",
+        "value": "info@metropolitanaddis.com",
+        "mailto": "mailto:info@metropolitanaddis.com",
+        "primary": true
+      },
+      {
+        "label": "Marketing",
+        "value": "marketing@metropolitanaddis.com",
+        "mailto": "mailto:marketing@metropolitanaddis.com"
+      }
+    ],
+    "whatsapp": {
+      "enabled": true,
+      "number": "+251973404040",
+      "display": "+251 973 40 40 40",
+      "message": "Hello Metropolitan Real Estate, I'm interested in learning more about your properties."
+    },
+    "social": {
+      "facebook": { "enabled": true, "url": "https://www.facebook.com/metropolitanaddis/", "handle": "@metropolitanaddis" },
+      "instagram": { "enabled": true, "url": "https://www.instagram.com/metropolitanaddis/", "handle": "@metropolitanaddis" },
+      "twitter": { "enabled": true, "url": "https://twitter.com/metropolitanaddis", "handle": "@metropolitanaddis" },
+      "youtube": { "enabled": true, "url": "https://www.youtube.com/@metropolitanaddis", "handle": "Metropolitan Real Estate" },
+      "linkedin": { "enabled": true, "url": "https://www.linkedin.com/company/metropolitanaddis", "handle": "Metropolitan Real Estate PLC" },
+      "tiktok": { "enabled": false }
+    },
+    "address": "Bole Rwanda, Infront of Mamokacha, Addis Ababa, Ethiopia | USA: 28775 W Ray Rd #6-444, Chandler, AZ 85224",
+    "website": "https://metropolitanaddis.com/",
+    "businessHours": "Monday–Saturday: 8:00 AM – 5:00 PM | Sunday: Closed"
+  },
+  "project": {
+    "name": "Central Tower",
+    "description": "Original architecture, international standard and a central location offer a quality of life unparalleled in the Addis Ababa Market. Located near the AU headquarters with stunning city views.",
+    "location": "AU, Addis Ababa",
+    "buildingType": "Luxury Residential",
+    "buildingSize": "B+G+21",
+    "deliveryTime": "18 Months",
+    "coordinates": { "lat": 9.0100, "lng": 38.7800 }
+  },
+  "projects": {
+    "central-tower": {
+      "name": "Central Tower",
+      "location": "AU, Addis Ababa 1862",
+      "description": "21 Floors, 126-185 sqm, 615 units. Located near AU headquarters in the diplomatic hub.",
+      "status": "selling",
+      "line": "Luxury",
+      "buildingSize": "B+G+21",
+      "floors": 21,
+      "unitRange": "126-185 sqm",
+      "totalUnits": 615
+    },
+    "metropolitan-tower": {
+      "name": "Metropolitan Tower",
+      "location": "Bole, Addis Ababa",
+      "description": "Luxury apartments with original architecture and international standards",
+      "status": "selling",
+      "line": "Luxury"
+    },
+    "metropolitan-residence": {
+      "name": "Metropolitan Residence",
+      "location": "Bole Rwanda, Addis Ababa",
+      "description": "Luxury apartments in prime Bole location",
+      "status": "selling",
+      "line": "Luxury"
+    },
+    "bole-midtown": {
+      "name": "Bole Midtown",
+      "location": "Bole, Addis Ababa",
+      "description": "Luxury development in central Bole",
+      "status": "sold-out",
+      "line": "Luxury"
+    },
+    "sarbet-gabriel": {
+      "name": "Sarbet Gabriel",
+      "location": "Sarbet, Addis Ababa",
+      "description": "First luxury project - Sold out",
+      "status": "sold-out",
+      "line": "Luxury"
+    },
+    "westview": {
+      "name": "WestView",
+      "location": "Addis Ababa",
+      "description": "Quality standard line with affordability",
+      "status": "selling",
+      "line": "Standard"
+    }
+  },
+  "amenities": [
+    "Fitness Center",
+    "Clubhouse",
+    "Common Terrace",
+    "High-Capacity Water Tank",
+    "Uninterrupted Power Supply",
+    "High-End Elevators",
+    "Automatic Security System"
+  ],
+  "auth": {
+    "adminEmails": ["admin@metropolitanaddis.com"]
+  },
+  "contactForm": {
+    "enabled": true,
+    "endpoint": "https://metropolitanaddis.com/wp-admin/admin-ajax.php",
+    "fields": [
+      { "name": "contact_name", "label": "Your Name", "type": "text", "required": true, "placeholder": "Your Name" },
+      { "name": "contact_email", "label": "Your Email", "type": "email", "required": true, "placeholder": "Your Email" },
+      { "name": "contact_phone", "label": "Your Phone", "type": "tel", "required": false, "placeholder": "Your Phone" },
+      { "name": "contact_content", "label": "Message", "type": "textarea", "required": true, "placeholder": "Type your message..." }
+    ],
+    "submitButton": { "label": "Send Message", "icon": "send" }
+  },
+  "displaySettings": {
+    "showPhones": true,
+    "showEmails": true,
+    "showSocial": true,
+    "showWhatsApp": true,
+    "showContactForm": true,
+    "showBusinessHours": true
+  }
+}

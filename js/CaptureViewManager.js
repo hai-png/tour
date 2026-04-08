@@ -13,7 +13,7 @@ export class CaptureViewManager {
     this.excludeOverlays = true;
     this.watermark = {
       enabled: true,
-      text: 'HAI PNG Virtual Tour',
+      text: 'Virtual Tour',
       position: 'bottom-right',
       fontSize: 16,
       color: '#ffffff',

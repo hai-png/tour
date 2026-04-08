@@ -495,9 +495,23 @@ export class UIManager {
     mapContainer.innerHTML = '';
     mapContainer.style.position = 'relative';
 
-    // Property coordinates - Port Moresby, PNG
-    const propertyLat = -9.4431;
-    const propertyLng = 147.1803;
+    // Get coordinates from brand config or project
+    const brandLoader = window.brandLoader;
+    let propertyLat, propertyLng, propertyName, propertyAddress;
+
+    if (brandLoader && brandLoader.isBrandLoaded() && brandLoader.brandConfig) {
+      const config = brandLoader.brandConfig;
+      propertyLat = config.project?.coordinates?.lat || -9.4431;
+      propertyLng = config.project?.coordinates?.lng || 147.1803;
+      propertyName = config.brand?.companyName || config.project?.name || 'Property';
+      propertyAddress = config.contact?.address || config.project?.location || '';
+    } else {
+      // Fallback defaults
+      propertyLat = -9.4431;
+      propertyLng = 147.1803;
+      propertyName = 'Property';
+      propertyAddress = '';
+    }
 
     // Create map with dark theme
     const map = L.map('property-map', {
@@ -515,16 +529,17 @@ export class UIManager {
       maxZoom: 20
     }).addTo(map);
 
-    // Custom marker icon
+    // Custom marker icon using brand primary color
+    const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#6366f1';
     const propertyIcon = L.divIcon({
       className: 'property-marker',
       html: `<div style="
-        background: linear-gradient(135deg, #6366f1, #4f46e5);
+        background: linear-gradient(135deg, ${primaryColor}, ${primaryColor}dd);
         width: 40px;
         height: 40px;
         border-radius: 50% 50% 50% 0;
         transform: rotate(-45deg);
-        box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+        box-shadow: 0 4px 16px ${primaryColor}66;
         border: 3px solid #fff;
         display: flex;
         align-items: center;
@@ -544,11 +559,11 @@ export class UIManager {
     // Add property marker
     const marker = L.marker([propertyLat, propertyLng], { icon: propertyIcon }).addTo(map);
 
-    // Add popup
+    // Add popup with brand info
     marker.bindPopup(`
       <div style="text-align: center; padding: 8px;">
-        <h4 style="margin: 0 0 8px 0; color: #6366f1; font-size: 14px;">HAI PNG Property</h4>
-        <p style="margin: 0; color: #666; font-size: 12px;">Waigani Drive, Port Moresby</p>
+        <h4 style="margin: 0 0 8px 0; color: ${primaryColor}; font-size: 14px;">${propertyName}</h4>
+        ${propertyAddress ? `<p style="margin: 0; color: #666; font-size: 12px;">${propertyAddress}</p>` : ''}
       </div>
     `).openPopup();
 
@@ -755,7 +770,7 @@ export class UIManager {
    */
   shareOnSocial(platform) {
     const tourUrl = encodeURIComponent(window.location.href);
-    const tourTitle = encodeURIComponent(this.tourPlayer.project?.name || 'HAI PNG Virtual Tour');
+    const tourTitle = encodeURIComponent(this.tourPlayer.project?.name || 'Virtual Tour');
 
     const shareUrls = {
       facebook: `https://www.facebook.com/sharer/sharer.php?u=${tourUrl}`,
@@ -780,7 +795,7 @@ export class UIManager {
    */
   shareToPlatform(platform) {
     const tourUrl = window.location.href;
-    const tourTitle = this.tourPlayer.project?.name || 'HAI PNG Virtual Tour';
+    const tourTitle = this.tourPlayer.project?.name || 'Virtual Tour';
     const encodedUrl = encodeURIComponent(tourUrl);
     const encodedTitle = encodeURIComponent(tourTitle);
 
@@ -1061,7 +1076,7 @@ export class UIManager {
     
     // Update title
     const titleEl = document.getElementById('tour-info-title');
-    if (titleEl) titleEl.textContent = project.name || 'HAI PNG Virtual Tour';
+    if (titleEl) titleEl.textContent = project.name || 'Virtual Tour';
     
     // Update property description
     const descEl = document.getElementById('property-description-text');

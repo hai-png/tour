@@ -15,6 +15,7 @@ import { AudioManager } from './AudioManager.js';
 import { CaptureViewManager } from './CaptureViewManager.js';
 import { PWAManager } from './PWAManager.js';
 import { VRModeManager } from './VRModeManager.js';
+import { BrandLoader } from './BrandLoader.js';
 
 export class TourPlayer {
   constructor(projectUrl) {
@@ -31,6 +32,7 @@ export class TourPlayer {
     this.ui = null;
     this.hotspotManager = null;
     this.floorPlanManager = null;
+    this.brandLoader = null;
 
     // Room data for display
     this.roomData = this.initializeRoomData();
@@ -130,6 +132,19 @@ export class TourPlayer {
 
   async init() {
     try {
+      // Initialize brand loader
+      this.brandLoader = window.brandLoader || new BrandLoader();
+      if (this.brandLoader.isBrandLoaded()) {
+        console.log(`[TourPlayer] Brand loaded: ${this.brandLoader.getBrandSlug()}`);
+        // Apply tour UI styles after DOM is ready
+        this.brandLoader.applyTheme();
+        
+        // Update contact, share, location from brand config
+        this.brandLoader.updateContactInfo();
+        this.brandLoader.updateShareInfo();
+        this.brandLoader.updateLocationInfo();
+      }
+
       // Load project data
       const response = await fetch(this.projectUrl);
       this.project = await response.json();

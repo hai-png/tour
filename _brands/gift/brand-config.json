@@ -1,0 +1,218 @@
+{
+  "version": "1.1.0",
+
+  "hero": "hero.jpg",
+
+  "brand": {
+    "companyName": "GIFT Real Estate P.L.C.",
+    "shortName": "GIFT Real Estate",
+    "tagline": "We Build Community!",
+    "logo": "icon-192.png",
+    "developerLogo": "icon-192.png"
+  },
+  "theme": {
+    "primary": "#2E7D32",
+    "primaryDark": "#1B5E20",
+    "primaryLight": "#4CAF50",
+    "primaryAlpha": "rgba(46,125,50,.15)",
+    "success": "#22c55e",
+    "warning": "#f59e0b",
+    "error": "#ef4444",
+    "info": "#3b82f6",
+    "background": "#f4f5f7",
+    "card": "#ffffff",
+    "cardAlt": "#f9fafb",
+    "input": "#ffffff",
+    "textPrimary": "#1a1a2e",
+    "textSecondary": "#555570",
+    "textMuted": "#8888a0",
+    "borderLight": "rgba(0,0,0,.08)",
+    "borderMedium": "rgba(0,0,0,.14)",
+    "dark": {
+      "background": "#0A1A0A",
+      "card": "#132813",
+      "cardAlt": "#1A331A",
+      "input": "#1E3D1E",
+      "textPrimary": "#e8e8e8",
+      "textSecondary": "#b0b8c4",
+      "textMuted": "#7a8594",
+      "borderLight": "rgba(255,255,255,.08)",
+      "borderMedium": "rgba(255,255,255,.15)"
+    }
+  },
+  "pwa": {
+    "name": "GIFT Property Tours",
+    "shortName": "GIFT Tours",
+    "description": "Explore properties with GIFT Real Estate — Building communities since 2005. Part of GIFT Business Group.",
+    "themeColor": "#2E7D32",
+    "backgroundColor": "#2E7D32",
+    "icon192": "icon-192.png",
+    "icon512": "icon-512.png"
+  },
+  "contact": {
+    "phones": [
+      {
+        "label": "Hotline",
+        "value": "+251930076726",
+        "tel": "tel:+251930076726",
+        "display": "+251 930 076 726",
+        "primary": true
+      },
+      {
+        "label": "Office",
+        "value": "+251912507906",
+        "tel": "tel:+251912507906",
+        "display": "+251 912 507 906"
+      }
+    ],
+    "emails": [
+      {
+        "label": "General Inquiry",
+        "value": "info@giftrealestate.com.et",
+        "mailto": "mailto:info@giftrealestate.com.et",
+        "primary": true
+      },
+      {
+        "label": "Sales",
+        "value": "sales@giftrealestate.com.et",
+        "mailto": "mailto:sales@giftrealestate.com.et"
+      }
+    ],
+    "whatsapp": {
+      "enabled": true,
+      "number": "+251930076726",
+      "display": "+251 930 076 726",
+      "message": "Hello GIFT Real Estate, I'm interested in learning more about your properties."
+    },
+    "social": {
+      "facebook": { "enabled": true, "url": "https://www.facebook.com/giftrealestate", "handle": "@giftrealestate" },
+      "twitter": { "enabled": true, "url": "https://twitter.com/giftrealestate", "handle": "@giftrealestate" },
+      "youtube": { "enabled": true, "url": "https://www.youtube.com/@giftrealestate", "handle": "GIFT Real Estate" },
+      "telegram": { "enabled": true, "url": "https://t.me/giftrealestate", "handle": "@giftrealestate" },
+      "instagram": { "enabled": true, "url": "https://www.instagram.com/giftrealestate/", "handle": "@giftrealestate" },
+      "linkedin": { "enabled": false },
+      "tiktok": { "enabled": false }
+    },
+    "address": "Africa Avenue, Near To Getu Commercial, 5th & 6th Floor, Addis Ababa, Ethiopia",
+    "website": "https://giftrealestate.com.et/",
+    "businessHours": "Monday–Saturday: 8:00 AM – 5:00 PM | Sunday: Closed"
+  },
+  "project": {
+    "name": "La Gare",
+    "description": "Commercial & residential apartments in prime Addis Ababa locations. One of Ethiopia's pioneering real estate companies since 2005.",
+    "location": "Addis Ababa",
+    "buildingType": "Residential & Commercial",
+    "buildingSize": "B+G+12",
+    "deliveryTime": "24 Months",
+    "coordinates": { "lat": 9.0300, "lng": 38.7500 }
+  },
+  "projects": {
+    "la-gare-1br": {
+      "name": "La Gare One Bedroom",
+      "location": "La Gare, Addis Ababa",
+      "description": "Residential/Commercial Apartment - 65.07 sq.mt",
+      "status": "selling",
+      "type": "Residential/Commercial Apartment",
+      "size": "65.07 sq.mt",
+      "layout": "1 Bed, 1 Bath",
+      "mapsUrl": "https://maps.app.goo.gl/dtToLuWiNfy6tVNFA"
+    },
+    "la-gare-2br": {
+      "name": "La Gare Two Bedroom",
+      "location": "La Gare, Addis Ababa",
+      "description": "Residential/Commercial Apartment - 108-141 sq.mt",
+      "status": "selling",
+      "type": "Residential/Commercial Apartment",
+      "size": "108-141 sq.mt",
+      "layout": "2 Beds, 2 Baths",
+      "mapsUrl": "https://maps.app.goo.gl/dtToLuWiNfy6tVNFA"
+    },
+    "la-gare-3br": {
+      "name": "La Gare Three Bedroom",
+      "location": "La Gare, Addis Ababa",
+      "description": "Residential/Commercial Apartment - 163 sq.mt",
+      "status": "selling",
+      "type": "Residential/Commercial Apartment",
+      "size": "163 sq.mt",
+      "layout": "3 Beds, 2 Baths",
+      "mapsUrl": "https://maps.app.goo.gl/dtToLuWiNfy6tVNFA"
+    },
+    "la-gare-shops": {
+      "name": "La Gare Shops",
+      "location": "La Gare, Addis Ababa",
+      "description": "Commercial Apartment - 60-108 sq.mt",
+      "status": "selling",
+      "type": "Commercial Apartment",
+      "size": "60-108 sq.mt",
+      "layout": "1 Bath",
+      "mapsUrl": "https://maps.app.goo.gl/dtToLuWiNfy6tVNFA"
+    },
+    "ayat-feres-bet": {
+      "name": "Ayat Feres Bet Four Bedroom",
+      "location": "Ayat Feres Bet, Addis Ababa",
+      "description": "Residential Apartment - 153 sq.mt",
+      "status": "selling",
+      "type": "Residential Apartment",
+      "size": "153 sq.mt",
+      "layout": "4 Beds, 3 Baths"
+    },
+    "bole-atlas-3br": {
+      "name": "Bole Atlas Three Bedroom",
+      "location": "Mike Leyland Street, Addis Ababa",
+      "description": "Residential Apartment - 216.97 sq.mt",
+      "status": "selling",
+      "type": "Residential Apartment",
+      "size": "216.97 sq.mt",
+      "layout": "3 Beds, 3 Baths"
+    },
+    "bole-atlas-shops": {
+      "name": "Bole Atlas Shops",
+      "location": "Mike Leyland Street, Addis Ababa",
+      "description": "Commercial Apartment - 40-173 sq.mt",
+      "status": "selling",
+      "type": "Commercial Apartment",
+      "size": "40-173 sq.mt",
+      "layout": "1 Bath"
+    },
+    "teklehaimanot-1br": {
+      "name": "Teklehaimanot Site One Bedroom",
+      "location": "2PGV+W8R Tekle Himanot Orthodox Church, Merkato, Addis Ababa",
+      "description": "Residential Apartment - 81.66 sq.mt",
+      "status": "selling",
+      "type": "Residential Apartment",
+      "size": "81.66 sq.mt",
+      "layout": "1 Bed, 1 Bath"
+    },
+    "teklehaimanot-2br": {
+      "name": "Teklehaimanot Site Two Bedroom",
+      "location": "2PGV+W8R Tekle Himanot Orthodox Church, Merkato, Addis Ababa",
+      "description": "Residential Apartment - 95.20 sq.mt",
+      "status": "selling",
+      "type": "Residential Apartment",
+      "size": "95.20 sq.mt",
+      "layout": "2 Beds, 1 Bath"
+    }
+  },
+  "auth": {
+    "adminEmails": ["admin@giftrealestate.com.et"]
+  },
+  "contactForm": {
+    "enabled": true,
+    "endpoint": "https://giftrealestate.com.et/wp-admin/admin-ajax.php",
+    "fields": [
+      { "name": "contact_name", "label": "Your Name", "type": "text", "required": true, "placeholder": "Your Name" },
+      { "name": "contact_email", "label": "Your Email", "type": "email", "required": true, "placeholder": "Your Email" },
+      { "name": "contact_phone", "label": "Your Phone", "type": "tel", "required": false, "placeholder": "Your Phone" },
+      { "name": "contact_content", "label": "Message", "type": "textarea", "required": true, "placeholder": "Type your message..." }
+    ],
+    "submitButton": { "label": "Send Message", "icon": "send" }
+  },
+  "displaySettings": {
+    "showPhones": true,
+    "showEmails": true,
+    "showSocial": true,
+    "showWhatsApp": true,
+    "showContactForm": true,
+    "showBusinessHours": true
+  }
+}

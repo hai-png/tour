@@ -1,0 +1,264 @@
+{
+  "version": "1.0.0",
+
+  "hero": "hero.png",
+
+  "brand": {
+    "companyName": "Temer Real Estate",
+    "shortName": "Temer Tower",
+    "tagline": "Luxury living redefined",
+    "logo": "icon-192.png",
+    "developerLogo": "icon-192.png"
+  },
+
+  "theme": {
+    "primary": "#8b5cf6",
+    "primaryDark": "#6d28d9",
+    "primaryLight": "#a78bfa",
+    "primaryAlpha": "rgba(139,92,246,.15)",
+    "success": "#22c55e",
+    "warning": "#f59e0b",
+    "error": "#ef4444",
+    "info": "#3b82f6",
+    "background": "#f4f5f7",
+    "card": "#ffffff",
+    "cardAlt": "#f9fafb",
+    "input": "#ffffff",
+    "textPrimary": "#1a1a2e",
+    "textSecondary": "#555570",
+    "textMuted": "#8888a0",
+    "borderLight": "rgba(0,0,0,.08)",
+    "borderMedium": "rgba(0,0,0,.14)",
+    "dark": {
+      "background": "#0f0a1a",
+      "card": "#1a1330",
+      "cardAlt": "#231a3d",
+      "input": "#2a1f45",
+      "textPrimary": "#e8e8e8",
+      "textSecondary": "#b0b8c4",
+      "textMuted": "#7a8594",
+      "borderLight": "rgba(255,255,255,.08)",
+      "borderMedium": "rgba(255,255,255,.15)"
+    }
+  },
+
+  "pwa": {
+    "name": "Temer Property Tours",
+    "shortName": "Temer Tours",
+    "description": "Explore luxury properties with Temer Real Estate",
+    "themeColor": "#0f0a1a",
+    "backgroundColor": "#0f0a1a",
+    "icon192": "icon-192.png",
+    "icon512": "icon-512.png"
+  },
+
+  "contact": {
+    "phones": [
+      {
+        "label": "Hotline",
+        "value": "+251911111111",
+        "tel": "tel:+251911111111",
+        "display": "+251 911 111 111",
+        "primary": true
+      }
+    ],
+    "emails": [
+      {
+        "label": "General Inquiry",
+        "value": "info@temerrealestate.com",
+        "mailto": "mailto:info@temerrealestate.com",
+        "primary": true
+      }
+    ],
+    "whatsapp": {
+      "enabled": true,
+      "number": "+251911111111",
+      "display": "+251 911 111 111",
+      "message": "Hello Temer Real Estate, I'm interested in learning more about your properties."
+    },
+    "social": {
+      "facebook": { "enabled": false },
+      "twitter": { "enabled": false },
+      "youtube": { "enabled": false },
+      "instagram": { "enabled": false },
+      "tiktok": { "enabled": false }
+    },
+    "address": "Addis Ababa, Ethiopia",
+    "website": "https://temerrealestate.com",
+    "businessHours": "Monday–Saturday: 8:00 AM – 5:00 PM | Sunday: Closed"
+  },
+
+  "project": {
+    "name": "Temer Tower",
+    "description": "Luxury residential apartments in Addis Ababa",
+    "location": "Addis Ababa",
+    "buildingType": "Residential",
+    "buildingSize": "B+G+15",
+    "deliveryTime": "24 Months",
+    "coordinates": { "lat": 9.0100, "lng": 38.7800 }
+  },
+
+  "auth": {
+    "adminEmails": ["admin@temerrealestate.com"]
+  },
+
+  "contactForm": {
+    "enabled": true,
+    "endpoint": "https://temerrealestate.com/api/contact",
+    "fields": [
+      { "name": "contact_name", "label": "Your Name", "type": "text", "required": true, "placeholder": "Your Name" },
+      { "name": "contact_email", "label": "Your Email", "type": "email", "required": true, "placeholder": "Your Email" },
+      { "name": "contact_phone", "label": "Your Phone", "type": "tel", "required": false, "placeholder": "Your Phone" },
+      { "name": "contact_content", "label": "Message", "type": "textarea", "required": true, "placeholder": "Type your message..." }
+    ],
+    "submitButton": { "label": "Send Message", "icon": "send" }
+  },
+
+  "displaySettings": {
+    "showPhones": true,
+    "showEmails": true,
+    "showSocial": true,
+    "showWhatsApp": true,
+    "showContactForm": true,
+    "showBusinessHours": true
+  },
+
+  "ui": {
+    "labels": {
+      "detailsPanel": "Details",
+      "searchPanel": "Unit Search",
+      "searchPlaceholder": "Search units...",
+      "searchButton": "Search",
+      "resetButton": "Reset",
+      "galleryLabel": "Gallery",
+      "contactButton": "Contact",
+      "detailsButton": "Details",
+      "installButton": "Install",
+      "adminLoginTitle": "Admin Login",
+      "floorPlanTitle": "3D Floor Plan",
+      "panoramaTitle": "Panorama",
+      "adminAccessTitle": "Admin Access",
+      "availabilityTitle": "Availability",
+      "enterButton": "Explore Now",
+      "loadingFloorPlan": "Loading 3D Floor Plan...",
+      "loadingGeneric": "Loading..."
+    },
+    "filters": {
+      "allTypes": "All Types",
+      "allStatus": "All Status",
+      "allFloors": "All Floors"
+    },
+    "statusLabels": {
+      "available": "Available",
+      "reserved": "Reserved",
+      "sold": "Sold",
+      "unavailable": "Unavailable"
+    },
+    "unitDetail": {
+      "typeLabel": "Type",
+      "floorLabel": "Floor",
+      "areaLabel": "Area",
+      "priceLabel": "Price",
+      "viewAreaDetails": "View Area Details",
+      "areaNet": "Net",
+      "areaCommon": "Common",
+      "areaTotal": "Total",
+      "floorPlan": "Floor Plan",
+      "panorama": "Panorama",
+      "action3DPlan": "3D Plan"
+    },
+    "projectDetail": {
+      "locationLabel": "Location",
+      "structureLabel": "Structure",
+      "lotLabel": "Lot",
+      "deliveryLabel": "Delivery",
+      "unitsLabel": "Units",
+      "floorsLabel": "Floors",
+      "parkingLabel": "Parking",
+      "basementLabel": "Basement",
+      "amenitiesSection": "Amenities & Features",
+      "nearbySection": "Nearby",
+      "contactSection": "Contact Us",
+      "openInMaps": "Open in Maps",
+      "callButton": "Call",
+      "emailButton": "Email",
+      "whatsappButton": "WhatsApp",
+      "shareButton": "Share"
+    },
+    "contact": {
+      "sectionPhones": "Phone Numbers",
+      "sectionEmail": "Email",
+      "sectionWhatsApp": "WhatsApp",
+      "sectionSocial": "Follow Us",
+      "sectionForm": "Send Message",
+      "chatWithUs": "Chat with us",
+      "callNow": "Call Now",
+      "whatsappLabel": "WhatsApp",
+      "emailLabel": "Email",
+      "shareLabel": "Share",
+      "messageSuccess": "Thank you! Your message has been sent successfully.",
+      "messageError": "Sorry, there was an error sending your message. Please try again."
+    },
+    "install": {
+      "title": "Install This App",
+      "description": "Add this app to your home screen or desktop for offline access anytime.",
+      "button": "Install Now",
+      "successMessage": "App installed successfully!",
+      "dismissMessage": "Install dismissed. You can try again anytime."
+    },
+    "update": {
+      "title": "New Version Available",
+      "description": "Update to get the latest features and improvements.",
+      "button": "Update Now"
+    },
+    "intro": {
+      "loadingText": "Loading Tour...",
+      "loadingLocation": "Loading...",
+      "tagline": "Interactive 3D Tour"
+    },
+    "empty": {
+      "noUnitsFound": "No units found",
+      "noUnitsAdmin": "No units found",
+      "addDataHint": "Add data to Firebase to get started."
+    }
+  },
+
+  "seo": {
+    "metaDescription": "Explore luxury properties with Temer Real Estate. View unit availability, floor plans, and amenities.",
+    "offlinePageTitle": "Offline - Temer Tower"
+  },
+
+  "messages": {
+    "auth": {
+      "invalidEmail": "Invalid email address.",
+      "accountDisabled": "Account disabled. Contact admin.",
+      "authFailed": "Authentication failed.",
+      "invalidCredentials": "Invalid credentials.",
+      "signIn": "Sign In",
+      "signingIn": "Signing in...",
+      "signedIn": "Signed in successfully.",
+      "signedOut": "Signed out successfully.",
+      "signInBtn": "Sign In"
+    },
+    "availability": {
+      "updating": "Updating...",
+      "updated": "Availability updated.",
+      "offline": "Offline - changes will sync when online.",
+      "updateFailed": "Update failed.",
+      "unsaved": "Unsaved",
+      "statusLabel": "Status",
+      "notesLabel": "Notes (optional)",
+      "notesPlaceholder": "Add notes...",
+      "loginBtn": "Login",
+      "offlineMessage": "Offline - changes will sync when connection is restored"
+    },
+    "connection": {
+      "restored": "Connection restored - syncing changes...",
+      "offline": "You are now offline - changes will sync when connected.",
+      "offlineReady": "Ready for offline"
+    },
+    "share": {
+      "linkCopied": "Link copied to clipboard!"
+    }
+  }
+}

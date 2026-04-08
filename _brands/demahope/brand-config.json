@@ -1,0 +1,352 @@
+{
+  "version": "2.0.0",
+
+  "hero": "2026-03-18_10-01.jpg",
+
+  "brand": {
+    "companyName": "Dema Hope Real Estate",
+    "shortName": "Dema Hope",
+    "tagline": "Elevate Your Lifestyle",
+    "logo": "icon-192.png",
+    "developerLogo": "icon-192.png"
+  },
+  "theme": {
+    "primary": "#2D4CF5",
+    "primaryDark": "#1A1145",
+    "primaryLight": "#4158F0",
+    "primaryAlpha": "rgba(45,76,245,.15)",
+    "success": "#22c55e",
+    "warning": "#f59e0b",
+    "error": "#ef4444",
+    "info": "#3b82f6",
+    "background": "#f4f5f7",
+    "card": "#ffffff",
+    "cardAlt": "#f9fafb",
+    "input": "#ffffff",
+    "textPrimary": "#1a1a2e",
+    "textSecondary": "#555570",
+    "textMuted": "#8888a0",
+    "borderLight": "rgba(0,0,0,.08)",
+    "borderMedium": "rgba(0,0,0,.14)",
+    "dark": {
+      "background": "#1A1145",
+      "card": "#2C2654",
+      "cardAlt": "#3D3570",
+      "input": "#4A4180",
+      "textPrimary": "#e8e8e8",
+      "textSecondary": "#b0b8c4",
+      "textMuted": "#7a8594",
+      "borderLight": "rgba(255,255,255,.08)",
+      "borderMedium": "rgba(255,255,255,.15)"
+    }
+  },
+  "pwa": {
+    "name": "Dema Hope Property Tours",
+    "shortName": "Dema Hope",
+    "description": "Explore premium properties with Dema Hope Real Estate — Trust, Quality, Speed",
+    "themeColor": "#1A1145",
+    "backgroundColor": "#1A1145",
+    "icon192": "icon-192.png",
+    "icon512": "icon-512.png"
+  },
+  "contact": {
+    "phones": [
+      {
+        "label": "Hotline",
+        "value": "+251951515174",
+        "tel": "tel:+251951515174",
+        "display": "+251 9 51 51 51 74",
+        "primary": true
+      },
+      {
+        "label": "Office",
+        "value": "+251951515111",
+        "tel": "tel:+251951515111",
+        "display": "+251 9 51 51 51 11"
+      },
+      {
+        "label": "Mobile",
+        "value": "+251951515127",
+        "tel": "tel:+251951515127",
+        "display": "+251 9 51 51 51 27"
+      }
+    ],
+    "emails": [
+      {
+        "label": "General Inquiry",
+        "value": "info@demahoperealestate.com",
+        "mailto": "mailto:info@demahoperealestate.com",
+        "primary": true
+      },
+      {
+        "label": "Sales",
+        "value": "sales@demahoperealestate.com",
+        "mailto": "mailto:sales@demahoperealestate.com"
+      }
+    ],
+    "whatsapp": {
+      "enabled": true,
+      "number": "+251951515174",
+      "display": "+251 951515174",
+      "message": "Hello Dema Hope Real Estate, I'm interested in learning more about your properties."
+    },
+    "social": {
+      "facebook": { "enabled": true, "url": "https://www.facebook.com/demahoperealestate/", "handle": "@demahoperealestate" },
+      "instagram": { "enabled": true, "url": "https://www.instagram.com/demahoperealestate/", "handle": "@demahoperealestate" },
+      "youtube": { "enabled": true, "url": "https://www.youtube.com/@demahoperealestate", "handle": "Dema Hope Real Estate" },
+      "linkedin": { "enabled": true, "url": "https://www.linkedin.com/company/demahoperealestate", "handle": "Dema Hope Real Estate" },
+      "tiktok": { "enabled": true, "url": "https://www.tiktok.com/@demahoperealestate", "handle": "@demahoperealestate" },
+      "twitter": { "enabled": false }
+    },
+    "address": "4th Floor, Dema Hope Prime, Signal, Addis Ababa, Ethiopia",
+    "website": "https://demahoperealestate.com/",
+    "businessHours": "Monday–Saturday: 8:00 AM – 5:00 PM | Sunday: Closed"
+  },
+  "project": {
+    "name": "Dema Hope Prime",
+    "description": "Premium residential and commercial development at Signal, Addis Ababa. Available Now.",
+    "location": "Signal, Addis Ababa, Ethiopia",
+    "buildingType": "Residential & Commercial",
+    "buildingSize": "B+G+15",
+    "deliveryTime": "Available Now",
+    "coordinates": { "lat": 9.0150, "lng": 38.7650 }
+  },
+  "projects": {
+    "demahope-prime": {
+      "name": "Dema Hope Prime",
+      "location": "Signal, Addis Ababa, Ethiopia",
+      "description": "Premium residential and commercial development. Available Now.",
+      "status": "available-now",
+      "buildingSize": "B+G+15",
+      "deliveryTime": "Available Now"
+    },
+    "bole-downtown": {
+      "name": "Bole Downtown",
+      "location": "Bole Medhanialem / Edna Mall Area, Addis Ababa",
+      "description": "Luxury development in the heart of Bole",
+      "status": "selling"
+    },
+    "bole-adey-abeba": {
+      "name": "Bole Adey Abeba",
+      "location": "Bole Area, Addis Ababa",
+      "description": "Modern apartments near Yellow Flower",
+      "status": "selling"
+    },
+    "shola-mountain-view": {
+      "name": "Shola Mountain View",
+      "location": "Shola Area, Yeka, Addis Ababa",
+      "description": "Scenic residences with mountain views",
+      "status": "selling"
+    },
+    "bole-central": {
+      "name": "Bole Central",
+      "location": "Bole Area, Addis Ababa",
+      "description": "Premium development in central Bole",
+      "status": "selling"
+    }
+  },
+  "amenities": [
+    "EV Charging Station",
+    "Gym",
+    "Spa",
+    "Generator",
+    "Outdoor Terrace",
+    "Private Water Well",
+    "Valet Parking"
+  ],
+  "unitTypes": {
+    "3br-type-b": {
+      "name": "3 Bedroom Type B",
+      "bedrooms": 3,
+      "bathrooms": 2,
+      "area": 290,
+      "areaUnit": "sqm"
+    },
+    "3br-type-a": {
+      "name": "3 Bedroom Type A",
+      "bedrooms": 3,
+      "bathrooms": 3,
+      "area": 267,
+      "areaUnit": "sqm"
+    },
+    "2br-type-b": {
+      "name": "2 Bedroom Type B",
+      "bedrooms": 2,
+      "bathrooms": 2,
+      "area": 237,
+      "areaUnit": "sqm"
+    },
+    "2br-type-a": {
+      "name": "2 Bedroom Type A",
+      "bedrooms": 2,
+      "bathrooms": 1,
+      "area": 209,
+      "areaUnit": "sqm"
+    },
+    "shop": {
+      "name": "Shop Apartment",
+      "bedrooms": 0,
+      "bathrooms": 1,
+      "area": null,
+      "areaUnit": "sqm"
+    }
+  },
+  "auth": {
+    "adminEmails": ["admin@demahoperealestate.com"]
+  },
+  "contactForm": {
+    "enabled": true,
+    "endpoint": "https://demahoperealestate.com/wp-admin/admin-ajax.php",
+    "fields": [
+      { "name": "contact_name", "label": "Name", "type": "text", "required": true, "placeholder": "First Name + Last Name" },
+      { "name": "contact_phone", "label": "Phone", "type": "tel", "required": true, "placeholder": "Your Phone Number" },
+      { "name": "property_type", "label": "Property Type", "type": "radio", "required": true, "options": ["Shop", "Apartment"] },
+      { "name": "preferred_sqm", "label": "Preferred Sq Meter", "type": "number", "required": false, "placeholder": "222m²", "min": 1, "max": 500 }
+    ],
+    "submitButton": { "label": "Submit your Interest", "icon": "send" }
+  },
+  "displaySettings": {
+    "showPhones": true,
+    "showEmails": true,
+    "showSocial": true,
+    "showWhatsApp": true,
+    "showContactForm": true,
+    "showBusinessHours": true
+  },
+  "ui": {
+    "labels": {
+      "detailsPanel": "Details",
+      "searchPanel": "Unit Search",
+      "searchPlaceholder": "Search units...",
+      "searchButton": "Search",
+      "resetButton": "Reset",
+      "galleryLabel": "Gallery",
+      "contactButton": "Contact",
+      "detailsButton": "Details",
+      "installButton": "Install",
+      "adminLoginTitle": "Admin Login",
+      "floorPlanTitle": "3D Floor Plan",
+      "panoramaTitle": "Panorama",
+      "adminAccessTitle": "Admin Access",
+      "availabilityTitle": "Availability",
+      "enterButton": "Explore Now",
+      "loadingFloorPlan": "Loading 3D Floor Plan...",
+      "loadingGeneric": "Loading..."
+    },
+    "filters": {
+      "allTypes": "All Types",
+      "allStatus": "All Status",
+      "allFloors": "All Floors"
+    },
+    "statusLabels": {
+      "available": "Available",
+      "reserved": "Reserved",
+      "sold": "Sold",
+      "unavailable": "Unavailable"
+    },
+    "unitDetail": {
+      "typeLabel": "Type",
+      "floorLabel": "Floor",
+      "areaLabel": "Area",
+      "priceLabel": "Price",
+      "viewAreaDetails": "View Area Details",
+      "areaNet": "Net",
+      "areaCommon": "Common",
+      "areaTotal": "Total",
+      "floorPlan": "Floor Plan",
+      "panorama": "Panorama",
+      "action3DPlan": "3D Plan"
+    },
+    "projectDetail": {
+      "locationLabel": "Location",
+      "structureLabel": "Structure",
+      "lotLabel": "Lot",
+      "deliveryLabel": "Delivery",
+      "unitsLabel": "Units",
+      "floorsLabel": "Floors",
+      "parkingLabel": "Parking",
+      "basementLabel": "Basement",
+      "amenitiesSection": "Amenities & Features",
+      "nearbySection": "Nearby",
+      "contactSection": "Contact Us",
+      "openInMaps": "Open in Maps",
+      "callButton": "Call",
+      "emailButton": "Email",
+      "whatsappButton": "WhatsApp",
+      "shareButton": "Share"
+    },
+    "contact": {
+      "sectionPhones": "Phone Numbers",
+      "sectionEmail": "Email",
+      "sectionWhatsApp": "WhatsApp",
+      "sectionSocial": "Follow Us",
+      "sectionForm": "Send Message",
+      "chatWithUs": "Chat with us",
+      "callNow": "Call Now",
+      "whatsappLabel": "WhatsApp",
+      "emailLabel": "Email",
+      "shareLabel": "Share",
+      "messageSuccess": "Thank you! Your message has been sent successfully.",
+      "messageError": "Sorry, there was an error sending your message. Please try again."
+    },
+    "install": {
+      "title": "Install This App",
+      "description": "Add this app to your home screen or desktop for offline access anytime.",
+      "button": "Install Now",
+      "successMessage": "App installed successfully!",
+      "dismissMessage": "Install dismissed. You can try again anytime."
+    },
+    "update": {
+      "title": "New Version Available",
+      "description": "Update to get the latest features and improvements.",
+      "button": "Update Now"
+    },
+    "intro": {
+      "loadingText": "Loading Tour...",
+      "loadingLocation": "Loading...",
+      "tagline": "Elevate Your Lifestyle"
+    },
+    "empty": {
+      "noUnitsFound": "No units found",
+      "noUnitsAdmin": "📭 No units found",
+      "addDataHint": "Add data to Firebase /availability/ path"
+    }
+  },
+  "seo": {
+    "metaDescription": "Explore premium properties with Dema Hope Real Estate — Trust, Quality, Speed. Dema Hope Prime, Bole Downtown, and more in Addis Ababa.",
+    "offlinePageTitle": "Offline - Dema Hope"
+  },
+  "messages": {
+    "auth": {
+      "invalidEmail": "Invalid email address.",
+      "accountDisabled": "Account disabled. Contact admin.",
+      "authFailed": "Authentication failed.",
+      "invalidCredentials": "Invalid credentials.",
+      "signIn": "Sign In",
+      "signingIn": "Signing in...",
+      "signedIn": "Signed in successfully.",
+      "signedOut": "Signed out successfully.",
+      "signInBtn": "Sign In"
+    },
+    "availability": {
+      "updating": "Updating...",
+      "updated": "Availability updated.",
+      "offline": "Offline - changes will sync when online.",
+      "updateFailed": "Update failed.",
+      "unsaved": "Unsaved",
+      "statusLabel": "Status",
+      "notesLabel": "Notes (optional)",
+      "notesPlaceholder": "Add notes...",
+      "loginBtn": "Login",
+      "offlineMessage": "Offline - changes will sync when connection is restored"
+    },
+    "connection": {
+      "restored": "Connection restored - syncing changes...",
+      "offline": "You are now offline - changes will sync when connected.",
+      "offlineReady": "Ready for offline"
+    },
+    "share": {
+      "linkCopied": "Link copied to clipboard!"
+    }
+  }
+}

@@ -9,13 +9,13 @@ export class LocationManager {
     this.map = null;
     this.marker = null;
     this.isInitialized = false;
-    
-    // Default location (Port Moresby, PNG - can be customized)
+
+    // Default location (will be overridden by brand config)
     this.defaultLocation = {
-      lat: -9.4431,
-      lng: 147.1803,
-      address: '123 Virtual Street, Digital City, DC 12345',
-      name: 'HAI PNG Property'
+      lat: 9.0100,
+      lng: 38.7800,
+      address: 'Addis Ababa, Ethiopia',
+      name: 'Property'
     };
 
     this.init();
