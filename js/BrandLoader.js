@@ -684,11 +684,11 @@ export class BrandLoader {
     const theme = this.brandConfig.theme;
     const style = document.createElement('style');
     style.id = 'brand-loading-styles';
-    
+
     // Check for hero image
     const heroImage = this.getHeroImagePath();
     const hasHero = heroImage && this.brandConfig.hero;
-    
+
     style.textContent = this.generateLoadingScreenCSS(theme, hasHero ? heroImage : null);
     document.head.appendChild(style);
 
@@ -696,38 +696,24 @@ export class BrandLoader {
   }
 
   /**
-   * Get hero image path from brand folder
-   */
-  getHeroImagePath() {
-    if (!this.brandConfig || !this.brandConfig.hero) {
-      return null;
-    }
-    
-    const hero = this.brandConfig.hero;
-    // Handle different path formats
-    if (hero.startsWith('/')) {
-      return hero;
-    }
-    if (hero.startsWith('_brands/')) {
-      return hero;
-    }
-    // Assume it's in the brand folder
-    return `/_brands/${this.brandSlug}/${hero}`;
-  }
-
-  /**
    * Generate CSS for loading screen theming
    */
   generateLoadingScreenCSS(theme, heroImagePath = null) {
-    const heroBackground = heroImagePath 
+    const heroBackground = heroImagePath
       ? `background: url('${heroImagePath}') center/cover no-repeat fixed;`
       : `background: linear-gradient(135deg, ${theme.primaryDark} 0%, ${theme.primary} 100%);`;
+
+    // If there's a hero image, we need to disable the ::before overlay or make it transparent
+    const beforeStyles = heroImagePath
+      ? `.loading-overlay::before { display: none !important; }`
+      : '';
 
     return `
       /* Loading Screen Brand Styles */
       .loading-overlay {
         ${heroBackground}
       }
+      ${beforeStyles}
 
       /* White/transparent buttons on loading screen */
       .btn-start-tour-modern {
