@@ -844,17 +844,21 @@ export class UIManager {
     const modal = document.getElementById('modal-share');
     if (!modal) return;
 
+    // Build clean share URL (keep origin, pathname, and brand query param)
+    const url = new URL(window.location.href);
+    const shareUrl = `${url.origin}${url.pathname}?brand=${url.searchParams.get('brand') || ''}`.replace(/\?brand=$/, '');
+    
     // Set the share link
-    const shareLinkInput = document.getElementById('share-link-input');
+    const shareLinkInput = document.getElementById('share-link');
     if (shareLinkInput) {
-      shareLinkInput.value = window.location.href;
+      shareLinkInput.value = shareUrl || window.location.origin + window.location.pathname;
     }
 
     modal.classList.add('active');
 
     // Generate QR code after modal is fully visible
     setTimeout(() => {
-      this.generateQRCode(window.location.href);
+      this.generateQRCode(shareUrl || window.location.origin + window.location.pathname);
     }, 200);
   }
 

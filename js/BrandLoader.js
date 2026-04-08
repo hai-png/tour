@@ -42,17 +42,11 @@ export class BrandLoader {
    * Get the base path for the repo (handles GitHub Pages subdirectory)
    */
   getBasePath() {
-    // GitHub Pages repos are served from /reponame/ not /
     const path = window.location.pathname;
-    // Remove trailing slash and get repo name
     const parts = path.split('/').filter(Boolean);
     if (parts.length > 0) {
-      // Check if first segment is a brand - if so, base is just /
       const knownBrands = ['ayat', 'demahope', 'gift', 'hosea', 'metropolitan', 'temer'];
-      if (knownBrands.includes(parts[0].toLowerCase())) {
-        return '/';
-      }
-      // Otherwise it's the repo name
+      if (knownBrands.includes(parts[0].toLowerCase())) return '/';
       return `/${parts[0]}`;
     }
     return '';
@@ -63,9 +57,7 @@ export class BrandLoader {
    */
   resolveAssetPath(assetPath) {
     if (!assetPath) return '';
-    // Already absolute
     if (assetPath.startsWith('/') || assetPath.startsWith('http')) return assetPath;
-    // Brand folder asset: prefix with basePath
     const basePath = this.getBasePath();
     return `${basePath}/${assetPath}`;
   }
@@ -74,9 +66,7 @@ export class BrandLoader {
    * Get hero image path from brand folder
    */
   getHeroImagePath() {
-    if (!this.brandConfig || !this.brandConfig.hero) {
-      return null;
-    }
+    if (!this.brandConfig || !this.brandConfig.hero) return null;
     return this.resolveAssetPath(this.brandConfig.hero);
   }
 
@@ -91,8 +81,6 @@ export class BrandLoader {
 
     try {
       const basePath = this.getBasePath();
-      
-      // Try multiple possible paths for brand config
       const possiblePaths = [
         `${basePath}/_brands/${this.brandSlug}/brand-config.json`,
         `/_brands/${this.brandSlug}/brand-config.json`,
@@ -202,7 +190,6 @@ export class BrandLoader {
       loadingLogo.alt = brand.companyName;
       loadingLogo.onerror = () => {
         loadingLogo.src = 'media/tdv-import/skin/logo.webp';
-        console.log('[BrandLoader] Brand logo not found, using default');
       };
     }
 
@@ -225,7 +212,6 @@ export class BrandLoader {
       brandLogo.alt = brand.shortName;
       brandLogo.onerror = () => {
         brandLogo.src = 'media/tdv-import/skin/logo.webp';
-        console.log('[BrandLoader] Brand logo not found, using default');
       };
     }
 
@@ -648,6 +634,17 @@ export class BrandLoader {
       tileColor.content = pwa.themeColor;
     }
 
+    // Update favicons with brand icon
+    if (pwa.icon192) {
+      const iconPath = this.resolveAssetPath(pwa.icon192);
+      // Update standard favicon
+      const favicon = document.querySelector('link[rel="icon"], link[rel="shortcut icon"]');
+      if (favicon) favicon.href = iconPath;
+      // Update apple-touch-icon
+      const appleIcon = document.querySelector('link[rel="apple-touch-icon"]');
+      if (appleIcon) appleIcon.href = iconPath;
+    }
+
     console.log('[BrandLoader] Meta tags updated');
   }
 
@@ -763,4 +760,143 @@ export class BrandLoader {
       .stat-card {
         background: rgba(255, 255, 255, 0.1) !important;
         border-color: rgba(255, 255, 255, 0.2) !important;
-        backdrop-f
+        backdrop-filter: blur(10px);
+      }
+
+      .stat-card:hover {
+        background: rgba(255, 255, 255, 0.15) !important;
+        border-color: rgba(255, 255, 255, 0.3) !important;
+      }
+
+      .stat-value {
+        color: #ffffff !important;
+      }
+
+      .stat-label-modern {
+        color: rgba(255, 255, 255, 0.8) !important;
+      }
+
+      .stat-icon {
+        color: rgba(255, 255, 255, 0.9) !important;
+      }
+
+      /* Settings panel - white/transparent */
+      .loading-settings-modern {
+        background: rgba(255, 255, 255, 0.1) !important;
+        border-color: rgba(255, 255, 255, 0.2) !important;
+        backdrop-filter: blur(10px);
+      }
+
+      .loading-settings-modern h3 {
+        color: #ffffff !important;
+      }
+
+      .setting-option-modern {
+        background: rgba(255, 255, 255, 0.08) !important;
+        border-color: rgba(255, 255, 255, 0.15) !important;
+      }
+
+      .toggle-text-modern .toggle-title {
+        color: #ffffff !important;
+      }
+
+      .toggle-text-modern .toggle-desc {
+        color: rgba(255, 255, 255, 0.7) !important;
+      }
+
+      /* Stats grid container */
+      .loading-stats-modern {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+        backdrop-filter: blur(10px);
+      }
+
+      /* Text colors */
+      .loading-header h1 {
+        color: #ffffff !important;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      }
+
+      .loading-subtitle {
+        color: rgba(255, 255, 255, 0.9) !important;
+        text-shadow: 0 1px 5px rgba(0, 0, 0, 0.3);
+      }
+
+      .loading-status-text {
+        color: #ffffff !important;
+      }
+
+      /* Spinner */
+      .spinner-modern {
+        border-color: rgba(255, 255, 255, 0.2);
+        border-top-color: rgba(255, 255, 255, 0.8);
+      }
+
+      /* Progress bar */
+      .prep-progress-bar {
+        background: rgba(255, 255, 255, 0.15) !important;
+      }
+
+      .prep-progress-bar-fill {
+        background: rgba(255, 255, 255, 0.6) !important;
+      }
+
+      .prep-stat {
+        color: rgba(255, 255, 255, 0.9) !important;
+      }
+
+      .prep-stat i {
+        color: rgba(255, 255, 255, 0.7) !important;
+      }
+
+      .prep-progress-icon {
+        color: rgba(255, 255, 255, 0.8) !important;
+      }
+
+      /* Particles - subtle white */
+      .particle {
+        background: rgba(255, 255, 255, 0.15) !important;
+      }
+
+      /* Logo glow */
+      .logo-glow {
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
+      }
+
+      /* Shimmer on button */
+      .btn-shimmer {
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+      }
+    `;
+  }
+
+  /**
+   * Apply brand-specific tour UI styles
+   * No longer needed - CSS variables handle this
+   */
+  applyTourUIStyles() {
+    // CSS variables already handle tour UI theming
+    console.log('[BrandLoader] Tour UI themed via CSS variables');
+  }
+
+  /**
+   * Get brand configuration
+   */
+  getConfig() {
+    return this.brandConfig;
+  }
+
+  /**
+   * Get brand slug
+   */
+  getBrandSlug() {
+    return this.brandSlug;
+  }
+
+  /**
+   * Check if brand is loaded
+   */
+  isBrandLoaded() {
+    return this.isLoaded;
+  }
+}
