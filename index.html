@@ -64,18 +64,20 @@
         brandLoader.updateLoadingScreen();
         brandLoader.updateMetaTags();
         brandLoader.applyLoadingScreenStyles();
-        
+
         // Apply content updates after DOM is ready
         if (document.readyState === 'loading') {
           document.addEventListener('DOMContentLoaded', () => {
             brandLoader.updateContactInfo();
             brandLoader.updateShareInfo();
             brandLoader.updateLocationInfo();
+            brandLoader.updateManifest();
           });
         } else {
           brandLoader.updateContactInfo();
           brandLoader.updateShareInfo();
           brandLoader.updateLocationInfo();
+          brandLoader.updateManifest();
         }
       }
     }).catch(err => {

@@ -637,15 +637,22 @@ export class BrandLoader {
 
     // Update favicons with brand icon
     if (pwa.icon192) {
-      const iconPath = `${this.getBasePath()}/_brands/${this.brandSlug}/${pwa.icon192}`;
-      // Update standard favicon
+      const basePath = this.getBasePath();
+      const icon192Path = `${basePath}/_brands/${this.brandSlug}/${pwa.icon192}`;
+      const icon512Path = `${basePath}/_brands/${this.brandSlug}/${pwa.icon512 || pwa.icon192}`;
+
+      // Update standard favicon links
       document.querySelectorAll('link[rel="icon"], link[rel="shortcut icon"]').forEach(link => {
-        link.href = iconPath;
+        link.href = icon192Path;
       });
-      // Update apple-touch-icon
+
+      // Update apple-touch-icon links
       document.querySelectorAll('link[rel="apple-touch-icon"]').forEach(link => {
-        link.href = iconPath;
+        link.href = icon192Path;
       });
+
+      // Try to update manifest icons (if manifest is inline or dynamic)
+      this.updateManifest();
     }
 
     console.log('[BrandLoader] Meta tags updated');
@@ -653,24 +660,58 @@ export class BrandLoader {
 
   /**
    * Update PWA manifest with brand info
+   * Creates a dynamic manifest and injects it into the page
    */
-  updateManifest() {
+  async updateManifest() {
     if (!this.brandConfig || !this.brandConfig.pwa) {
       return;
     }
 
     const pwa = this.brandConfig.pwa;
     const brand = this.brandConfig.brand;
+    const basePath = this.getBasePath();
 
-    // Try to update manifest if it's inline
+    // Build brand-specific manifest
+    const brandManifest = {
+      name: pwa.name || `${brand.companyName} Virtual Tour`,
+      short_name: pwa.shortName || brand.shortName,
+      description: pwa.description || brand.tagline,
+      start_url: './index.html',
+      display: 'standalone',
+      background_color: pwa.backgroundColor || '#0f172a',
+      theme_color: pwa.themeColor || '#6366f1',
+      orientation: 'any',
+      scope: './',
+      lang: 'en',
+      dir: 'ltr',
+      icons: [
+        {
+          src: `${basePath}/_brands/${this.brandSlug}/${pwa.icon192 || 'icon-192.png'}`,
+          sizes: '192x192',
+          type: 'image/png',
+          purpose: 'any maskable'
+        },
+        {
+          src: `${basePath}/_brands/${this.brandSlug}/${pwa.icon512 || 'icon-512.png'}`,
+          sizes: '512x512',
+          type: 'image/png',
+          purpose: 'any maskable'
+        }
+      ]
+    };
+
+    // Create a blob URL for the dynamic manifest
+    const manifestBlob = new Blob([JSON.stringify(brandManifest, null, 2)], { type: 'application/json' });
+    const manifestURL = URL.createObjectURL(manifestBlob);
+
+    // Update the manifest link to point to our dynamic manifest
     const manifestLink = document.querySelector('link[rel="manifest"]');
     if (manifestLink) {
-      // For GitHub Pages, we can't dynamically update manifest.json
-      // But we can register a service worker to intercept manifest requests
-      console.log('[BrandLoader] PWA manifest would need server-side update for full branding');
+      manifestLink.href = manifestURL;
+      console.log('[BrandLoader] Dynamic manifest injected:', brandManifest.name);
     }
 
-    console.log('[BrandLoader] Manifest update noted (requires server-side config for full PWA branding)');
+    console.log('[BrandLoader] PWA manifest updated with brand info');
   }
 
   /**
