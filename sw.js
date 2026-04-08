@@ -459,7 +459,7 @@ self.addEventListener('message', (event) => {
 // ── Precache ALL media (called by PWAManager on first boot) ───
 async function precacheMedia(urls, port) {
   const cache = await caches.open(CACHE_NAMES.media);
-  let cached = 0, failed = 0;
+  let cached = 0, failed = 0, quotaExceeded = 0;
   const total = urls.length;
 
   console.log(`[SW] Precaching ${total} media items…`);
@@ -473,8 +473,7 @@ async function precacheMedia(urls, port) {
     try {
       // Normalize URL to ensure consistent form
       const normalizedUrl = url.startsWith('./') ? url : './' + url;
-      const altUrl = normalizedUrl.startsWith('./') ? normalizedUrl.substring(2) : './' + normalizedUrl;
-      
+
       const resp = await fetch(normalizedUrl, { cache: 'no-cache' });
       if (!resp.ok) {
         if (failures.length < 5) {
@@ -483,23 +482,29 @@ async function precacheMedia(urls, port) {
         console.warn(`[SW] Failed to fetch ${normalizedUrl}: ${resp.status} ${resp.statusText}`);
         failed++;
       } else {
-        // Store with normalized URL
-        await cache.put(normalizedUrl, resp.clone());
-        // Also store without ./ prefix for broader matching
-        await cache.put(altUrl, resp);
+        // Store only once with normalized URL (not twice to save storage)
+        await cache.put(normalizedUrl, resp);
         cached++;
       }
     } catch (err) {
       if (failures.length < 5) {
         failures.push({ url: url, error: err.message });
       }
-      console.warn(`[SW] Error caching ${url}:`, err.message);
-      failed++;
+      // Check if it's a quota exceeded error
+      if (err.name === 'QuotaExceededError' || err.message.includes('Quota exceeded')) {
+        quotaExceeded++;
+        if (quotaExceeded === 1 || quotaExceeded % 50 === 0) {
+          console.warn(`[SW] Storage quota exceeded. Cached: ${cached}, Quota failures: ${quotaExceeded}`);
+        }
+      } else {
+        console.warn(`[SW] Error caching ${url}:`, err.message);
+        failed++;
+      }
     }
 
     port?.postMessage({
       type: 'CACHE_PROGRESS',
-      cached, failed, total,
+      cached, failed, total, quotaExceeded,
       percent: Math.round(((cached + failed) / total) * 100),
       url,
     });
@@ -512,12 +517,12 @@ async function precacheMedia(urls, port) {
 
   const result = {
     type: 'CACHE_COMPLETE',
-    cached, failed, total,
+    cached, failed, total, quotaExceeded,
     percent: 100,
     successRate: total ? Math.round((cached / total) * 100) : 0,
   };
 
-  console.log(`[SW] Precache complete: ${cached}/${total}`);
+  console.log(`[SW] Precache complete: ${cached}/${total} cached, ${failed} failed, ${quotaExceeded} quota exceeded`);
   if (failures.length > 0) {
     console.error(`[SW] First ${failures.length} failures:`, JSON.stringify(failures, null, 2));
   }

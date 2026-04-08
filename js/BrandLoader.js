@@ -671,17 +671,18 @@ export class BrandLoader {
     const brand = this.brandConfig.brand;
     const basePath = this.getBasePath();
 
-    // Build brand-specific manifest
+    // Build brand-specific manifest with absolute paths from origin
+    // IMPORTANT: Blob URLs require paths relative to the origin, not relative paths
     const brandManifest = {
       name: pwa.name || `${brand.companyName} Virtual Tour`,
       short_name: pwa.shortName || brand.shortName,
       description: pwa.description || brand.tagline,
-      start_url: './index.html',
+      start_url: `${basePath}/index.html`,
       display: 'standalone',
       background_color: pwa.backgroundColor || '#0f172a',
       theme_color: pwa.themeColor || '#6366f1',
       orientation: 'any',
-      scope: './',
+      scope: `${basePath}/`,
       lang: 'en',
       dir: 'ltr',
       icons: [
@@ -709,6 +710,8 @@ export class BrandLoader {
     if (manifestLink) {
       manifestLink.href = manifestURL;
       console.log('[BrandLoader] Dynamic manifest injected:', brandManifest.name);
+      console.log('[BrandLoader] Manifest start_url:', brandManifest.start_url);
+      console.log('[BrandLoader] Manifest scope:', brandManifest.scope);
     }
 
     console.log('[BrandLoader] PWA manifest updated with brand info');
