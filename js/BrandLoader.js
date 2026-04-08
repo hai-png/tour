@@ -59,6 +59,28 @@ export class BrandLoader {
   }
 
   /**
+   * Resolve a relative asset path to absolute with repo base path
+   */
+  resolveAssetPath(assetPath) {
+    if (!assetPath) return '';
+    // Already absolute
+    if (assetPath.startsWith('/') || assetPath.startsWith('http')) return assetPath;
+    // Brand folder asset: prefix with basePath
+    const basePath = this.getBasePath();
+    return `${basePath}/${assetPath}`;
+  }
+
+  /**
+   * Get hero image path from brand folder
+   */
+  getHeroImagePath() {
+    if (!this.brandConfig || !this.brandConfig.hero) {
+      return null;
+    }
+    return this.resolveAssetPath(this.brandConfig.hero);
+  }
+
+  /**
    * Load brand configuration JSON
    */
   async loadBrandConfig() {
@@ -173,13 +195,10 @@ export class BrandLoader {
     const pwa = this.brandConfig.pwa;
     const ui = this.brandConfig.ui;
 
-    // Update loading logo - try multiple paths
+    // Update loading logo
     const loadingLogo = document.querySelector('.loading-logo');
     if (loadingLogo && brand.logo) {
-      const logoPath = brand.logo.startsWith('/') ? brand.logo : 
-                       brand.logo.startsWith('_brands/') ? brand.logo :
-                       `/_brands/${this.brandSlug}/${brand.logo.split('/').pop()}`;
-      loadingLogo.src = logoPath;
+      loadingLogo.src = this.resolveAssetPath(brand.logo);
       loadingLogo.alt = brand.companyName;
       loadingLogo.onerror = () => {
         loadingLogo.src = 'media/tdv-import/skin/logo.webp';
@@ -202,10 +221,7 @@ export class BrandLoader {
     // Update brand container logo
     const brandLogo = document.querySelector('.brand-logo');
     if (brandLogo && brand.logo) {
-      const logoPath = brand.logo.startsWith('/') ? brand.logo : 
-                       brand.logo.startsWith('_brands/') ? brand.logo :
-                       `/_brands/${this.brandSlug}/${brand.logo.split('/').pop()}`;
-      brandLogo.src = logoPath;
+      brandLogo.src = this.resolveAssetPath(brand.logo);
       brandLogo.alt = brand.shortName;
       brandLogo.onerror = () => {
         brandLogo.src = 'media/tdv-import/skin/logo.webp';
@@ -216,10 +232,7 @@ export class BrandLoader {
     // Update property info modal logo
     const propertyInfoLogo = document.querySelector('.property-info-logo img');
     if (propertyInfoLogo && brand.logo) {
-      const logoPath = brand.logo.startsWith('/') ? brand.logo : 
-                       brand.logo.startsWith('_brands/') ? brand.logo :
-                       `/_brands/${this.brandSlug}/${brand.logo.split('/').pop()}`;
-      propertyInfoLogo.src = logoPath;
+      propertyInfoLogo.src = this.resolveAssetPath(brand.logo);
       propertyInfoLogo.alt = brand.companyName;
       propertyInfoLogo.onerror = () => {
         propertyInfoLogo.src = 'media/tdv-import/skin/logo.webp';
@@ -750,143 +763,4 @@ export class BrandLoader {
       .stat-card {
         background: rgba(255, 255, 255, 0.1) !important;
         border-color: rgba(255, 255, 255, 0.2) !important;
-        backdrop-filter: blur(10px);
-      }
-
-      .stat-card:hover {
-        background: rgba(255, 255, 255, 0.15) !important;
-        border-color: rgba(255, 255, 255, 0.3) !important;
-      }
-
-      .stat-value {
-        color: #ffffff !important;
-      }
-
-      .stat-label-modern {
-        color: rgba(255, 255, 255, 0.8) !important;
-      }
-
-      .stat-icon {
-        color: rgba(255, 255, 255, 0.9) !important;
-      }
-
-      /* Settings panel - white/transparent */
-      .loading-settings-modern {
-        background: rgba(255, 255, 255, 0.1) !important;
-        border-color: rgba(255, 255, 255, 0.2) !important;
-        backdrop-filter: blur(10px);
-      }
-
-      .loading-settings-modern h3 {
-        color: #ffffff !important;
-      }
-
-      .setting-option-modern {
-        background: rgba(255, 255, 255, 0.08) !important;
-        border-color: rgba(255, 255, 255, 0.15) !important;
-      }
-
-      .toggle-text-modern .toggle-title {
-        color: #ffffff !important;
-      }
-
-      .toggle-text-modern .toggle-desc {
-        color: rgba(255, 255, 255, 0.7) !important;
-      }
-
-      /* Stats grid container */
-      .loading-stats-modern {
-        background: rgba(255, 255, 255, 0.05) !important;
-        border-color: rgba(255, 255, 255, 0.1) !important;
-        backdrop-filter: blur(10px);
-      }
-
-      /* Text colors */
-      .loading-header h1 {
-        color: #ffffff !important;
-        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-      }
-
-      .loading-subtitle {
-        color: rgba(255, 255, 255, 0.9) !important;
-        text-shadow: 0 1px 5px rgba(0, 0, 0, 0.3);
-      }
-
-      .loading-status-text {
-        color: #ffffff !important;
-      }
-
-      /* Spinner */
-      .spinner-modern {
-        border-color: rgba(255, 255, 255, 0.2);
-        border-top-color: rgba(255, 255, 255, 0.8);
-      }
-
-      /* Progress bar */
-      .prep-progress-bar {
-        background: rgba(255, 255, 255, 0.15) !important;
-      }
-
-      .prep-progress-bar-fill {
-        background: rgba(255, 255, 255, 0.6) !important;
-      }
-
-      .prep-stat {
-        color: rgba(255, 255, 255, 0.9) !important;
-      }
-
-      .prep-stat i {
-        color: rgba(255, 255, 255, 0.7) !important;
-      }
-
-      .prep-progress-icon {
-        color: rgba(255, 255, 255, 0.8) !important;
-      }
-
-      /* Particles - subtle white */
-      .particle {
-        background: rgba(255, 255, 255, 0.15) !important;
-      }
-
-      /* Logo glow */
-      .logo-glow {
-        background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
-      }
-
-      /* Shimmer on button */
-      .btn-shimmer {
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
-      }
-    `;
-  }
-
-  /**
-   * Apply brand-specific tour UI styles
-   * No longer needed - CSS variables handle this
-   */
-  applyTourUIStyles() {
-    // CSS variables already handle tour UI theming
-    console.log('[BrandLoader] Tour UI themed via CSS variables');
-  }
-
-  /**
-   * Get brand configuration
-   */
-  getConfig() {
-    return this.brandConfig;
-  }
-
-  /**
-   * Get brand slug
-   */
-  getBrandSlug() {
-    return this.brandSlug;
-  }
-
-  /**
-   * Check if brand is loaded
-   */
-  isBrandLoaded() {
-    return this.isLoaded;
-  }
-}
+        backdrop-f
