@@ -91,8 +91,7 @@ export class GuidedTourManager {
 
     for (const [key, narration] of Object.entries(narrations)) {
       const cleanKey = key.replace(/^\d+_/, '').toLowerCase().trim();
-      // Match if scene name equals or contains the key
-      if (sceneName === key || cleanName === cleanKey || sceneName.includes(key) || cleanName.includes(cleanKey)) {
+      if (sceneName === key || cleanName === cleanKey) {
         console.log(`[GuidedTour] Matched "${sceneName}" -> key: "${key}"`);
         return narration;
       }
