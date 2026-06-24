@@ -107,8 +107,15 @@ export class PanoramaViewer {
     const cube = new THREE.Mesh(geometry, materials);
     this.sceneGroup.add(cube);
 
+    let loadedCount = 0;
+    const totalFaces = faceNames.length;
     Promise.all(faceNames.map((name, i) =>
-      this.loadFace(baseUrl, name, materials[this.faceMap[name]])
+      this.loadFace(baseUrl, name, materials[this.faceMap[name]], () => {
+        loadedCount++;
+        if (this.loadProgressCallback) {
+          this.loadProgressCallback(loadedCount, totalFaces);
+        }
+      })
     )).then(() => {
       // Set initial view
       if (scene.initialView) {
@@ -121,7 +128,11 @@ export class PanoramaViewer {
     });
   }
 
-  loadFace(baseUrl, faceName, material) {
+  setLoadProgressCallback(callback) {
+    this.loadProgressCallback = callback;
+  }
+
+  loadFace(baseUrl, faceName, material, onLoaded) {
     return new Promise(resolve => {
       const img = new Image();
       img.crossOrigin = '';
@@ -149,11 +160,13 @@ export class PanoramaViewer {
         material.map = tex;
         material.color = new THREE.Color(0xffffff);
         material.needsUpdate = true;
+        if (onLoaded) onLoaded();
         resolve();
       };
       img.onerror = () => {
         console.warn(`Failed to load face: ${imgUrl}`);
         material.color = new THREE.Color(0x1a1a2e);
+        if (onLoaded) onLoaded();
         resolve();
       };
       img.src = imgUrl;

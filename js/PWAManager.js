@@ -160,6 +160,15 @@ export class PWAManager {
       console.log('[PWA] SW registered');
     } catch (err) {
       console.error('[PWA] SW registration failed:', err);
+      // If SW fails, content still works online - enable start button
+      if (window.tourPlayer && typeof window.tourPlayer.enableStartButton === 'function') {
+        window.tourPlayer.enableStartButton('Ready (online mode)');
+      } else {
+        const btn = document.getElementById('btn-start-tour');
+        if (btn) btn.disabled = false;
+        const st = document.getElementById('loading-status-text');
+        if (st) st.textContent = 'Ready';
+      }
     }
   }
 

@@ -170,8 +170,27 @@ export class TourPlayer {
       // Setup guided tour state listener
       this.setupGuidedTourListener();
 
+      // Track first-scene panorama load progress
+      let firstSceneFacesComplete = false;
+      this.viewer.setLoadProgressCallback((loaded, total) => {
+        const pct = Math.round((loaded / total) * 100);
+        const statusText = document.getElementById('loading-status-text');
+        const btnSubtitle = document.getElementById('btn-start-subtitle');
+        if (statusText) statusText.textContent = `Loading panorama ${pct}%`;
+        if (btnSubtitle) btnSubtitle.textContent = `Loading ${pct}%`;
+        if (loaded >= total && !firstSceneFacesComplete) {
+          firstSceneFacesComplete = true;
+          this.enableStartButton('Ready!');
+        }
+      });
+
       // Load first scene
       this.loadScene(0);
+
+      // Safety timeout: enable start button after 20s max regardless of state
+      setTimeout(() => {
+        this.enableStartButton('Ready');
+      }, 20000);
 
       // Update gallery widget
       this.ui.updateGalleryWidget();
@@ -203,6 +222,22 @@ export class TourPlayer {
           </div>
         `;
       }
+    }
+  }
+
+  enableStartButton(statusText = 'Ready!') {
+    const startBtn = document.getElementById('btn-start-tour');
+    const statusEl = document.getElementById('loading-status-text');
+    const btnSubtitle = document.getElementById('btn-start-subtitle');
+    const prepProgress = document.getElementById('offline-prep-progress');
+    if (startBtn && startBtn.disabled) {
+      startBtn.disabled = false;
+      startBtn.title = statusText;
+    }
+    if (statusEl) statusEl.textContent = statusText;
+    if (btnSubtitle) btnSubtitle.textContent = statusText;
+    if (prepProgress && prepProgress.style.display !== 'none') {
+      setTimeout(() => { prepProgress.style.display = 'none'; }, 2000);
     }
   }
 
